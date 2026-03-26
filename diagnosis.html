@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aushadh AI | Health Summary</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Public+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script>tailwind.config={theme:{extend:{colors:{"surface-container-low":"#f1f4fa","surface":"#f7f9ff","secondary":"#3b6934","outline-variant":"#bdc9ca","secondary-fixed":"#bcf0ae","on-primary-fixed-variant":"#004f56","surface-container-high":"#e5e8ee","on-primary":"#ffffff","tertiary":"#005a91","on-secondary-fixed":"#002201","on-secondary-container":"#3f6d38","error":"#ba1a1a","on-surface":"#181c20","surface-container":"#ebeef4","primary":"#006068","surface-container-highest":"#dfe3e8","on-primary-fixed":"#001f23","surface-container-lowest":"#ffffff","error-container":"#ffdad6","outline":"#6e797a","on-surface-variant":"#3e494a","on-secondary":"#ffffff","primary-fixed":"#96f1fc","primary-container":"#007b85","on-error":"#ffffff","secondary-container":"#b9eeab","on-secondary-fixed-variant":"#23501e"},fontFamily:{"headline":["Manrope"],"body":["Public Sans"]}}}}</script>
+<style>
+  .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+  .primary-gradient{background:linear-gradient(135deg,#006068 0%,#007b85 100%)}
+  body{font-family:'Public Sans',sans-serif;overflow-x:hidden}
+  h1,h2,h3,h4{font-family:'Manrope',sans-serif}
+
+  @media print {
+    body > *:not(#pdf-content) { display: none !important; }
+    #pdf-content { display: block !important; padding: 24px; font-family: 'Public Sans', sans-serif; color: #181c20; }
+    #pdf-content h1 { font-size: 22px; font-weight: 800; color: #006068; margin-bottom: 4px; }
+    #pdf-content h2 { font-size: 14px; font-weight: 700; color: #006068; margin: 16px 0 6px; border-bottom: 1px solid #e5e8ee; padding-bottom: 4px; }
+    #pdf-content table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    #pdf-content th { background: #006068; color: white; padding: 6px 8px; text-align: left; }
+    #pdf-content td { padding: 6px 8px; border-bottom: 1px solid #f1f4fa; }
+    #pdf-content tr:nth-child(even) td { background: #f7f9ff; }
+    #pdf-content .pdf-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; background: #e0f4f6; color: #006068; font-weight: 700; font-size: 10px; }
+    #pdf-content .pdf-emergency { background: #ffdad6; padding: 10px 14px; border-radius: 8px; font-size: 12px; border-left: 4px solid #ba1a1a; }
+    #pdf-content .pdf-footer { margin-top: 20px; font-size: 10px; color: #6e797a; text-align: center; border-top: 1px solid #e5e8ee; padding-top: 10px; }
+  }
+</style>
+</head>
+<body class="bg-surface text-on-surface">
+<nav class="bg-[#f7f9ff]/80 backdrop-blur-xl sticky top-0 z-50 shadow-sm">
+  <div class="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
+    <div class="flex items-center gap-8">
+      <a href="dashboard.html" class="flex items-center gap-2 text-2xl font-black text-[#006068] font-headline">
+        <img src="logo_green.png" alt="Aushadh AI" class="w-8 h-8 object-contain">
+        Aushadh AI
+      </a>
+      <div class="hidden md:flex gap-6">
+        <a class="text-slate-500 font-medium hover:text-[#007B85] transition-colors" href="dashboard.html">Dashboard</a>
+        <a class="text-[#006068] font-bold border-b-2 border-[#006068]" href="diagnosis.html">Summary</a>
+        <a class="text-slate-500 font-medium hover:text-[#007B85] transition-colors" href="medications.html">Medications</a>
+        <a class="text-slate-500 font-medium hover:text-[#007B85] transition-colors" href="checklist.html">Checklist</a>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-full bg-surface-container border border-outline-variant flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary text-sm">person</span>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main class="max-w-7xl mx-auto px-6 py-10 flex flex-col md:flex-row gap-10">
+  <!-- Sidebar -->
+  <aside class="hidden md:flex flex-col w-56 space-y-4 flex-shrink-0">
+    <div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant/10">
+      <div class="flex items-center gap-2 mb-4 pb-4 border-b border-outline-variant/10">
+        <img src="logo_green.png" alt="Aushadh AI" class="w-8 h-8 object-contain">
+        <span class="font-bold text-primary">Aushadh AI</span>
+      </div>
+      <nav class="space-y-1">
+        <a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-surface-container-low rounded-lg transition-all text-sm font-semibold" href="dashboard.html"><span class="material-symbols-outlined text-sm">dashboard</span>Dashboard</a>
+        <a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-surface-container-low rounded-lg transition-all text-sm font-semibold" href="documents.html"><span class="material-symbols-outlined text-sm">description</span>Documents</a>
+        <a class="flex items-center gap-3 px-3 py-2.5 bg-surface-container-low text-primary rounded-lg text-sm font-bold" href="diagnosis.html"><span class="material-symbols-outlined text-sm">summarize</span>Summary</a>
+        <a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-surface-container-low rounded-lg transition-all text-sm font-semibold" href="medications.html"><span class="material-symbols-outlined text-sm">medical_services</span>Medications</a>
+        <a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-surface-container-low rounded-lg transition-all text-sm font-semibold" href="checklist.html"><span class="material-symbols-outlined text-sm">fact_check</span>Checklist</a>
+      </nav>
+      <div class="mt-6 pt-4 border-t border-outline-variant/10">
+        <a href="documents.html" class="w-full primary-gradient text-white font-bold py-2.5 rounded-full flex items-center justify-center gap-1 text-sm active:scale-95">
+          <span class="material-symbols-outlined text-sm">add</span> Upload New
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <section class="flex-1">
+
+    <!-- NO DATA STATE -->
+    <div id="no-data" class="hidden text-center py-20">
+      <div class="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+        <span class="material-symbols-outlined text-primary text-5xl">upload_file</span>
+      </div>
+      <h2 class="font-headline text-3xl font-black text-on-surface mb-3">No Analysis Yet</h2>
+      <p class="text-on-surface-variant max-w-md mx-auto mb-8">Upload your prescription or discharge summary first. Our AI will simplify it into plain language for you.</p>
+      <a href="documents.html" class="inline-flex items-center gap-2 primary-gradient text-white font-black px-8 py-4 rounded-full shadow-lg hover:-translate-y-0.5 transition-all">
+        <span class="material-symbols-outlined">upload_file</span> Upload Document
+      </a>
+    </div>
+
+    <!-- DATA STATE -->
+    <div id="has-data" class="hidden space-y-6">
+
+      <!-- ── PAGE HEADER ── -->
+      <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 class="font-headline text-2xl md:text-3xl font-extrabold text-on-surface mb-1">Your Health Summary</h1>
+          <p class="text-sm text-on-surface-variant">AI-simplified from your prescription by Aushadh AI</p>
+        </div>
+        <div class="flex gap-2 flex-wrap">
+          <div class="flex bg-surface-container-low border border-outline-variant/20 rounded-full p-1 gap-1">
+            <button onclick="setLang('en',this)" class="lang-btn px-4 py-1.5 rounded-full text-xs font-bold bg-white text-primary shadow-sm transition-all">EN</button>
+            <button onclick="setLang('hi',this)" class="lang-btn px-4 py-1.5 rounded-full text-xs font-bold text-outline transition-all">हि</button>
+          </div>
+          <button id="speak-btn" onclick="toggleSpeak()" class="flex items-center gap-1 bg-secondary-container/30 text-secondary border border-secondary/20 px-4 py-2 rounded-full font-bold text-sm hover:bg-secondary hover:text-white transition-all">
+            <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">volume_up</span>
+            <span id="speak-label">Listen</span>
+          </button>
+          <a href="documents.html" class="flex items-center gap-1 bg-surface-container-high text-on-primary-fixed-variant px-4 py-2 rounded-full font-bold text-sm hover:bg-surface-container-highest transition-all">
+            <span class="material-symbols-outlined text-sm">refresh</span> New Upload
+          </a>
+        </div>
+      </div>
+
+      <!-- ── PATIENT + DOCTOR INFO CARD ── -->
+      <div id="patient-card" class="hidden bg-surface-container-lowest rounded-2xl border border-outline-variant/20 shadow-sm overflow-hidden">
+        <div class="px-5 py-3 bg-surface-container border-b border-outline-variant/10 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings:'FILL' 1">person_4</span>
+          <span class="text-xs font-black uppercase tracking-widest text-outline">Patient & Doctor Details</span>
+        </div>
+        <div class="p-5 flex flex-wrap gap-6">
+          <div id="patient-age-block" class="hidden">
+            <p class="text-[10px] font-black uppercase tracking-widest text-outline mb-1">Patient Age</p>
+            <p class="font-bold text-on-surface" id="patient-age-val">—</p>
+          </div>
+          <div id="patient-gender-block" class="hidden">
+            <p class="text-[10px] font-black uppercase tracking-widest text-outline mb-1">Gender</p>
+            <p class="font-bold text-on-surface" id="patient-gender-val">—</p>
+          </div>
+          <div id="doctor-name-block" class="hidden">
+            <p class="text-[10px] font-black uppercase tracking-widest text-outline mb-1">Doctor</p>
+            <p class="font-bold text-on-surface" id="doctor-name">—</p>
+            <p class="text-xs text-outline" id="doctor-specialty"></p>
+          </div>
+          <div id="hospital-block" class="hidden">
+            <p class="text-[10px] font-black uppercase tracking-widest text-outline mb-1">Hospital</p>
+            <p class="font-bold text-on-surface" id="hospital-val">—</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── AI CONFIDENCE ── -->
+      <div class="bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/20 shadow-sm">
+        <div class="flex items-center gap-3 flex-wrap">
+          <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings:'FILL' 1">verified</span>
+          <div class="text-[10px] font-black uppercase tracking-widest text-outline flex-shrink-0">AI Confidence Score</div>
+          <div class="flex-1 min-w-[80px] h-2.5 bg-surface-container rounded-full overflow-hidden">
+            <div id="conf-bar" class="h-full primary-gradient rounded-full transition-all duration-1000" style="width:0%"></div>
+          </div>
+          <div class="font-headline font-black text-2xl text-primary flex-shrink-0" id="conf-pct">—</div>
+        </div>
+        <p class="text-xs text-outline mt-1 pl-7" id="conf-note"></p>
+      </div>
+
+      <!-- ── PLAIN-LANGUAGE SUMMARY ── -->
+      <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/20 shadow-sm">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-9 h-9 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+            <span class="material-symbols-outlined text-primary text-base" style="font-variation-settings:'FILL' 1">summarize</span>
+          </div>
+          <div>
+            <h2 class="font-headline font-bold text-lg text-on-surface">What Happened — In Simple Words</h2>
+            <p class="text-xs text-outline">Easy-to-read summary for you and your family</p>
+          </div>
+        </div>
+        <p class="text-base text-on-surface leading-relaxed" id="summary-text">—</p>
+        <div class="flex gap-2 flex-wrap mt-4 pt-4 border-t border-outline-variant/10">
+          <button onclick="copySummary()" class="flex items-center gap-1 text-primary font-bold text-xs hover:underline">
+            <span class="material-symbols-outlined text-sm">copy_all</span>Copy
+          </button>
+          <button onclick="shareAnalysisOnWhatsApp()" class="flex items-center gap-1 bg-[#25D366]/10 text-[#128C51] font-bold text-xs px-3 py-1.5 rounded-full hover:bg-[#25D366]/20 transition-all">
+            <span class="material-symbols-outlined text-sm">share</span>Share on WhatsApp
+          </button>
+          <button id="speak-btn2" onclick="toggleSpeak()" class="flex items-center gap-1 text-secondary font-bold text-xs hover:underline">
+            <span class="material-symbols-outlined text-sm">volume_up</span>Read Aloud
+          </button>
+        </div>
+      </div>
+
+      <!-- ── DIAGNOSIS COMPARISON ── -->
+      <div>
+        <div class="flex items-center gap-3 mb-3">
+          <h2 class="font-headline text-lg font-bold text-on-surface">Diagnosis Explained</h2>
+          <span class="text-[10px] font-black uppercase tracking-widest bg-primary/10 text-primary px-3 py-1 rounded-full">Doctor's Words → Plain Language</span>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <!-- Original -->
+          <div class="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/20 shadow-sm">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-[10px] font-black uppercase tracking-widest bg-surface-container text-outline px-2 py-1 rounded-full">Doctor's Original</span>
+            </div>
+            <p class="text-sm text-on-surface-variant font-mono leading-relaxed bg-surface-container-low rounded-lg p-4 border-l-4 border-outline-variant/40" id="dx-original">—</p>
+          </div>
+          <!-- Simplified -->
+          <div class="bg-primary/5 rounded-xl p-5 border-2 border-primary/20 shadow-sm">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings:'FILL' 1">auto_awesome</span>
+              <span class="text-[10px] font-black uppercase tracking-widest bg-primary/10 text-primary px-2 py-1 rounded-full">Simplified by AI</span>
+            </div>
+            <p class="text-sm text-on-surface leading-relaxed border-l-4 border-primary/50 pl-4" id="dx-simple">—</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── MEDICATIONS ── -->
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="font-headline text-lg font-bold text-on-surface">Your Medicines</h2>
+          <a href="medications.html" class="text-primary font-bold text-xs hover:underline flex items-center gap-1">
+            Full schedule <span class="material-symbols-outlined text-sm">arrow_forward</span>
+          </a>
+        </div>
+        <div id="med-cards" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+        <div id="med-empty" class="hidden bg-surface-container-lowest rounded-xl p-8 text-center border border-outline-variant/10">
+          <span class="material-symbols-outlined text-outline text-3xl">medication</span>
+          <p class="text-sm text-outline mt-2">No medications found in document</p>
+        </div>
+      </div>
+
+      <!-- ── WATCH FOR ── -->
+      <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/20 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-outline-variant/10 flex items-center gap-2">
+          <span class="material-symbols-outlined text-amber-600 text-base" style="font-variation-settings:'FILL' 1">visibility</span>
+          <h3 class="font-headline font-bold text-base text-on-surface">What to Watch For</h3>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-outline-variant/10">
+          <div class="p-5">
+            <p class="text-[10px] font-black uppercase tracking-widest text-outline mb-2">Doctor's Clinical Notes</p>
+            <p class="text-sm text-on-surface-variant font-mono leading-relaxed" id="watch-original">—</p>
+          </div>
+          <div class="p-5 bg-amber-50/50">
+            <p class="text-[10px] font-black uppercase tracking-widest text-amber-700 mb-2">In Plain Words</p>
+            <p class="text-sm text-on-surface leading-relaxed" id="watch-simple">—</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SIDE EFFECTS + EMERGENCY ── -->
+      <div id="side-effects-block" class="hidden space-y-4">
+        <!-- Side effects -->
+        <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/10 shadow-sm overflow-hidden">
+          <div class="px-5 py-4 border-b border-outline-variant/10 flex items-center gap-2">
+            <span class="material-symbols-outlined text-error text-base" style="font-variation-settings:'FILL' 1">warning</span>
+            <h3 class="font-headline font-bold text-base text-on-surface">Possible Side Effects</h3>
+          </div>
+          <div class="p-5 space-y-2" id="se-mini"></div>
+        </div>
+        <!-- Emergency -->
+        <div class="bg-error-container/20 rounded-2xl p-5 border-2 border-error/30">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="material-symbols-outlined text-error" style="font-variation-settings:'FILL' 1">emergency</span>
+            <h3 class="font-headline font-bold text-base text-error">Call Doctor Immediately If:</h3>
+          </div>
+          <p class="text-sm text-on-surface leading-relaxed font-medium" id="emergency-mini"></p>
+        </div>
+      </div>
+
+      <!-- ── RECOVERY NOTE ── -->
+      <div id="recovery-block" class="hidden bg-secondary-container/20 border border-secondary/20 rounded-2xl p-5">
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-outlined text-secondary flex-shrink-0 mt-0.5" style="font-variation-settings:'FILL' 1">calendar_today</span>
+          <div>
+            <p class="font-headline font-bold text-sm text-on-surface mb-1">Recovery Timeline</p>
+            <p class="text-sm text-on-surface-variant leading-relaxed" id="recovery-text"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── BOTTOM CTAs ── -->
+      <div class="flex gap-3 flex-wrap pb-8">
+        <a href="checklist.html" class="flex items-center gap-2 primary-gradient text-white px-6 py-3 rounded-full font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-95 transition-all text-sm">
+          <span class="material-symbols-outlined text-sm">fact_check</span> Follow-up Checklist
+        </a>
+        <a href="medications.html" class="flex items-center gap-2 bg-surface-container-high text-on-primary-fixed-variant px-6 py-3 rounded-full font-bold hover:bg-surface-container-highest transition-all text-sm">
+          <span class="material-symbols-outlined text-sm">medication</span> Full Medication Schedule
+        </a>
+        <a href="chat.html" class="flex items-center gap-2 bg-secondary-container/30 text-secondary border border-secondary/20 px-6 py-3 rounded-full font-bold hover:bg-secondary hover:text-white transition-all text-sm">
+          <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">smart_toy</span> Ask AI a Question
+        </a>
+        <button onclick="exportPdf()" class="flex items-center gap-2 border border-outline-variant text-on-surface-variant px-6 py-3 rounded-full font-bold hover:border-primary hover:text-primary transition-all text-sm">
+          <span class="material-symbols-outlined text-sm">picture_as_pdf</span> Export PDF
+        </button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Bottom Nav Mobile -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 bg-white/80 backdrop-blur-xl flex justify-around items-center px-4 pb-6 pt-3 shadow-[0_-4px_24px_rgba(24,28,32,0.06)] rounded-t-3xl">
+  <a class="flex flex-col items-center text-[#006068] bg-[#007B85]/10 rounded-2xl px-4 py-1" href="dashboard.html"><span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">home</span><span class="text-[10px] uppercase mt-1">Home</span></a>
+  <a class="flex flex-col items-center text-slate-400" href="documents.html"><span class="material-symbols-outlined">add_circle</span><span class="text-[10px] uppercase mt-1">Upload</span></a>
+  <a class="flex flex-col items-center text-slate-400" href="medications.html"><span class="material-symbols-outlined">pill</span><span class="text-[10px] uppercase mt-1">Meds</span></a>
+  <a class="flex flex-col items-center text-slate-400" href="checklist.html"><span class="material-symbols-outlined">assignment_turned_in</span><span class="text-[10px] uppercase mt-1">Tasks</span></a>
+</nav>
+
+<div id="pdf-content" style="display:none"></div>
+<script src="medbuddy.js"></script>
+<script>
+requireAuth();
+let currentLang='en';
+let speaking=false;
+const data=getAnalysis();
+
+// Check if we need to show emergency alert (set during document upload)
+const showAlert = sessionStorage.getItem('showEmergencyAlert');
+sessionStorage.removeItem('showEmergencyAlert');
+
+if(!data){
+  document.getElementById('no-data').classList.remove('hidden');
+} else {
+  // Check for emergency/severe conditions - only if flagged during upload
+  if (showAlert === 'true') {
+    const emergency = checkForEmergency(data);
+    if (emergency && emergency.isSevere) {
+      setTimeout(() => showEmergencyAlert(emergency), 500);
+    }
+  }
+  
+  document.getElementById('has-data').classList.remove('hidden');
+  renderData(data);
+}
+
+function renderData(d){
+  // Confidence
+  setTimeout(()=>{
+    document.getElementById('conf-bar').style.width=(d.confidence||80)+'%';
+    document.getElementById('conf-pct').textContent=(d.confidence||80)+'%';
+  },300);
+  document.getElementById('conf-note').textContent=d.confidence_note||'';
+
+  // Summary
+  document.getElementById('summary-text').textContent=d.summary_en||'—';
+
+  // Doctor info
+  if(d.doctor_name){
+    const doctorBlock = document.getElementById('doctor-block');
+    if(doctorBlock) doctorBlock.classList.remove('hidden');
+    document.getElementById('doctor-name').textContent=d.doctor_name;
+    document.getElementById('doctor-specialty').textContent=d.doctor_specialty||'';
+  }
+
+  // Diagnosis
+  document.getElementById('dx-original').textContent=d.diagnosis?.original_jargon||'Not found in document';
+  document.getElementById('dx-simple').textContent=d.diagnosis?.simple_english||'—';
+
+  // Watch for
+  document.getElementById('watch-original').textContent=d.watch_for?.original||'—';
+  document.getElementById('watch-simple').textContent=d.watch_for?.simple||'—';
+
+  // Side effects + emergency mini
+  if((d.side_effects&&d.side_effects.length)||d.emergency){
+    document.getElementById('side-effects-block').classList.remove('hidden');
+    if(d.side_effects&&d.side_effects.length){
+      const sevCls={high:'text-error bg-error-container/20',medium:'text-amber-700 bg-amber-50',low:'text-on-surface-variant bg-surface-container-low'};
+      document.getElementById('se-mini').innerHTML=d.side_effects.map(se=>`
+        <div class="flex items-start gap-2 p-3 rounded-lg ${sevCls[se.severity]||sevCls.low}">
+          <span class="text-base flex-shrink-0">${se.icon||'⚠️'}</span>
+          <p class="text-xs font-semibold leading-relaxed">${esc(se.text)}</p>
+        </div>`).join('');
+    }
+    if(d.emergency) document.getElementById('emergency-mini').textContent=d.emergency;
+  }
+
+  // Medications - use card layout
+  const cards = document.getElementById('med-cards');
+  if (d.medications && d.medications.length > 0) {
+    cards.innerHTML = d.medications.map((m, i) => `
+      <div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/10 shadow-sm">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="font-bold text-sm">${esc(m.name)}</span>
+        </div>
+        <div class="text-xs text-outline">${esc(m.dosage)} - ${esc(m.timing)}</div>
+        <div class="text-xs text-on-surface-variant mt-1">${esc(m.simple_instruction || '')}</div>
+      </div>`).join('');
+  } else {
+    cards.innerHTML = '<div class="col-span-full text-center py-4 text-outline text-sm">No medications found in your document</div>';
+  }
+}
+
+function setLang(l,btn){
+  currentLang=l;
+  document.querySelectorAll('.lang-btn').forEach(b=>b.className='lang-btn px-4 py-1.5 rounded-full text-xs font-bold text-outline transition-all');
+  btn.className='lang-btn px-4 py-1.5 rounded-full text-xs font-bold bg-white text-primary shadow-sm transition-all';
+  if(!data)return;
+  if(l==='hi'){
+    document.getElementById('summary-text').textContent=data.summary_hi||data.summary_en||'—';
+    document.getElementById('dx-simple').textContent=data.diagnosis?.simple_hindi||data.diagnosis?.simple_english||'—';
+  } else {
+    document.getElementById('summary-text').textContent=data.summary_en||'—';
+    document.getElementById('dx-simple').textContent=data.diagnosis?.simple_english||'—';
+  }
+}
+
+function copySummary(){
+  if(!data)return;
+  navigator.clipboard.writeText(data.summary_en||'').then(()=>showToast('✅ Copied!'));
+}
+
+function exportPdf(){
+  if(!data)return;
+  const e=s=>String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const meds=(data.medications||[]).map(m=>`
+    <tr>
+      <td><strong>${e(m.name)}</strong></td>
+      <td><span class="pdf-badge">${e(m.dosage)}</span></td>
+      <td>${e(m.timing)}</td>
+      <td>${e(m.duration)}</td>
+      <td>${e(m.with_food)}</td>
+    </tr>`).join('');
+  const checklist=(data.checklist||[]).map(c=>`<li>☐ [${e(c.category)}] ${e(c.text)}</li>`).join('');
+  const se=(data.side_effects||[]).map(s=>`<li>${s.icon||'⚠️'} ${e(s.text)}</li>`).join('');
+
+  let html=`
+    <h1>Aushadh AI Health Summary</h1>
+    <p style="color:#6e797a;font-size:12px">Generated ${new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}${data.doctor_name?' &nbsp;|&nbsp; '+e(data.doctor_name):''}</p>
+    <h2>Summary</h2>
+    <p style="font-size:13px">${e(data.summary_en)}</p>
+    <h2>Diagnosis</h2>
+    <p style="font-size:11px;color:#6e797a;margin-bottom:4px">${e(data.diagnosis?.original_jargon)}</p>
+    <p style="font-size:13px">${e(data.diagnosis?.simple_english)}</p>
+    <h2>Medications</h2>
+    <table><thead><tr><th>Medicine</th><th>Dose</th><th>Timing</th><th>Duration</th><th>With Food</th></tr></thead><tbody>${meds}</tbody></table>
+    ${se?`<h2>Side Effects to Watch</h2><ul style="font-size:12px;line-height:1.8">${se}</ul>`:''}
+    ${data.emergency?`<h2>Emergency — Call Doctor If</h2><div class="pdf-emergency">${e(data.emergency)}</div>`:''}
+    ${checklist?`<h2>Action Checklist</h2><ul style="font-size:12px;line-height:2;list-style:none;padding:0">${checklist}</ul>`:''}
+    <div class="pdf-footer">Generated by Aushadh AI &bull; Always consult your doctor &bull; medbuddy.app</div>`;
+
+  const div=document.getElementById('pdf-content');
+  div.innerHTML=html;
+  div.style.display='block';
+  window.print();
+  setTimeout(()=>{ div.style.display='none'; },600);
+}
+
+function showToast(msg){
+  const t=document.createElement('div');
+  t.className='fixed bottom-6 left-1/2 -translate-x-1/2 bg-on-surface text-white px-5 py-3 rounded-full text-sm font-bold shadow-xl z-50';
+  t.style.background='#181c20';
+  t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2500);
+}
+
+// ── Voice Readout ─────────────────────────────────────
+function toggleSpeak(){
+  if(!data)return;
+  if(speaking){ stopSpeak(); return; }
+  const d=data;
+  const lang=currentLang;
+  let text=`Aushadh AI Health Summary. `;
+  if(lang==='hi'){
+    text+=(d.summary_hi||d.summary_en||'')+'. ';
+    text+=`Diagnosis: `+(d.diagnosis?.simple_hindi||d.diagnosis?.simple_english||'')+'. ';
+  } else {
+    text+=(d.summary_en||'')+'. ';
+    text+=`Your diagnosis: `+(d.diagnosis?.simple_english||'')+'. ';
+  }
+  text+=`You have ${(d.medications||[]).length} medicines. `;
+  (d.medications||[]).forEach((m,i)=>{ text+=`Medicine ${i+1}: ${m.name}, ${m.dosage}, ${m.timing}, for ${m.duration}. `; });
+  text+=`Important: `+(d.emergency||'')+'. ';
+  text+=`This summary was generated by Aushadh AI. Always consult your doctor.`;
+
+  const utterance=new SpeechSynthesisUtterance(text);
+  utterance.lang=lang==='hi'?'hi-IN':'en-IN';
+  utterance.rate=0.9;
+  utterance.onend=()=>{ speaking=false; updateSpeakBtn(false); };
+  utterance.onerror=()=>{ speaking=false; updateSpeakBtn(false); };
+  window.speechSynthesis.speak(utterance);
+  speaking=true;
+  updateSpeakBtn(true);
+}
+function stopSpeak(){
+  window.speechSynthesis.cancel();
+  speaking=false;
+  updateSpeakBtn(false);
+}
+function updateSpeakBtn(on){
+  const btn=document.getElementById('speak-btn');
+  const lbl=document.getElementById('speak-label');
+  if(on){
+    btn.className='flex items-center gap-1 bg-secondary text-white px-4 py-2 rounded-full font-bold text-sm transition-all animate-pulse';
+    lbl.textContent='Stop';
+    btn.querySelector('.material-symbols-outlined').textContent='stop_circle';
+  } else {
+    btn.className='flex items-center gap-1 bg-secondary-container/30 text-secondary border border-secondary/20 px-4 py-2 rounded-full font-bold text-sm hover:bg-secondary hover:text-white transition-all';
+    lbl.textContent='Listen';
+    btn.querySelector('.material-symbols-outlined').textContent='volume_up';
+  }
+}
+
+
+</script>
+</body>
+</html>

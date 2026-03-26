@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aushadh AI | Checklist & Alerts</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Public+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script>tailwind.config={theme:{extend:{colors:{"surface-container-low":"#f1f4fa","surface":"#f7f9ff","secondary":"#3b6934","outline-variant":"#bdc9ca","secondary-fixed":"#bcf0ae","on-primary-fixed-variant":"#004f56","surface-container-high":"#e5e8ee","on-primary":"#ffffff","tertiary":"#005a91","on-secondary-fixed":"#002201","on-secondary-container":"#3f6d38","error":"#ba1a1a","on-surface":"#181c20","surface-container":"#ebeef4","primary":"#006068","surface-container-highest":"#dfe3e8","on-primary-fixed":"#001f23","surface-container-lowest":"#ffffff","error-container":"#ffdad6","outline":"#6e797a","on-surface-variant":"#3e494a","on-secondary":"#ffffff","primary-fixed":"#96f1fc","primary-container":"#007b85","on-error":"#ffffff","secondary-container":"#b9eeab","tertiary-fixed":"#cfe5ff","on-tertiary-fixed":"#001d34","on-secondary-fixed-variant":"#23501e"},fontFamily:{"headline":["Manrope"],"body":["Public Sans"]}}}}</script>
+<style>
+  .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+  .primary-gradient{background:linear-gradient(135deg,#006068 0%,#007b85 100%)}
+  body{font-family:'Public Sans',sans-serif;overflow-x:hidden}
+  h1,h2,h3,h4{font-family:'Manrope',sans-serif}
+  .cl-item.checked .cl-text{text-decoration:line-through;opacity:0.5}
+  @keyframes confettiFall{0%{transform:translateY(-10px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+  .confetti-piece{position:fixed;top:-10px;z-index:9999;animation:confettiFall linear forwards;pointer-events:none;border-radius:2px}
+  /* Dark Mode Styles */
+  html.dark body { background-color: #121212; color: #e0e0e0; }
+  html.dark .bg-surface { background-color: #1e1e1e !important; }
+  html.dark .bg-surface-container-low { background-color: #2c2c2c !important; }
+  html.dark .bg-surface-container-lowest { background-color: #252525 !important; }
+  html.dark .bg-surface-container-high { background-color: #383838 !important; }
+  html.dark .text-on-surface { color: #e0e0e0 !important; }
+  html.dark .text-slate-600 { color: #a0a0a0 !important; }
+  html.dark .text-slate-500 { color: #909090 !important; }
+  html.dark .text-outline { color: #808080 !important; }
+  html.dark .border-outline-variant { border-color: #404040 !important; }
+  html.dark .bg-white { background-color: #252525 !important; }
+  html.dark header { background-color: rgba(30,30,30,0.8) !important; }
+  html.dark main { background-color: #121212 !important; }
+  html.dark .primary-gradient { background: linear-gradient(135deg, #003840 0%, #004f56 100%) !important; }
+</style>
+</head>
+<body class="bg-surface text-on-surface">
+
+<header class="bg-[#f7f9ff]/80 backdrop-blur-xl sticky top-0 z-50 shadow-sm">
+  <div class="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
+    <div class="flex items-center gap-8">
+      <a href="dashboard.html" class="flex items-center gap-2 text-2xl font-black text-[#006068] font-headline">
+        <img src="logo_green.png" alt="Aushadh AI" class="w-8 h-8 object-contain">
+        Aushadh AI
+      </a>
+      <nav class="hidden md:flex gap-6">
+        <a class="text-slate-500 font-medium hover:text-[#007B85] transition-colors" href="dashboard.html">Dashboard</a>
+        <a class="text-slate-500 font-medium hover:text-[#007B85] transition-colors" href="documents.html">Documents</a>
+        <a class="text-slate-500 font-medium hover:text-[#007B85] transition-colors" href="medications.html">Medications</a>
+        <a class="text-[#006068] font-bold border-b-2 border-[#006068]" href="checklist.html">Checklist</a>
+      </nav>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-full bg-surface-container border border-outline-variant flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary text-sm">person</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="flex max-w-7xl mx-auto min-h-screen">
+<!-- Sidebar -->
+<aside class="hidden md:flex flex-col w-56 fixed left-0 top-16 h-full bg-surface-container-low py-8 z-30">
+  <div class="px-4 mb-4 flex items-center gap-2">
+    <img src="logo_green.png" alt="Aushadh AI" class="w-8 h-8 object-contain">
+    <div>
+      <p class="text-[#006068] font-bold text-sm">Aushadh AI</p>
+      <p class="text-[10px] text-slate-500 uppercase tracking-widest">Clinical Serenity</p>
+    </div>
+  </div>
+    <nav class="flex-grow space-y-1 px-3">
+      <a class="flex items-center gap-2 px-3 py-2.5 text-slate-600 hover:bg-surface-container-high/50 hover:translate-x-1 transition-all font-semibold text-sm rounded-lg" href="dashboard.html"><span class="material-symbols-outlined text-sm">dashboard</span>Dashboard</a>
+      <a class="flex items-center gap-2 px-3 py-2.5 text-slate-600 hover:bg-surface-container-high/50 hover:translate-x-1 transition-all font-semibold text-sm rounded-lg" href="documents.html"><span class="material-symbols-outlined text-sm">description</span>Documents</a>
+      <a class="flex items-center gap-2 px-3 py-2.5 text-slate-600 hover:bg-surface-container-high/50 hover:translate-x-1 transition-all font-semibold text-sm rounded-lg" href="medications.html"><span class="material-symbols-outlined text-sm">medical_services</span>Medications</a>
+      <a class="flex items-center gap-2 px-3 py-2.5 bg-white text-primary rounded-r-full shadow-sm font-semibold text-sm" href="checklist.html"><span class="material-symbols-outlined text-sm">fact_check</span>Checklist</a>
+    </nav>
+    <div class="px-4 mt-auto space-y-3">
+      <a href="documents.html" class="w-full py-2.5 primary-gradient text-white rounded-full font-bold text-sm flex items-center justify-center gap-1">
+        <span class="material-symbols-outlined text-sm">upload</span> Upload
+      </a>
+      <a class="flex items-center gap-2 py-1.5 text-slate-600 hover:text-error transition-colors text-sm" href="#" onclick="logout()">
+        <span class="material-symbols-outlined text-sm">logout</span>Logout
+      </a>
+    </div>
+  </aside>
+
+  <main class="flex-1 md:ml-56 p-6 md:p-10 mb-24 md:mb-0">
+    <div class="mb-3 flex items-center gap-2 text-sm">
+      <a href="dashboard.html" class="text-outline hover:text-primary transition-colors flex items-center gap-1"><span class="material-symbols-outlined text-sm">arrow_back</span>Dashboard</a>
+      <span class="text-outline">/</span>
+      <span class="text-primary font-semibold">Follow-up Guide</span>
+    </div>
+
+    <!-- NO DATA -->
+    <div id="no-data" class="hidden text-center py-20">
+      <div class="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+        <span class="material-symbols-outlined text-primary text-5xl">fact_check</span>
+      </div>
+      <h2 class="font-headline text-3xl font-black text-on-surface mb-3">No Checklist Yet</h2>
+      <p class="text-on-surface-variant max-w-md mx-auto mb-8">Upload your prescription to get your personalised follow-up checklist and side effect alerts.</p>
+      <a href="documents.html" class="inline-flex items-center gap-2 primary-gradient text-white font-black px-8 py-4 rounded-full shadow-lg hover:-translate-y-0.5 transition-all">
+        <span class="material-symbols-outlined">upload_file</span> Upload Document
+      </a>
+    </div>
+
+    <!-- HAS DATA -->
+    <div id="has-data" class="hidden">
+      <header class="mb-8">
+        <h1 class="text-2xl md:text-4xl font-extrabold text-on-surface leading-tight">Post-Consultation<br/><span class="text-primary-container">Follow-up Guide</span></h1>
+        <p class="text-on-surface-variant mt-2 max-w-xl">Your personalised breakdown of what to watch for and your next steps.</p>
+      </header>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+        <!-- Side Effects -->
+        <section class="lg:col-span-5">
+          <div class="bg-surface-container-low rounded-xl p-7 h-full">
+            <div class="flex items-center gap-3 mb-6">
+              <span class="material-symbols-outlined text-error" style="font-variation-settings:'FILL' 1">warning</span>
+              <h2 class="text-2xl font-bold">Side Effects Alerts</h2>
+            </div>
+            <div class="space-y-4" id="se-list">
+              <p class="text-outline text-sm">No side effects noted.</p>
+            </div>
+            <!-- Emergency -->
+            <div id="emergency-box" class="hidden mt-5 bg-error-container/30 border border-error/20 rounded-xl p-4">
+              <div class="flex items-start gap-2 text-error text-sm font-semibold">
+                <span class="material-symbols-outlined text-sm flex-shrink-0 mt-0.5">emergency</span>
+                <span id="emergency-text"></span>
+              </div>
+            </div>
+            <a href="medications.html" class="mt-5 flex items-center gap-1 text-primary font-bold text-sm hover:underline">
+              <span class="material-symbols-outlined text-sm">medical_services</span> View Medications
+            </a>
+          </div>
+        </section>
+
+        <!-- Checklist -->
+        <section class="lg:col-span-7 space-y-6">
+          <div class="bg-surface-container-lowest rounded-xl p-7 shadow-sm">
+            <div class="flex items-center justify-between mb-6">
+              <h2 class="text-2xl font-bold">Your Follow-up Checklist</h2>
+              <div class="flex items-center gap-3">
+                <svg width="52" height="52" viewBox="0 0 52 52" class="flex-shrink-0">
+                  <circle cx="26" cy="26" r="22" fill="none" stroke="#ebeef4" stroke-width="5"/>
+                  <circle id="progress-ring" cx="26" cy="26" r="22" fill="none" stroke="#3b6934" stroke-width="5"
+                    stroke-dasharray="138.2" stroke-dashoffset="138.2" stroke-linecap="round"
+                    transform="rotate(-90 26 26)" style="transition:stroke-dashoffset 0.5s ease"/>
+                  <text x="26" y="30" text-anchor="middle" font-size="11" font-weight="900" fill="#3b6934" id="progress-pct">0%</text>
+                </svg>
+                <div class="text-right">
+                  <p class="font-black text-secondary text-sm" id="progress-text">0 done</p>
+                  <p class="text-[10px] text-outline" id="progress-sub">of 0 tasks</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- By category -->
+            <div id="checklist-container" class="space-y-6"></div>
+
+            <!-- Family summary share -->
+            <div class="mt-8 bg-primary-container/10 border-2 border-dashed border-primary/20 rounded-xl p-5 flex flex-col md:flex-row items-center gap-5">
+              <div class="primary-gradient p-3 rounded-full flex-shrink-0">
+                <span class="material-symbols-outlined text-white" style="font-variation-settings:'FILL' 1">share</span>
+              </div>
+              <div class="flex-1 text-center md:text-left">
+                <p class="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Family Status Update</p>
+                <p class="text-on-surface font-medium italic text-sm" id="family-summary">"Your health summary will appear here after uploading your document."</p>
+              </div>
+              <div class="flex gap-2">
+                <button onclick="copyFamilySummary()" class="primary-gradient text-white px-4 py-2.5 rounded-full font-bold text-sm whitespace-nowrap hover:shadow-lg active:scale-95 transition-all flex items-center gap-1">
+                  <span class="material-symbols-outlined text-xs">copy_all</span>Copy
+                </button>
+                <button onclick="shareAnalysisOnWhatsApp()" class="bg-[#25D366] hover:bg-[#1DA851] text-white px-4 py-2.5 rounded-full font-bold text-sm whitespace-nowrap hover:shadow-lg active:scale-95 transition-all flex items-center gap-1">
+                  <span class="material-symbols-outlined text-xs">share</span>WhatsApp
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <footer class="mt-12 text-center border-t border-surface-container-high pt-8 pb-10">
+        <div class="flex justify-center gap-3 flex-wrap">
+          <a href="diagnosis.html" class="flex items-center gap-2 primary-gradient text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg active:scale-95 transition-all">
+            <span class="material-symbols-outlined text-sm">summarize</span> Health Summary
+          </a>
+          <a href="medications.html" class="flex items-center gap-2 bg-surface-container-high text-on-primary-fixed-variant px-6 py-2.5 rounded-full font-bold text-sm hover:bg-surface-container-highest transition-all">
+            <span class="material-symbols-outlined text-sm">medication</span> Medications
+          </a>
+          <a href="documents.html" class="flex items-center gap-2 border border-outline-variant text-on-surface-variant px-6 py-2.5 rounded-full font-bold text-sm hover:border-primary hover:text-primary transition-all">
+            <span class="material-symbols-outlined text-sm">upload_file</span> New Upload
+          </a>
+          <button onclick="showFindHospitalPopup()" class="flex items-center gap-2 bg-error text-white px-6 py-2.5 rounded-full font-bold text-sm hover:bg-error/90 transition-all shadow-md">
+            <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">local_hospital</span> Find a Hospital
+          </button>
+        </div>
+      </footer>
+    </div>
+  </main>
+</div>
+
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-white/80 backdrop-blur-xl border-t border-slate-100/10 shadow-[0_-4px_24px_rgba(24,28,32,0.06)]">
+  <a class="flex flex-col items-center text-slate-400" href="dashboard.html"><span class="material-symbols-outlined">home</span><span class="text-[10px] uppercase mt-1">Home</span></a>
+  <a class="flex flex-col items-center text-slate-400" href="documents.html"><span class="material-symbols-outlined">add_circle</span><span class="text-[10px] uppercase mt-1">Upload</span></a>
+  <a class="flex flex-col items-center text-slate-400" href="medications.html"><span class="material-symbols-outlined">pill</span><span class="text-[10px] uppercase mt-1">Meds</span></a>
+  <a class="flex flex-col items-center text-[#006068] bg-[#007B85]/10 rounded-2xl px-4 py-1" href="checklist.html"><span class="material-symbols-outlined">assignment_turned_in</span><span class="text-[10px] uppercase mt-1">Tasks</span></a>
+</nav>
+
+<a href="documents.html" class="fixed bottom-24 right-6 md:bottom-8 md:right-10 primary-gradient text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-90 transition-all z-40">
+  <span class="material-symbols-outlined text-2xl">add</span>
+</a>
+
+<script src="medbuddy.js"></script>
+<script>
+requireAuth();
+const data=getAnalysis();
+
+let checkedCount=0, totalCount=0;
+
+if(!data){
+  document.getElementById('no-data').classList.remove('hidden');
+} else {
+  document.getElementById('has-data').classList.remove('hidden');
+
+  // Family summary
+  document.getElementById('family-summary').textContent='"'+( data.summary_en||'Summary from your prescription')+'"';
+
+  // Side effects
+  const seList=document.getElementById('se-list');
+  if(data.side_effects&&data.side_effects.length>0){
+    const sevConfig={
+      high:{cls:'border-error bg-surface-container-lowest',badge:'bg-error-container text-on-error-container',label:'SEEK HELP'},
+      medium:{cls:'border-tertiary-fixed bg-surface-container-lowest',badge:'bg-tertiary-fixed text-on-tertiary-fixed',label:'EXPECTED'},
+      low:{cls:'border-secondary bg-surface-container-lowest',badge:'bg-secondary-container text-on-secondary-container',label:'WATCH'}
+    };
+    seList.innerHTML=data.side_effects.map(se=>{
+      const c=sevConfig[se.severity]||sevConfig.low;
+      return `<div class="p-5 rounded-lg shadow-sm border-l-4 ${c.cls}">
+        <div class="flex justify-between items-start mb-2">
+          <h3 class="font-bold text-base text-on-surface">${se.icon||'⚠️'} ${esc(se.text)}</h3>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${c.badge} ml-2 flex-shrink-0">${c.label}</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Emergency
+  if(data.emergency){
+    document.getElementById('emergency-box').classList.remove('hidden');
+    document.getElementById('emergency-text').textContent=data.emergency;
+  }
+
+  // Checklist grouped by category
+  const items=data.checklist||[];
+  totalCount=items.length;
+  const groups={Test:[],Diet:[],Activity:[],'Follow-up':[]};
+  items.forEach((item,i)=>{
+    const cat=item.category||'Follow-up';
+    if(!groups[cat])groups[cat]=[];
+    groups[cat].push({...item,idx:i});
+  });
+
+  const catConfig={
+    Test:{icon:'science',color:'text-tertiary',bg:'bg-tertiary-fixed/20 border-tertiary-fixed/30'},
+    Diet:{icon:'restaurant',color:'text-secondary',bg:'bg-secondary-container/20 border-secondary-container/30'},
+    Activity:{icon:'directions_walk',color:'text-primary',bg:'bg-primary/5 border-primary/10'},
+    'Follow-up':{icon:'calendar_today',color:'text-on-surface',bg:'bg-surface-container border-outline-variant/20'}
+  };
+
+  let html='';
+  Object.entries(groups).forEach(([cat,catItems])=>{
+    if(!catItems.length)return;
+    const cfg=catConfig[cat]||catConfig['Follow-up'];
+    html+=`<div>
+      <h3 class="text-[10px] font-black uppercase tracking-widest text-outline mb-3">${cat}</h3>
+      <div class="space-y-2">`;
+    catItems.forEach(item=>{
+      html+=`<label class="cl-item flex items-center justify-between p-4 ${cfg.bg} border rounded-lg cursor-pointer hover:opacity-90 transition-all group" id="cli-${item.idx}" onclick="toggleItem(${item.idx},this)">
+        <div class="flex items-center gap-3">
+          <div class="w-6 h-6 rounded-md border-2 border-outline-variant flex items-center justify-center flex-shrink-0 transition-all" id="cb-${item.idx}"></div>
+          <div>
+            <p class="font-bold text-on-surface cl-text text-sm">${esc(item.text)}</p>
+          </div>
+        </div>
+        <span class="material-symbols-outlined ${cfg.color} text-sm opacity-0 group-hover:opacity-100 transition-opacity">task_alt</span>
+      </label>`;
+    });
+    html+='</div></div>';
+  });
+  document.getElementById('checklist-container').innerHTML=html||'<p class="text-outline text-sm">No checklist items found.</p>';
+  updateProgress();
+}
+
+function toggleItem(i,label){
+  const cb=document.getElementById('cb-'+i);
+  const isChecked=label.classList.toggle('checked');
+  if(isChecked){
+    cb.innerHTML='<span class="material-symbols-outlined text-white text-xs" style="font-variation-settings:\'FILL\' 1">check</span>';
+    cb.className='w-6 h-6 rounded-md border-2 border-secondary bg-secondary flex items-center justify-center flex-shrink-0';
+    checkedCount++;
+  } else {
+    cb.innerHTML='';
+    cb.className='w-6 h-6 rounded-md border-2 border-outline-variant flex items-center justify-center flex-shrink-0';
+    checkedCount--;
+  }
+  updateProgress();
+}
+
+function updateProgress(){
+  const pct = totalCount ? Math.round(checkedCount/totalCount*100) : 0;
+  const circumference = 138.2;
+  document.getElementById('progress-ring').style.strokeDashoffset = circumference*(1-pct/100);
+  document.getElementById('progress-pct').textContent = pct+'%';
+  document.getElementById('progress-text').textContent = checkedCount+' done';
+  document.getElementById('progress-sub').textContent = 'of '+totalCount+' tasks';
+  if(checkedCount===totalCount && totalCount>0) launchConfetti();
+}
+
+function launchConfetti(){
+  const colors=['#006068','#3b6934','#25D366','#007b85','#96f1fc','#bcf0ae'];
+  for(let i=0;i<80;i++){
+    const el=document.createElement('div');
+    el.className='confetti-piece';
+    el.style.left=Math.random()*100+'vw';
+    el.style.width=(Math.random()*8+6)+'px';
+    el.style.height=(Math.random()*8+6)+'px';
+    el.style.background=colors[Math.floor(Math.random()*colors.length)];
+    el.style.animationDuration=(Math.random()*2+1.5)+'s';
+    el.style.animationDelay=(Math.random()*0.5)+'s';
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(), 4000);
+  }
+  showToast('All tasks complete! Great job!', 'success');
+}
+
+function showToast(msg, type){
+  const t=document.createElement('div');
+  t.style.cssText=`position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:${type==='error'?'#ba1a1a':'#3b6934'};color:white;padding:12px 24px;border-radius:30px;font-size:13px;font-weight:700;box-shadow:0 8px 32px rgba(0,0,0,0.3);z-index:9999;transition:transform 0.3s ease;`;
+  t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.style.transform='translateX(-50%) translateY(0)',10);
+  setTimeout(()=>{t.style.transform='translateX(-50%) translateY(80px)';setTimeout(()=>t.remove(),300);},3000);
+}
+
+function copyFamilySummary(){
+  if(!data)return;
+  navigator.clipboard.writeText(data.summary_en||'').then(()=>{
+    const btn=document.querySelector('[onclick="copyFamilySummary()"]');
+    btn.textContent='Copied!';
+    setTimeout(()=>btn.textContent='Copy & Share',2000);
+  });
+}
+
+function showFindHospitalPopup() {
+  const popup = document.createElement('div');
+  popup.id = 'hospital-popup';
+  popup.className = 'fixed inset-0 z-[99999] flex items-center justify-center p-4';
+  popup.innerHTML = `
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeFindHospitalPopup()"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-12 h-12 bg-error rounded-full flex items-center justify-center">
+          <span class="material-symbols-outlined text-white text-2xl" style="font-variation-settings:'FILL' 1">local_hospital</span>
+        </div>
+        <div>
+          <h3 class="font-headline font-bold text-xl text-error">Find a Hospital</h3>
+          <p class="text-xs text-outline">Emergency Services Near You</p>
+        </div>
+      </div>
+      <p class="text-on-surface mb-4">Search for hospitals, clinics, and emergency services in your area.</p>
+      <div class="flex gap-3">
+        <button onclick="closeFindHospitalPopup()" class="flex-1 bg-surface-container-high text-on-surface-variant py-3 rounded-full font-bold hover:bg-surface-container-highest transition-all">
+          Close
+        </button>
+        <a href="https://www.google.com/maps/search/hospital+near+me" target="_blank" class="flex-1 bg-error text-white py-3 rounded-full font-bold hover:bg-error/90 transition-all text-center flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-sm">open_in_new</span>
+          Search on Maps
+        </a>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(popup);
+}
+
+function closeFindHospitalPopup() {
+  const popup = document.getElementById('hospital-popup');
+  if (popup) popup.remove();
+}
+</script>
+</body>
+</html>

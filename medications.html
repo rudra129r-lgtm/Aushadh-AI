@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aushadh AI | Medications</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Public+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script>tailwind.config={theme:{extend:{colors:{"surface-container-low":"#f1f4fa","surface":"#f7f9ff","secondary":"#3b6934","outline-variant":"#bdc9ca","secondary-fixed":"#bcf0ae","on-primary-fixed-variant":"#004f56","surface-container-high":"#e5e8ee","on-primary":"#ffffff","tertiary":"#005a91","on-secondary-fixed":"#002201","on-secondary-container":"#3f6d38","error":"#ba1a1a","on-surface":"#181c20","surface-container":"#ebeef4","primary":"#006068","surface-container-highest":"#dfe3e8","on-primary-fixed":"#001f23","surface-container-lowest":"#ffffff","error-container":"#ffdad6","outline":"#6e797a","on-surface-variant":"#3e494a","on-secondary":"#ffffff","primary-fixed":"#96f1fc","primary-container":"#007b85","on-error":"#ffffff","secondary-container":"#b9eeab","on-secondary-fixed-variant":"#23501e","tertiary-fixed":"#cfe5ff","on-tertiary-fixed":"#001d34"},fontFamily:{"headline":["Manrope"],"body":["Public Sans"]}}}}</script>
+<style>
+  .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+  .primary-gradient{background:linear-gradient(135deg,#006068 0%,#007b85 100%)}
+  body{font-family:'Public Sans',sans-serif;overflow-x:hidden}
+  h1,h2,h3,h4{font-family:'Manrope',sans-serif}
+  .nav-link:hover{transform:translateX(4px)}
+  .nav-link{transition:transform 0.2s}
+  @media print{
+    aside,header,nav,.fixed,button,a[href]{display:none!important}
+    main{margin:0!important;padding:0!important}
+    body{background:white!important}
+    .bg-surface-container-lowest{background:white!important;border:1px solid #ccc!important;box-shadow:none!important}
+    #med-table tr:nth-child(even){background:#f9f9f9}
+    h2{font-size:18px!important;margin-bottom:8px!important}
+    th,td{padding:8px 12px!important;font-size:12px!important}
+    .rounded-full,.rounded-xl,.rounded-2xl{border-radius:4px!important}
+  }
+  /* Dark Mode Styles */
+  html.dark body { background-color: #121212; color: #e0e0e0; }
+  html.dark .bg-surface { background-color: #1e1e1e !important; }
+  html.dark .bg-surface-container-low { background-color: #2c2c2c !important; }
+  html.dark .bg-surface-container-lowest { background-color: #252525 !important; }
+  html.dark .bg-surface-container-high { background-color: #383838 !important; }
+  html.dark .text-on-surface { color: #e0e0e0 !important; }
+  html.dark .text-slate-600 { color: #a0a0a0 !important; }
+  html.dark .text-slate-500 { color: #909090 !important; }
+  html.dark .text-outline { color: #808080 !important; }
+  html.dark .border-outline-variant { border-color: #404040 !important; }
+  html.dark .bg-white { background-color: #252525 !important; }
+  html.dark aside, html.dark nav { background-color: #1e1e1e !important; }
+  html.dark main { background-color: #121212 !important; }
+  html.dark .primary-gradient { background: linear-gradient(135deg, #003840 0%, #004f56 100%) !important; }
+</style>
+</head>
+<body class="bg-surface text-on-surface">
+
+<!-- Sidebar -->
+<aside class="hidden md:flex flex-col h-screen w-56 fixed left-0 top-0 bg-surface-container-low py-8 z-40">
+  <div class="px-5 mb-8 flex items-center gap-2">
+    <img src="logo_green.png" alt="Aushadh AI" class="w-8 h-8 object-contain">
+    <div>
+      <h1 class="text-lg font-bold text-primary">Aushadh AI</h1>
+      <p class="text-[10px] uppercase tracking-widest text-outline">Clinical Serenity</p>
+    </div>
+  </div>
+  <nav class="flex-1 space-y-1 px-3">
+    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="dashboard.html">
+      <span class="material-symbols-outlined text-sm">dashboard</span>Dashboard
+    </a>
+    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="documents.html">
+      <span class="material-symbols-outlined text-sm">description</span>Documents
+    </a>
+    <a class="nav-link flex items-center gap-2 px-4 py-3 bg-surface-container-lowest text-primary rounded-r-full shadow-sm font-semibold text-sm" href="medications.html">
+      <span class="material-symbols-outlined text-sm">medical_services</span>Medications
+    </a>
+    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="checklist.html">
+      <span class="material-symbols-outlined text-sm">fact_check</span>Checklist
+    </a>
+  </nav>
+  <div class="px-5 space-y-3 mt-auto">
+    <a href="documents.html" class="w-full primary-gradient text-white rounded-full py-2.5 text-sm font-bold shadow-lg flex items-center justify-center gap-1 active:scale-95">
+      <span class="material-symbols-outlined text-sm">upload</span>Upload Document
+    </a>
+    <a class="flex items-center gap-2 py-1.5 text-slate-500 text-sm hover:text-error transition-colors cursor-pointer" onclick="logout()">
+      <span class="material-symbols-outlined text-sm">logout</span>Logout
+    </a>
+  </div>
+</aside>
+
+<main class="md:ml-56 min-h-screen pb-24 md:pb-12">
+  <!-- Header -->
+  <header class="sticky top-0 z-30 bg-surface/80 backdrop-blur-xl flex justify-between items-center px-6 md:px-10 py-4">
+    <div>
+      <div class="flex items-center gap-2 text-sm text-outline mb-1">
+        <a href="dashboard.html" class="hover:text-primary transition-colors flex items-center gap-1">
+          <span class="material-symbols-outlined text-sm">arrow_back</span>Dashboard
+        </a>
+        <span>/</span>
+        <span class="text-primary font-semibold">Medications</span>
+      </div>
+      <h2 class="font-headline font-extrabold text-2xl text-on-surface">Active Medications</h2>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-full bg-primary/10 border-2 border-primary-fixed flex items-center justify-center">
+        <span class="material-symbols-outlined text-primary text-sm">person</span>
+      </div>
+    </div>
+  </header>
+
+  <section class="max-w-7xl mx-auto px-6 md:px-10 mt-4">
+
+    <!-- NO DATA -->
+    <div id="no-data" class="hidden text-center py-24">
+      <div class="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+        <span class="material-symbols-outlined text-primary text-5xl">medication</span>
+      </div>
+      <h2 class="font-headline text-3xl font-black text-on-surface mb-3">No Medications Yet</h2>
+      <p class="text-on-surface-variant max-w-md mx-auto mb-8">Upload your prescription to see your complete medication schedule here.</p>
+      <a href="documents.html" class="inline-flex items-center gap-2 primary-gradient text-white font-black px-8 py-4 rounded-full shadow-lg hover:-translate-y-0.5 transition-all">
+        <span class="material-symbols-outlined">upload_file</span> Upload Document
+      </a>
+    </div>
+
+    <!-- HAS DATA -->
+    <div id="has-data" class="hidden">
+
+      <!-- ── DAILY SCHEDULE TIMELINE ── -->
+      <div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm border border-outline-variant/10 mb-8">
+        <div class="px-4 md:px-7 py-5 border-b border-outline-variant/10 flex items-center justify-between">
+          <div>
+            <h2 class="font-headline font-bold text-xl text-on-surface">Today's Schedule</h2>
+            <p class="text-xs text-outline mt-0.5">When to take each medicine</p>
+          </div>
+          <span class="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full" id="today-date"></span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-outline-variant/10" id="timeline-grid">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+
+      <!-- Drug Interaction Alert Banner -->
+      <div id="interaction-banner" class="hidden bg-amber-50 border border-amber-300 rounded-2xl p-5 mb-6">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="material-symbols-outlined text-amber-600">warning</span>
+          <h3 class="font-headline font-bold text-amber-900">Drug Interaction Alerts <span id="interaction-count" class="ml-2 bg-amber-200 text-amber-800 text-xs font-black px-2 py-0.5 rounded-full"></span></h3>
+        </div>
+        <div id="interaction-list" class="space-y-2"></div>
+        <p class="text-xs text-amber-700 mt-3 font-semibold">Source: FDA drug database. Confirm with your doctor before taking these medicines together.</p>
+      </div>
+
+      <!-- Recovery Calendar -->
+      <div id="calendar-section" class="hidden bg-surface-container-lowest rounded-2xl border border-outline-variant/10 shadow-sm mb-6 overflow-hidden">
+        <div class="px-6 py-4 border-b border-outline-variant/10 flex items-center justify-between">
+          <div>
+            <h3 class="font-headline font-bold text-on-surface">Recovery Calendar</h3>
+            <p class="text-xs text-outline mt-0.5">Medicine schedule — day by day</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="calShift(-7)" class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center hover:bg-surface-container-high transition-all font-bold text-on-surface-variant">‹</button>
+            <span id="cal-range" class="text-xs font-bold text-on-surface-variant px-2"></span>
+            <button onclick="calShift(7)" class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center hover:bg-surface-container-high transition-all font-bold text-on-surface-variant">›</button>
+          </div>
+        </div>
+        <div class="overflow-x-auto p-4">
+          <div id="cal-grid"></div>
+          <div id="cal-legend" class="flex flex-wrap gap-3 mt-4 pt-3 border-t border-outline-variant/10"></div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-surface-container-lowest rounded-2xl p-5 border border-outline-variant/10 shadow-sm text-center">
+          <p class="text-3xl font-black text-primary font-headline" id="stat-total">0</p>
+          <p class="text-xs text-outline font-bold uppercase tracking-widest mt-1">Active Meds</p>
+        </div>
+        <div class="bg-surface-container-lowest rounded-2xl p-5 border border-outline-variant/10 shadow-sm text-center">
+          <p class="text-3xl font-black text-secondary font-headline" id="stat-morning">0</p>
+          <p class="text-xs text-outline font-bold uppercase tracking-widest mt-1">Morning Dose</p>
+        </div>
+        <div class="bg-surface-container-lowest rounded-2xl p-5 border border-outline-variant/10 shadow-sm text-center">
+          <p class="text-3xl font-black text-tertiary font-headline" id="stat-evening">0</p>
+          <p class="text-xs text-outline font-bold uppercase tracking-widest mt-1">Evening Dose</p>
+        </div>
+        <div class="bg-surface-container-lowest rounded-2xl p-5 border border-outline-variant/10 shadow-sm text-center">
+          <p class="text-3xl font-black text-on-surface font-headline" id="stat-days">—</p>
+          <p class="text-xs text-outline font-bold uppercase tracking-widest mt-1">Longest Course</p>
+        </div>
+      </div>
+
+      <!-- Medication cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8" id="med-cards"></div>
+
+      <!-- Full table -->
+      <div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm border border-outline-variant/10 mb-8">
+        <div class="px-7 py-5 border-b border-outline-variant/10 flex items-center justify-between">
+          <h2 class="font-headline font-bold text-xl text-on-surface">Full Medication Table</h2>
+          <div class="flex gap-2">
+            <button onclick="shareAnalysisOnWhatsApp()" class="flex items-center gap-1 bg-[#25D366] text-white font-bold text-xs px-3 py-2 rounded-full hover:bg-[#1DA851] transition-all">
+              <span class="material-symbols-outlined text-xs">share</span>WhatsApp
+            </button>
+            <button onclick="window.print()" class="flex items-center gap-1 text-primary font-bold text-sm hover:underline">
+              <span class="material-symbols-outlined text-sm">print</span>Print
+            </button>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead class="bg-surface-container text-on-surface-variant text-xs font-black uppercase tracking-widest">
+              <tr>
+                <th class="px-6 py-4">#</th>
+                <th class="px-6 py-4">Medicine</th>
+                <th class="px-6 py-4">Dosage</th>
+                <th class="px-6 py-4">Timing</th>
+                <th class="px-6 py-4">Duration</th>
+                <th class="px-6 py-4">With Food</th>
+                <th class="px-6 py-4">Plain Instruction</th>
+              </tr>
+            </thead>
+            <tbody id="med-table" class="divide-y divide-outline-variant/10"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Recovery -->
+      <div id="recovery-block" class="hidden bg-secondary-container/20 border border-secondary/20 rounded-2xl p-5 mb-8 flex gap-3 items-start">
+        <span class="material-symbols-outlined text-secondary flex-shrink-0 mt-0.5">calendar_today</span>
+        <div>
+          <p class="font-bold text-sm text-on-surface mb-1">Recovery Timeline</p>
+          <p class="text-sm text-on-surface-variant" id="recovery-text"></p>
+        </div>
+      </div>
+
+      <!-- CTAs -->
+      <div class="flex gap-3 flex-wrap pb-8">
+        <a href="diagnosis.html" class="flex items-center gap-2 primary-gradient text-white px-7 py-3 rounded-full font-bold shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all">
+          <span class="material-symbols-outlined text-sm">summarize</span>Health Summary
+        </a>
+        <a href="checklist.html" class="flex items-center gap-2 bg-surface-container-high text-on-primary-fixed-variant px-7 py-3 rounded-full font-bold hover:bg-surface-container-highest transition-all">
+          <span class="material-symbols-outlined text-sm">fact_check</span>Checklist
+        </a>
+        <a href="documents.html" class="flex items-center gap-2 border border-outline-variant text-on-surface-variant px-7 py-3 rounded-full font-bold hover:border-primary hover:text-primary transition-all">
+          <span class="material-symbols-outlined text-sm">upload_file</span>New Upload
+        </a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Mobile nav -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 bg-white/80 backdrop-blur-xl flex justify-around items-center px-4 pb-6 pt-3 shadow-[0_-4px_24px_rgba(24,28,32,0.06)] rounded-t-3xl">
+  <a class="flex flex-col items-center text-slate-400" href="dashboard.html"><span class="material-symbols-outlined">home</span><span class="text-[10px] uppercase mt-1">Home</span></a>
+  <a class="flex flex-col items-center text-slate-400" href="documents.html"><span class="material-symbols-outlined">add_circle</span><span class="text-[10px] uppercase mt-1">Upload</span></a>
+  <a class="flex flex-col items-center text-[#006068] bg-[#007B85]/10 rounded-2xl px-4 py-1" href="medications.html"><span class="material-symbols-outlined">pill</span><span class="text-[10px] uppercase mt-1">Meds</span></a>
+  <a class="flex flex-col items-center text-slate-400" href="checklist.html"><span class="material-symbols-outlined">assignment_turned_in</span><span class="text-[10px] uppercase mt-1">Tasks</span></a>
+</nav>
+
+<script src="medbuddy.js"></script>
+<script>
+requireAuth();
+const data = getAnalysis();
+
+if (!data || !data.medications || data.medications.length === 0) {
+  document.getElementById('no-data').classList.remove('hidden');
+} else {
+  document.getElementById('has-data').classList.remove('hidden');
+  const meds = data.medications;
+
+  document.getElementById('stat-total').textContent = meds.length;
+  document.getElementById('stat-morning').textContent = meds.filter(m => /morning|am|breakfast/i.test(m.timing)).length;
+  document.getElementById('stat-evening').textContent = meds.filter(m => /evening|night|pm/i.test(m.timing)).length;
+  const durations = meds.map(m => m.duration).filter(Boolean);
+  document.getElementById('stat-days').textContent = durations.length ? durations[0] : '—';
+
+  const icons = ['pill','medication','vital_signs','vaccines','science','biotech'];
+  const colors = [
+    'bg-secondary-container/30 text-secondary',
+    'bg-tertiary-fixed/30 text-tertiary',
+    'bg-error-container/30 text-error',
+    'bg-primary/10 text-primary',
+    'bg-secondary/10 text-secondary',
+    'bg-surface-container-highest text-outline'
+  ];
+
+  // ── TIMELINE ──────────────────────────────────────────
+  document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
+  const slots = [
+    { key:'morning',   label:'Morning',   emoji:'☀️',  bg:'bg-amber-50',   border:'border-amber-200',   badge:'bg-amber-100 text-amber-800',   match:/morning|am|breakfast|od|once\s*daily/i },
+    { key:'afternoon', label:'Afternoon', emoji:'🌤️', bg:'bg-sky-50',     border:'border-sky-200',     badge:'bg-sky-100 text-sky-800',       match:/afternoon|noon|midday|lunch/i },
+    { key:'night',     label:'Night',     emoji:'🌙',  bg:'bg-indigo-50',  border:'border-indigo-200',  badge:'bg-indigo-100 text-indigo-800', match:/night|evening|pm|bedtime|sleep/i }
+  ];
+  const tdsBd = { tds:/tds|tid|three\s*times/i, bd:/bd|twice|two\s*times/i };
+
+  function getMedSlots(m){
+    const t=m.timing||'';
+    const assigned=[];
+    if(tdsBd.tds.test(t)) return ['morning','afternoon','night'];
+    if(tdsBd.bd.test(t))  return ['morning','night'];
+    slots.forEach(s=>{ if(s.match.test(t)) assigned.push(s.key); });
+    return assigned.length ? assigned : ['morning']; // default morning
+  }
+
+  const slotMeds = {morning:[],afternoon:[],night:[]};
+  meds.forEach(m=>{ getMedSlots(m).forEach(s=>slotMeds[s].push(m)); });
+
+  document.getElementById('timeline-grid').innerHTML = slots.map(s=>`
+    <div class="p-6 ${s.bg}">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="text-2xl">${s.emoji}</span>
+        <div>
+          <h3 class="font-headline font-bold text-sm text-on-surface">${s.label}</h3>
+          <p class="text-[10px] text-outline">${slotMeds[s.key].length} medicine${slotMeds[s.key].length!==1?'s':''}</p>
+        </div>
+      </div>
+      ${slotMeds[s.key].length === 0
+        ? `<p class="text-xs text-outline italic">No medicines this time</p>`
+        : slotMeds[s.key].map(m=>`
+          <div class="bg-white rounded-xl p-3 mb-2 border ${s.border} shadow-sm">
+            <p class="font-bold text-xs text-on-surface">${esc(m.name)}</p>
+            <div class="flex items-center justify-between mt-1">
+              <span class="text-[10px] font-bold px-2 py-0.5 ${s.badge} rounded-full">${esc(m.dosage)}</span>
+              <span class="text-[10px] text-outline">${esc(m.with_food)}</span>
+            </div>
+          </div>`).join('')
+      }
+    </div>`).join('');
+
+  // ── MED CARDS with FDA warnings ──────────────────────
+  document.getElementById('med-cards').innerHTML = meds.map((m, i) => {
+    const hasFda = m.fda_warnings || m.fda_interactions || m.fda_side_effects;
+    const fdaHtml = hasFda ? `
+      <div class="mt-3 border-t border-outline-variant/10 pt-3">
+        <button onclick="this.nextElementSibling.classList.toggle('hidden');this.querySelector('.arrow').classList.toggle('rotate-180')"
+          class="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-outline hover:text-error transition-colors w-full">
+          <span class="material-symbols-outlined text-xs">warning</span>
+          <span>FDA Info</span>
+          <span class="material-symbols-outlined text-xs arrow transition-transform ml-auto">expand_more</span>
+        </button>
+        <div class="hidden mt-2 space-y-1.5 text-[10px] text-on-surface-variant leading-relaxed">
+          ${m.fda_warnings   ? `<p class="bg-error-container/20 text-error p-2 rounded-lg"><strong>Warning:</strong> ${esc(m.fda_warnings.slice(0,180))}</p>` : ''}
+          ${m.fda_interactions ? `<p class="bg-amber-50 text-amber-800 p-2 rounded-lg"><strong>Interactions:</strong> ${esc(m.fda_interactions.slice(0,180))}</p>` : ''}
+          ${m.fda_side_effects ? `<p class="bg-surface-container p-2 rounded-lg"><strong>Side effects:</strong> ${esc(m.fda_side_effects.slice(0,180))}</p>` : ''}
+          ${m.storage ? `<p class="bg-surface-container p-2 rounded-lg"><strong>Storage:</strong> ${esc(m.storage.slice(0,120))}</p>` : ''}
+        </div>
+      </div>` : '';
+    return `
+    <div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/10 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-12 h-12 rounded-xl ${colors[i%colors.length].split(' ')[0]} flex items-center justify-center flex-shrink-0">
+          <span class="material-symbols-outlined ${colors[i%colors.length].split(' ')[1]}" style="font-variation-settings:'FILL' 1">${icons[i%icons.length]}</span>
+        </div>
+        <div class="min-w-0 flex-1">
+          <h4 class="font-bold text-on-surface font-headline truncate">${esc(m.name)}</h4>
+          <p class="text-xs text-outline">${esc(m.dosage)}</p>
+        </div>
+        ${hasFda ? '<span class="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" title="FDA info available"></span>' : ''}
+      </div>
+      <div class="space-y-2">
+        <div class="flex justify-between items-center bg-surface-container-low rounded-xl px-3 py-2">
+          <span class="text-on-surface-variant flex items-center gap-1 text-xs"><span class="material-symbols-outlined text-xs">schedule</span>Timing</span>
+          <span class="font-semibold text-xs text-right max-w-[60%]">${esc(m.timing)}</span>
+        </div>
+        <div class="flex justify-between items-center bg-surface-container-low rounded-xl px-3 py-2">
+          <span class="text-on-surface-variant flex items-center gap-1 text-xs"><span class="material-symbols-outlined text-xs">calendar_today</span>Duration</span>
+          <span class="font-semibold text-xs">${esc(m.duration)}</span>
+        </div>
+        <div class="flex justify-between items-center bg-surface-container-low rounded-xl px-3 py-2">
+          <span class="text-on-surface-variant flex items-center gap-1 text-xs"><span class="material-symbols-outlined text-xs">restaurant</span>With Food</span>
+          <span class="font-semibold text-xs">${esc(m.with_food)}</span>
+        </div>
+      </div>
+      ${m.simple_instruction ? `<p class="mt-3 text-xs text-on-surface-variant italic border-t border-outline-variant/10 pt-3">${esc(m.simple_instruction)}</p>` : ''}
+      ${fdaHtml}
+      <button onclick="markTaken(this,'${esc(m.name)}')" class="taken-btn mt-3 w-full flex items-center justify-center gap-1.5 bg-surface-container-low hover:bg-secondary-container/30 text-outline hover:text-secondary border border-outline-variant/20 py-2 rounded-xl text-xs font-bold transition-all">
+        <span class="material-symbols-outlined text-xs">check_circle</span>Mark as Taken Today
+      </button>
+    </div>`;
+  }).join('');
+
+  document.getElementById('med-table').innerHTML = meds.map((m,i) => `
+    <tr class="hover:bg-surface-container-low transition-colors">
+      <td class="px-6 py-4 text-sm font-black text-outline">${i+1}</td>
+      <td class="px-6 py-4"><p class="font-bold text-sm">${esc(m.name)}</p></td>
+      <td class="px-6 py-4"><span class="text-xs font-bold px-3 py-1 bg-surface-container-high rounded-full whitespace-nowrap">${esc(m.dosage)}</span></td>
+      <td class="px-6 py-4 text-sm whitespace-nowrap">${esc(m.timing)}</td>
+      <td class="px-6 py-4 text-sm whitespace-nowrap">${esc(m.duration)}</td>
+      <td class="px-6 py-4"><span class="text-xs font-bold px-2 py-1 bg-primary/10 text-primary rounded-full whitespace-nowrap">${esc(m.with_food)}</span></td>
+      <td class="px-6 py-4 text-xs text-on-surface-variant max-w-[200px]">${esc(m.simple_instruction||'—')}</td>
+    </tr>`).join('');
+
+  if (data.recovery_note) {
+    document.getElementById('recovery-block').classList.remove('hidden');
+    document.getElementById('recovery-text').textContent = data.recovery_note;
+  }
+
+  // Restore taken state from today
+  const todayKey = 'taken_'+new Date().toDateString();
+  const taken = JSON.parse(localStorage.getItem(todayKey)||'[]');
+  taken.forEach(name=>{
+    document.querySelectorAll('.taken-btn').forEach(btn=>{
+      if(btn.getAttribute('onclick').includes(name)){
+        setTakenState(btn, true);
+      }
+    });
+  });
+}
+
+function markTaken(btn, name){
+  const isNowTaken = !btn.dataset.taken;
+  setTakenState(btn, isNowTaken);
+  const todayKey = 'taken_'+new Date().toDateString();
+  let taken = JSON.parse(localStorage.getItem(todayKey)||'[]');
+  if(isNowTaken){ if(!taken.includes(name)) taken.push(name); }
+  else { taken = taken.filter(n=>n!==name); }
+  localStorage.setItem(todayKey, JSON.stringify(taken));
+  if(isNowTaken) showToast(name+' marked as taken!');
+}
+
+function setTakenState(btn, taken){
+  btn.dataset.taken = taken ? '1' : '';
+  btn.className = taken
+    ? 'taken-btn mt-3 w-full flex items-center justify-center gap-1.5 bg-secondary-container/30 text-secondary border border-secondary/30 py-2 rounded-xl text-xs font-bold transition-all'
+    : 'taken-btn mt-3 w-full flex items-center justify-center gap-1.5 bg-surface-container-low hover:bg-secondary-container/30 text-outline hover:text-secondary border border-outline-variant/20 py-2 rounded-xl text-xs font-bold transition-all';
+  btn.querySelector('.material-symbols-outlined').textContent = taken ? 'task_alt' : 'check_circle';
+  btn.querySelector('.material-symbols-outlined').style.fontVariationSettings = taken ? "'FILL' 1" : "'FILL' 0";
+  btn.childNodes[btn.childNodes.length-1].textContent = taken ? ' Taken Today' : 'Mark as Taken Today';
+}
+
+function showToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:#181c20;color:white;padding:12px 24px;border-radius:30px;font-size:13px;font-weight:700;box-shadow:0 8px 32px rgba(0,0,0,0.3);z-index:9999;transition:transform 0.3s ease;';
+  t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.style.transform='translateX(-50%) translateY(0)',10);
+  setTimeout(()=>{t.style.transform='translateX(-50%) translateY(80px)';setTimeout(()=>t.remove(),300);},2500);
+}
+
+// ── Drug Interaction Banner ───────────────────────────
+function renderInteractions(interactions){
+  if(!interactions||!interactions.length) return;
+  document.getElementById('interaction-banner').classList.remove('hidden');
+  document.getElementById('interaction-count').textContent=interactions.length+' alert'+(interactions.length>1?'s':'');
+  const sevDot={high:'bg-red-500',medium:'bg-amber-500',low:'bg-yellow-400'};
+  document.getElementById('interaction-list').innerHTML=interactions.map(ix=>`
+    <div class="flex items-start gap-3 bg-white rounded-xl p-3 border border-amber-200">
+      <span class="w-2.5 h-2.5 rounded-full mt-1.5 flex-shrink-0 ${sevDot[ix.severity]||sevDot.medium}"></span>
+      <div>
+        <p class="font-bold text-sm text-amber-900">${esc(ix.drug_a)} ↔ ${esc(ix.drug_b)}</p>
+        <p class="text-xs text-amber-700 mt-0.5 leading-relaxed">${esc(ix.description.substring(0,180))}${ix.description.length>180?'…':''}</p>
+      </div>
+    </div>`).join('');
+}
+
+// ── Recovery Calendar ─────────────────────────────────
+const CAL_COLORS=['#006068','#3b6934','#005a91','#ba1a1a','#7b5ea7','#c15c00'];
+let calOffset=0;
+
+function parseDays(duration){
+  if(!duration) return 0;
+  const d=duration.toLowerCase();
+  if(/sos|as needed|prn|when needed/i.test(d)) return 0;
+  const m=d.match(/(\d+)\s*week/);   if(m) return parseInt(m[1])*7;
+  const n=d.match(/(\d+)\s*month/);  if(n) return parseInt(n[1])*30;
+  const k=d.match(/(\d+)/);          return k ? parseInt(k[1]) : 0;
+}
+
+function renderCalendar(){
+  const calMeds=(data.medications||[]).filter(m=>parseDays(m.duration)>0);
+  if(calMeds.length===0) return;
+  document.getElementById('calendar-section').classList.remove('hidden');
+
+  const today=new Date(); today.setHours(0,0,0,0);
+  const startDay=calOffset; // offset in days from today
+  const days=7;
+
+  // Header
+  const headers=['<div class="text-xs font-bold text-on-surface-variant pr-3 py-1 text-right min-w-[120px]">Medicine</div>'];
+  for(let i=0;i<days;i++){
+    const d=new Date(today); d.setDate(today.getDate()+startDay+i);
+    const isToday=(startDay+i===0);
+    const label=d.toLocaleDateString('en-IN',{weekday:'short',day:'numeric'});
+    headers.push(`<div class="text-center px-1 py-1 min-w-[48px] ${isToday?'bg-primary/10 rounded-lg':''}">`+
+      `<p class="text-[10px] font-black ${isToday?'text-primary':'text-on-surface-variant'} uppercase leading-tight">${label.split(' ')[0]}</p>`+
+      `<p class="text-xs font-bold ${isToday?'text-primary':'text-on-surface'}">${label.split(' ')[1]||''}</p>`+
+      `</div>`);
+  }
+
+  const rows=calMeds.map((m,ci)=>{
+    const total=parseDays(m.duration);
+    const color=CAL_COLORS[ci%CAL_COLORS.length];
+    const cells=[];
+    for(let i=0;i<days;i++){
+      const dayNum=startDay+i+1; // day 1 = today
+      const active=(dayNum>=1&&dayNum<=total);
+      cells.push(`<div class="flex items-center justify-center min-w-[48px] py-1">`+
+        (active?`<span style="background:${color}" class="w-5 h-5 rounded-full inline-block opacity-90"></span>`
+                :`<span class="w-5 h-5 rounded-full border border-outline-variant/30 inline-block"></span>`)+
+        `</div>`);
+    }
+    return `<div class="flex items-center border-t border-outline-variant/10">
+      <div class="text-xs font-bold text-on-surface pr-3 py-2 min-w-[120px] truncate" title="${esc(m.name)}" style="color:${color}">${esc(m.name.split(' ')[0])}</div>
+      ${cells.join('')}
+    </div>`;
+  });
+
+  const startLabel=startDay===0?'Today':new Date(today.getTime()+(startDay*86400000)).toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+  const endLabel=new Date(today.getTime()+((startDay+6)*86400000)).toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+  document.getElementById('cal-range').textContent=`${startLabel} — ${endLabel}`;
+
+  document.getElementById('cal-grid').innerHTML=
+    `<div class="flex items-center mb-1">${headers.join('')}</div>${rows.join('')}`;
+
+  document.getElementById('cal-legend').innerHTML=calMeds.map((m,ci)=>`
+    <div class="flex items-center gap-1.5 text-xs font-semibold text-on-surface-variant">
+      <span style="background:${CAL_COLORS[ci%CAL_COLORS.length]}" class="w-3 h-3 rounded-full flex-shrink-0"></span>
+      ${esc(m.name)} (${parseDays(m.duration)}d)
+    </div>`).join('');
+}
+
+function calShift(delta){
+  calOffset+=delta;
+  renderCalendar();
+}
+
+// Render interaction banner and calendar
+renderInteractions(data.drug_interactions||[]);
+renderCalendar();
+</script>
+</body>
+</html>

@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aushadh AI | My Profile</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Public+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script>tailwind.config={theme:{extend:{colors:{"surface-container-low":"#f1f4fa","surface":"#f7f9ff","secondary":"#3b6934","outline-variant":"#bdc9ca","secondary-fixed":"#bcf0ae","on-primary-fixed-variant":"#004f56","surface-container-high":"#e5e8ee","on-primary":"#ffffff","tertiary":"#005a91","on-secondary-fixed":"#002201","on-secondary-container":"#3f6d38","error":"#ba1a1a","on-surface":"#181c20","surface-container":"#ebeef4","primary":"#006068","surface-container-highest":"#dfe3e8","on-primary-fixed":"#001f23","surface-container-lowest":"#ffffff","error-container":"#ffdad6","outline":"#6e797a","on-surface-variant":"#3e494a","on-secondary":"#ffffff","primary-fixed":"#96f1fc","primary-container":"#007b85","on-error":"#ffffff","secondary-container":"#b9eeab","on-secondary-fixed-variant":"#23501e"},fontFamily:{"headline":["Manrope"],"body":["Public Sans"]}}}}</script>
+<style>
+  .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+  .primary-gradient{background:linear-gradient(135deg,#006068 0%,#007b85 100%)}
+  body{font-family:'Public Sans',sans-serif}
+  h1,h2,h3,h4{font-family:'Manrope',sans-serif}
+  .input-field{width:100%;padding:11px 16px;border:1.5px solid #bdc9ca;border-radius:12px;background:#fff;color:#181c20;font-family:'Public Sans',sans-serif;font-size:14px;transition:border-color 0.2s,box-shadow 0.2s;outline:none}
+  .input-field:focus{border-color:#006068;box-shadow:0 0 0 3px rgba(0,96,104,0.1)}
+  .input-field:disabled{background:#f1f4fa;color:#6e797a;cursor:not-allowed}
+  .avatar-ring{background:linear-gradient(135deg,#006068,#007b85);padding:3px;border-radius:50%}
+</style>
+</head>
+<body class="bg-surface text-on-surface">
+
+<!-- Header -->
+<header class="bg-[#f7f9ff]/80 backdrop-blur-xl sticky top-0 z-50 shadow-sm">
+  <div class="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
+    <div class="flex items-center gap-8">
+      <a href="dashboard.html" class="flex items-center gap-2 text-2xl font-black text-[#006068] font-headline">
+        <img src="logo_green.png" alt="Aushadh AI" class="w-8 h-8 object-contain">
+        Aushadh AI
+      </a>
+      <nav class="hidden md:flex gap-6">
+        <a class="text-slate-500 font-medium hover:text-[#007B85] transition-colors" href="dashboard.html">Dashboard</a>
+        <a class="text-slate-500 font-medium hover:text-[#007B85] transition-colors" href="documents.html">Documents</a>
+        <a class="text-slate-500 font-medium hover:text-[#007B85] transition-colors" href="medications.html">Medications</a>
+        <a class="text-slate-500 font-medium hover:text-[#007B85] transition-colors" href="checklist.html">Checklist</a>
+      </nav>
+    </div>
+    <div class="flex items-center gap-3">
+      <!-- Profile avatar -->
+      <div class="avatar-ring cursor-pointer" onclick="window.location.href='profile.html'">
+        <div class="w-9 h-9 rounded-full bg-primary flex items-center justify-center overflow-hidden" id="nav-avatar">
+          <img id="nav-avatar-img" class="w-full h-full object-cover hidden" alt="Avatar" />
+          <span class="text-white font-black text-sm" id="nav-initials">?</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="flex max-w-7xl mx-auto min-h-screen">
+  <!-- Sidebar -->
+  <aside class="hidden md:flex flex-col w-56 fixed left-0 top-16 h-full bg-surface-container-low py-8 z-30">
+    <div class="px-4 mb-4">
+      <p class="text-[#006068] font-bold text-sm">Aushadh AI</p>
+      <p class="text-[10px] text-slate-500 uppercase tracking-widest">Clinical Serenity</p>
+    </div>
+    <nav class="flex-grow space-y-1 px-3">
+      <a class="flex items-center gap-2 px-3 py-2.5 text-slate-600 hover:bg-surface-container-high/50 hover:translate-x-1 transition-all font-semibold text-sm rounded-lg" href="dashboard.html"><span class="material-symbols-outlined text-sm">dashboard</span>Dashboard</a>
+      <a class="flex items-center gap-2 px-3 py-2.5 text-slate-600 hover:bg-surface-container-high/50 hover:translate-x-1 transition-all font-semibold text-sm rounded-lg" href="documents.html"><span class="material-symbols-outlined text-sm">description</span>Documents</a>
+      <a class="flex items-center gap-2 px-3 py-2.5 text-slate-600 hover:bg-surface-container-high/50 hover:translate-x-1 transition-all font-semibold text-sm rounded-lg" href="medications.html"><span class="material-symbols-outlined text-sm">medical_services</span>Medications</a>
+      <a class="flex items-center gap-2 px-3 py-2.5 text-slate-600 hover:bg-surface-container-high/50 hover:translate-x-1 transition-all font-semibold text-sm rounded-lg" href="checklist.html"><span class="material-symbols-outlined text-sm">fact_check</span>Checklist</a>
+      <a class="flex items-center gap-2 px-3 py-2.5 bg-white text-primary rounded-r-full shadow-sm font-semibold text-sm" href="profile.html"><span class="material-symbols-outlined text-sm">person</span>Profile</a>
+    </nav>
+    <div class="px-4 mt-auto space-y-2">
+      <a href="documents.html" class="w-full py-2.5 primary-gradient text-white rounded-full font-bold text-sm flex items-center justify-center gap-1 active:scale-95">
+        <span class="material-symbols-outlined text-sm">upload</span>Upload
+      </a>
+      <button onclick="logout()" class="w-full flex items-center justify-center gap-2 py-2 text-error text-sm font-semibold hover:opacity-80 transition-opacity">
+        <span class="material-symbols-outlined text-sm">logout</span>Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 md:ml-56 p-6 md:p-10 mb-24 md:mb-0">
+
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-sm mb-6">
+      <a href="dashboard.html" class="text-outline hover:text-primary transition-colors flex items-center gap-1">
+        <span class="material-symbols-outlined text-sm">arrow_back</span>Dashboard
+      </a>
+      <span class="text-outline">/</span>
+      <span class="text-primary font-semibold">My Profile</span>
+    </div>
+
+    <!-- Profile Header Card -->
+    <div class="primary-gradient rounded-2xl p-8 mb-6 relative overflow-hidden">
+      <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full translate-x-1/3 -translate-y-1/3"></div>
+      <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -translate-x-1/3 translate-y-1/3"></div>
+      <div class="relative z-10 flex flex-col md:flex-row items-center md:items-end gap-6">
+        <!-- Avatar -->
+        <div class="relative group">
+          <div class="w-28 h-28 rounded-full bg-white/20 border-4 border-white/30 flex items-center justify-center shadow-2xl overflow-hidden">
+            <img id="profile-avatar-img" class="w-full h-full object-cover hidden" alt="Avatar" />
+            <span class="text-white font-black text-4xl" id="profile-initials">?</span>
+          </div>
+          <button onclick="document.getElementById('avatar-input').click()" class="absolute bottom-0 right-0 w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
+            <span class="material-symbols-outlined text-primary text-sm">photo_camera</span>
+          </button>
+          <input type="file" id="avatar-input" accept="image/*" class="hidden" onchange="handleAvatarUpload(event)" />
+        </div>
+        <!-- Name & info -->
+        <div class="text-center md:text-left flex-1">
+          <h1 class="font-headline text-3xl font-black text-white mb-1" id="profile-name">Loading...</h1>
+          <p class="text-white/70 text-sm" id="profile-email">—</p>
+          <div class="flex flex-wrap gap-2 mt-3 justify-center md:justify-start">
+            <span class="bg-white/15 text-white text-xs font-bold px-3 py-1 rounded-full" id="profile-age-badge">Age: —</span>
+            <span class="bg-white/15 text-white text-xs font-bold px-3 py-1 rounded-full" id="profile-lang-badge">🌐 English</span>
+            <span class="bg-white/15 text-white text-xs font-bold px-3 py-1 rounded-full" id="profile-member-badge">Member</span>
+          </div>
+        </div>
+        <!-- Edit button -->
+        <button onclick="toggleEdit()" id="edit-toggle-btn"
+          class="bg-white text-primary font-bold px-6 py-2.5 rounded-full text-sm shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all flex items-center gap-2">
+          <span class="material-symbols-outlined text-sm">edit</span> Edit Profile
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/10 shadow-sm text-center">
+        <p class="text-3xl font-black text-primary" id="stat-analyses">0</p>
+        <p class="text-xs text-outline font-bold uppercase tracking-widest mt-1">Analyses Done</p>
+      </div>
+      <div class="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/10 shadow-sm text-center">
+        <p class="text-3xl font-black text-secondary" id="stat-meds">0</p>
+        <p class="text-xs text-outline font-bold uppercase tracking-widest mt-1">Active Meds</p>
+      </div>
+      <div class="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/10 shadow-sm text-center">
+        <p class="text-3xl font-black text-tertiary" id="stat-tasks">0</p>
+        <p class="text-xs text-outline font-bold uppercase tracking-widest mt-1">Tasks Pending</p>
+      </div>
+      <div class="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/10 shadow-sm text-center">
+        <p class="text-3xl font-black text-on-surface" id="stat-confidence">—</p>
+        <p class="text-xs text-outline font-bold uppercase tracking-widest mt-1">Last Confidence</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Personal Info Form -->
+      <div class="lg:col-span-2 bg-surface-container-lowest rounded-2xl p-7 border border-outline-variant/10 shadow-sm">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="font-headline font-bold text-xl text-on-surface flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-sm">badge</span>
+            Personal Information
+          </h2>
+          <span id="edit-indicator" class="hidden text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">Editing</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div>
+            <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2">First Name</label>
+            <input id="f-fname" class="input-field" disabled placeholder="John" type="text"/>
+          </div>
+          <div>
+            <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2">Last Name</label>
+            <input id="f-lname" class="input-field" disabled placeholder="Doe" type="text"/>
+          </div>
+          <div>
+            <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2">Email Address</label>
+            <div class="relative">
+              <input id="f-email" class="input-field pl-10" disabled placeholder="you@example.com" type="email"/>
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">mail</span>
+            </div>
+          </div>
+          <div>
+            <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2">Age</label>
+            <div class="relative">
+              <input id="f-age" class="input-field pl-10" disabled placeholder="e.g. 35" type="number" min="1" max="120"/>
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">person</span>
+            </div>
+          </div>
+          <div>
+            <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2">Phone Number</label>
+            <div class="relative">
+              <input id="f-phone" class="input-field pl-10" disabled placeholder="+91 98765 43210" type="tel"/>
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">phone</span>
+            </div>
+          </div>
+          <div>
+            <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2">City</label>
+            <div class="relative">
+              <input id="f-city" class="input-field pl-10" disabled placeholder="Mumbai" type="text"/>
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">location_on</span>
+            </div>
+          </div>
+          <div>
+            <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2">Blood Group</label>
+            <div class="relative">
+              <select id="f-blood" class="input-field pl-10 appearance-none" disabled>
+                <option value="">Select blood group</option>
+                <option>A+</option><option>A-</option>
+                <option>B+</option><option>B-</option>
+                <option>AB+</option><option>AB-</option>
+                <option>O+</option><option>O-</option>
+              </select>
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">bloodtype</span>
+            </div>
+          </div>
+          <div>
+            <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2">Preferred Language</label>
+            <div class="relative">
+              <select id="f-lang" class="input-field pl-10 appearance-none" disabled>
+                <option value="english">English</option>
+                <option value="hindi">Hindi (हिंदी)</option>
+              </select>
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">language</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5">
+          <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2">Known Allergies</label>
+          <textarea id="f-allergies" class="input-field resize-none" rows="2" disabled placeholder="e.g. Penicillin, Sulfa drugs, Aspirin..."></textarea>
+        </div>
+
+        <div class="mt-5">
+          <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2">Medical Conditions</label>
+          <textarea id="f-conditions" class="input-field resize-none" rows="2" disabled placeholder="e.g. Diabetes Type 2, Hypertension..."></textarea>
+        </div>
+
+        <!-- Save / Cancel buttons (hidden until edit mode) -->
+        <div id="save-btns" class="hidden mt-6 flex gap-3">
+          <button onclick="saveProfile()" class="flex-1 primary-gradient text-white font-bold py-3 rounded-full shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-sm">save</span> Save Changes
+          </button>
+          <button onclick="cancelEdit()" class="flex-1 border border-outline-variant text-on-surface-variant py-3 rounded-full font-bold hover:border-error hover:text-error transition-all">
+            Cancel
+          </button>
+        </div>
+      </div>
+
+      <!-- Right column -->
+      <div class="space-y-5">
+
+        <!-- Emergency Contact -->
+        <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/10 shadow-sm">
+          <h3 class="font-headline font-bold text-base text-on-surface mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-error text-sm" style="font-variation-settings:'FILL' 1">emergency</span>
+            Emergency Contact
+          </h3>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-1.5">Contact Name</label>
+              <input id="f-ec-name" class="input-field text-sm" disabled placeholder="Family member name"/>
+            </div>
+            <div>
+              <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-1.5">Phone</label>
+              <input id="f-ec-phone" class="input-field text-sm" disabled placeholder="+91 98765 43210" type="tel"/>
+            </div>
+            <div>
+              <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-1.5">Relationship</label>
+              <select id="f-ec-rel" class="input-field text-sm appearance-none" disabled>
+                <option value="">Select</option>
+                <option>Spouse</option><option>Parent</option>
+                <option>Child</option><option>Sibling</option>
+                <option>Friend</option><option>Other</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Doctor Info -->
+        <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/10 shadow-sm">
+          <h3 class="font-headline font-bold text-base text-on-surface mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings:'FILL' 1">stethoscope</span>
+            Primary Doctor
+          </h3>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-1.5">Doctor Name</label>
+              <input id="f-doc-name" class="input-field text-sm" disabled placeholder="Dr. Aisha Sharma"/>
+            </div>
+            <div>
+              <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-1.5">Specialty</label>
+              <input id="f-doc-spec" class="input-field text-sm" disabled placeholder="General Physician"/>
+            </div>
+            <div>
+              <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-1.5">Hospital / Clinic</label>
+              <input id="f-doc-hosp" class="input-field text-sm" disabled placeholder="Apollo Hospitals"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- Account Actions -->
+        <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/10 shadow-sm">
+          <h3 class="font-headline font-bold text-base text-on-surface mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-outline text-sm">settings</span>
+            Account
+          </h3>
+          <div class="space-y-2">
+            <button onclick="clearData()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-surface-container-low transition-colors text-sm font-semibold text-on-surface-variant text-left">
+              <span class="material-symbols-outlined text-sm text-outline">delete_sweep</span>
+              Clear Analysis Data
+            </button>
+            <button onclick="exportProfile()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-surface-container-low transition-colors text-sm font-semibold text-on-surface-variant text-left">
+              <span class="material-symbols-outlined text-sm text-outline">download</span>
+              Export My Data
+            </button>
+            <button onclick="logout()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-error-container/30 transition-colors text-sm font-semibold text-error text-left">
+              <span class="material-symbols-outlined text-sm">logout</span>
+              Sign Out
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Bottom Nav Mobile -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-white/80 backdrop-blur-xl border-t border-slate-100/10 shadow-[0_-4px_24px_rgba(24,28,32,0.06)]">
+  <a class="flex flex-col items-center text-slate-400" href="dashboard.html"><span class="material-symbols-outlined">home</span><span class="text-[10px] uppercase mt-1">Home</span></a>
+  <a class="flex flex-col items-center text-slate-400" href="documents.html"><span class="material-symbols-outlined">add_circle</span><span class="text-[10px] uppercase mt-1">Upload</span></a>
+  <a class="flex flex-col items-center text-slate-400" href="medications.html"><span class="material-symbols-outlined">pill</span><span class="text-[10px] uppercase mt-1">Meds</span></a>
+  <a class="flex flex-col items-center text-[#006068] bg-[#007B85]/10 rounded-2xl px-4 py-1" href="profile.html"><span class="material-symbols-outlined">person</span><span class="text-[10px] uppercase mt-1">Profile</span></a>
+</nav>
+
+<script src="medbuddy.js"></script>
+<script>
+requireAuth();
+
+let isEditing = false;
+
+// ── Load profile ───────────────────────────────────────
+function loadProfile() {
+  const user = getUser();
+  const profile = JSON.parse(localStorage.getItem('medbuddy_profile') || '{}');
+  const analysis = getAnalysis();
+
+  // Name & initials
+  const name = user.name || 'User';
+  const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  document.getElementById('profile-initials').textContent = initials;
+  document.getElementById('nav-initials').textContent = initials;
+  document.getElementById('profile-name').textContent = name;
+  document.getElementById('profile-email').textContent = user.email || '—';
+
+  // Avatar
+  const avatarImg = document.getElementById('profile-avatar-img');
+  const initialsEl = document.getElementById('profile-initials');
+  if (user.avatar) {
+    avatarImg.src = user.avatar;
+    avatarImg.classList.remove('hidden');
+    initialsEl.classList.add('hidden');
+  } else {
+    avatarImg.src = '';
+    avatarImg.classList.add('hidden');
+    initialsEl.classList.remove('hidden');
+  }
+
+  // Nav avatar
+  const navAvatarImg = document.getElementById('nav-avatar-img');
+  const navInitialsEl = document.getElementById('nav-initials');
+  if (user.avatar) {
+    navAvatarImg.src = user.avatar;
+    navAvatarImg.classList.remove('hidden');
+    navInitialsEl.classList.add('hidden');
+  } else {
+    navAvatarImg.src = '';
+    navAvatarImg.classList.add('hidden');
+    navInitialsEl.classList.remove('hidden');
+  }
+
+  // Badges
+  document.getElementById('profile-age-badge').textContent = user.age ? `Age: ${user.age}` : 'Age: Not set';
+  document.getElementById('profile-lang-badge').textContent = user.lang === 'hindi' ? '🌐 Hindi' : '🌐 English';
+  document.getElementById('profile-member-badge').textContent = user.isGuest ? 'Guest' : 'Member';
+
+  // Stats
+  document.getElementById('stat-analyses').textContent = profile.analyses_count || (analysis ? 1 : 0);
+  document.getElementById('stat-meds').textContent = analysis?.medications?.length || 0;
+  document.getElementById('stat-tasks').textContent = analysis?.checklist?.filter(i => !i.done).length || 0;
+  document.getElementById('stat-confidence').textContent = analysis?.confidence ? analysis.confidence + '%' : '—';
+
+  // Form fields
+  const nameParts = name.split(' ');
+  document.getElementById('f-fname').value = nameParts[0] || '';
+  document.getElementById('f-lname').value = nameParts.slice(1).join(' ') || '';
+  document.getElementById('f-email').value = user.email || '';
+  document.getElementById('f-age').value = user.age || '';
+  document.getElementById('f-lang').value = user.lang || 'english';
+
+  // Extended profile
+  document.getElementById('f-phone').value = profile.phone || '';
+  document.getElementById('f-city').value = profile.city || '';
+  document.getElementById('f-blood').value = profile.blood || '';
+  document.getElementById('f-allergies').value = profile.allergies || '';
+  document.getElementById('f-conditions').value = profile.conditions || '';
+  document.getElementById('f-ec-name').value = profile.ec_name || '';
+  document.getElementById('f-ec-phone').value = profile.ec_phone || '';
+  document.getElementById('f-ec-rel').value = profile.ec_rel || '';
+  document.getElementById('f-doc-name').value = profile.doc_name || '';
+  document.getElementById('f-doc-spec').value = profile.doc_spec || '';
+  document.getElementById('f-doc-hosp').value = profile.doc_hosp || '';
+}
+
+// ── Toggle edit mode ───────────────────────────────────
+function toggleEdit() {
+  isEditing = !isEditing;
+  const fields = document.querySelectorAll('.input-field');
+  fields.forEach(f => f.disabled = !isEditing);
+
+  document.getElementById('edit-indicator').classList.toggle('hidden', !isEditing);
+  document.getElementById('save-btns').classList.toggle('hidden', !isEditing);
+
+  const btn = document.getElementById('edit-toggle-btn');
+  if (isEditing) {
+    btn.innerHTML = '<span class="material-symbols-outlined text-sm">close</span> Cancel';
+    btn.className = 'bg-white/20 border border-white/30 text-white font-bold px-6 py-2.5 rounded-full text-sm hover:-translate-y-0.5 active:scale-95 transition-all flex items-center gap-2';
+  } else {
+    cancelEdit();
+  }
+}
+
+function cancelEdit() {
+  isEditing = false;
+  const fields = document.querySelectorAll('.input-field');
+  fields.forEach(f => f.disabled = true);
+  document.getElementById('edit-indicator').classList.add('hidden');
+  document.getElementById('save-btns').classList.add('hidden');
+  const btn = document.getElementById('edit-toggle-btn');
+  btn.innerHTML = '<span class="material-symbols-outlined text-sm">edit</span> Edit Profile';
+  btn.className = 'bg-white text-primary font-bold px-6 py-2.5 rounded-full text-sm shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all flex items-center gap-2';
+  loadProfile(); // Reset fields
+}
+
+// ── Save profile ───────────────────────────────────────
+function saveProfile() {
+  const fname = document.getElementById('f-fname').value.trim();
+  const lname = document.getElementById('f-lname').value.trim();
+  const fullName = fname + (lname ? ' ' + lname : '');
+
+  // Update user object
+  const user = getUser();
+  user.name = fullName;
+  user.email = document.getElementById('f-email').value.trim();
+  user.age = document.getElementById('f-age').value;
+  user.lang = document.getElementById('f-lang').value;
+  localStorage.setItem('medbuddy_user', JSON.stringify(user));
+
+  // Save extended profile
+  const profile = {
+    phone: document.getElementById('f-phone').value,
+    city: document.getElementById('f-city').value,
+    blood: document.getElementById('f-blood').value,
+    allergies: document.getElementById('f-allergies').value,
+    conditions: document.getElementById('f-conditions').value,
+    ec_name: document.getElementById('f-ec-name').value,
+    ec_phone: document.getElementById('f-ec-phone').value,
+    ec_rel: document.getElementById('f-ec-rel').value,
+    doc_name: document.getElementById('f-doc-name').value,
+    doc_spec: document.getElementById('f-doc-spec').value,
+    doc_hosp: document.getElementById('f-doc-hosp').value,
+    analyses_count: JSON.parse(localStorage.getItem('medbuddy_profile') || '{}').analyses_count || 0,
+  };
+  localStorage.setItem('medbuddy_profile', JSON.stringify(profile));
+
+  cancelEdit();
+  loadProfile();
+  showToast('✅ Profile saved successfully!');
+}
+
+// ── Clear analysis data ────────────────────────────────
+function clearData() {
+  if (confirm('Clear all analysis data? Your profile will remain.')) {
+    clearAnalysis();
+    loadProfile();
+    showToast('🗑️ Analysis data cleared');
+  }
+}
+
+// ── Export data ────────────────────────────────────────
+function exportProfile() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const user = getUser();
+  const profile = JSON.parse(localStorage.getItem('medbuddy_profile') || '{}');
+  const analysis = getAnalysis();
+  const exportDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+  let yPos = 20;
+
+  doc.setFontSize(22);
+  doc.setTextColor(0, 96, 104);
+  doc.text('Aushadh AI', 20, yPos);
+  yPos += 10;
+
+  doc.setFontSize(10);
+  doc.setTextColor(110, 121, 122);
+  doc.text('Data Export Report', 20, yPos);
+  yPos += 8;
+  doc.text('Exported: ' + exportDate, 20, yPos);
+  yPos += 15;
+
+  doc.setDrawColor(0, 96, 104);
+  doc.setLineWidth(0.5);
+  doc.line(20, yPos, 190, yPos);
+  yPos += 10;
+
+  doc.setFontSize(14);
+  doc.setTextColor(24, 28, 32);
+  doc.text('User Information', 20, yPos);
+  yPos += 8;
+
+  doc.setFontSize(10);
+  doc.setTextColor(62, 73, 74);
+  if (user && user.name) {
+    doc.text('Name: ' + user.name, 20, yPos);
+    yPos += 6;
+  }
+  if (user && user.email) {
+    doc.text('Email: ' + user.email, 20, yPos);
+    yPos += 6;
+  }
+  if (user && user.phone) {
+    doc.text('Phone: ' + user.phone, 20, yPos);
+    yPos += 6;
+  }
+  if (user && user.dob) {
+    doc.text('Date of Birth: ' + user.dob, 20, yPos);
+    yPos += 6;
+  }
+  if (user && user.gender) {
+    doc.text('Gender: ' + user.gender, 20, yPos);
+    yPos += 6;
+  }
+  yPos += 5;
+
+  if (profile && Object.keys(profile).length > 0) {
+    doc.setFontSize(14);
+    doc.setTextColor(24, 28, 32);
+    doc.text('Profile Details', 20, yPos);
+    yPos += 8;
+
+    doc.setFontSize(10);
+    doc.setTextColor(62, 73, 74);
+    const profileFields = [
+      ['Age', profile.age],
+      ['Blood Type', profile.bloodType],
+      ['Height', profile.height ? profile.height + ' cm' : '-'],
+      ['Weight', profile.weight ? profile.weight + ' kg' : '-'],
+      ['Allergies', profile.allergies || 'None listed'],
+      ['Conditions', profile.conditions || 'None listed'],
+      ['Medications', profile.medications || 'None listed']
+    ];
+    profileFields.forEach(([label, value]) => {
+      doc.text(label + ': ' + value, 20, yPos);
+      yPos += 6;
+    });
+    yPos += 5;
+  }
+
+  if (analysis && Object.keys(analysis).length > 0) {
+    if (yPos > 250) {
+      doc.addPage();
+      yPos = 20;
+    }
+
+    doc.setFontSize(14);
+    doc.setTextColor(24, 28, 32);
+    doc.text('Last Analysis', 20, yPos);
+    yPos += 8;
+
+    doc.setFontSize(10);
+    doc.setTextColor(62, 73, 74);
+
+    if (analysis.summary_en) {
+      const summaryLines = doc.splitTextToSize('Summary: ' + analysis.summary_en, 170);
+      doc.text(summaryLines, 20, yPos);
+      yPos += summaryLines.length * 5 + 5;
+    }
+    if (analysis.diagnosis && analysis.diagnosis.length > 0) {
+      doc.text('Diagnosis:', 20, yPos);
+      yPos += 5;
+      analysis.diagnosis.forEach((d, i) => {
+        const diagLines = doc.splitTextToSize((i + 1) + '. ' + (d.condition || d), 160);
+        doc.text(diagLines, 25, yPos);
+        yPos += diagLines.length * 5;
+      });
+      yPos += 5;
+    }
+    if (analysis.medications && analysis.medications.length > 0) {
+      doc.text('Medications:', 20, yPos);
+      yPos += 5;
+      analysis.medications.forEach((m, i) => {
+        const medLines = doc.splitTextToSize((i + 1) + '. ' + (m.name || m), 160);
+        doc.text(medLines, 25, yPos);
+        yPos += medLines.length * 5;
+      });
+      yPos += 5;
+    }
+    if (analysis.warnings && analysis.warnings.length > 0) {
+      doc.text('Warnings:', 20, yPos);
+      yPos += 5;
+      analysis.warnings.forEach((w, i) => {
+        const warnLines = doc.splitTextToSize((i + 1) + '. ' + w, 160);
+        doc.text(warnLines, 25, yPos);
+        yPos += warnLines.length * 5;
+      });
+    }
+  }
+
+  const pageCount = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(189, 201, 202);
+    doc.text('Generated by Aushadh AI', 20, doc.internal.pageSize.height - 10);
+    doc.text('Page ' + i + ' of ' + pageCount, 180, doc.internal.pageSize.height - 10);
+  }
+
+  doc.save('aushadh-ai-data.pdf');
+  showToast('⬇️ Data exported as PDF!');
+}
+
+// ── Avatar upload ──────────────────────────────────────
+function handleAvatarUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    showToast('Please select an image file');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const avatarData = e.target.result;
+    const user = getUser();
+    user.avatar = avatarData;
+    saveUser(user);
+    
+    const avatarImg = document.getElementById('profile-avatar-img');
+    const initialsEl = document.getElementById('profile-initials');
+    avatarImg.src = avatarData;
+    avatarImg.classList.remove('hidden');
+    initialsEl.classList.add('hidden');
+    
+    showToast('✅ Avatar updated!');
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Init ──────────────────────────────────────────────
+loadProfile();
+</script>
+</body>
+</html>
