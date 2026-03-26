@@ -69,7 +69,7 @@ def init_ocr():
         return
     try:
         import easyocr
-        print("[Aushadh AI] EasyOCR: initializing model...")
+        print("[Aushadh AI] EasyOCR: initializing...")
         EASYOCR_READER = easyocr.Reader(['en'], gpu=False, verbose=False)
         print("[Aushadh AI] EasyOCR ready")
     except Exception as e:
