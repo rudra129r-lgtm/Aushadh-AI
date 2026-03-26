@@ -11,7 +11,10 @@ RUN apt-get update && apt-get install -y \
     libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
+RUN pip uninstall -y bidi 2>/dev/null || true
+
 COPY requirements.txt .
+RUN pip install --no-cache-dir python-bidi==0.4.2
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .

@@ -78,16 +78,34 @@ def init_ocr():
 def ocr_image(image_bytes: bytes) -> str:
     global EASYOCR_READER
     try:
+        import numpy as np
+        from PIL import Image
+        import io
+        
         init_ocr()
         if EASYOCR_READER is None:
+            print("[Aushadh AI] EasyOCR reader is None")
             return ""
-        result = EASYOCR_READER.readtext(image_bytes, detail=0)
+        
+        # Convert bytes to numpy array for better compatibility
+        img = Image.open(io.BytesIO(image_bytes)).convert('RGB')
+        img_array = np.array(img)
+        
+        print(f"[Aushadh AI] Image shape: {img_array.shape}")
+        result = EASYOCR_READER.readtext(img_array, detail=0)
+        
+        if not result:
+            print("[Aushadh AI] EasyOCR returned no text")
+            return ""
+        
         text_lines = [str(line) for line in result if line]
         text = ' '.join(text_lines)
         print(f"[Aushadh AI] EasyOCR extracted {len(text)} chars")
         return text
     except Exception as e:
         print(f"[Aushadh AI] EasyOCR error: {e}")
+        import traceback
+        traceback.print_exc()
         return ""
 
 
