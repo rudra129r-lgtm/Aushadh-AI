@@ -1,5 +1,5 @@
 # Aushadh AI Requirements
-# Python 3.8-3.11 recommended (Python 3.14+ not supported by some packages)
+# Python 3.11 required (Python 3.14+ not supported)
 fastapi==0.111.0
 uvicorn[standard]==0.29.0
 python-multipart==0.0.9
@@ -10,4 +10,3 @@ pdfplumber==0.11.0
 Pillow>=10.4.0
 supabase>=2.0.0
 easyocr>=1.7.0
-python-bidi>=0.4.0
