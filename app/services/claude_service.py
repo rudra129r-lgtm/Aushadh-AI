@@ -59,20 +59,43 @@ CRITICAL RULES:
 11. recovery_days_min/max: extract from document (e.g. "rest for 7 days" → min=7, max=7; "2-3 weeks" → min=14, max=21). Return null only if truly not mentioned."""
 
 
-# ── STEP 1: OCR using Tesseract ────────────────────────────
+# ── STEP 1: OCR using EasyOCR ────────────────────────────
+
+EASYOCR_READER = None
+
+def init_ocr():
+    global EASYOCR_READER
+    if EASYOCR_READER is not None:
+        return
+    try:
+        import easyocr
+        print("[Aushadh AI] EasyOCR: initializing model...")
+        EASYOCR_READER = easyocr.Reader(['en'], gpu=False, verbose=False)
+        print("[Aushadh AI] EasyOCR ready")
+    except Exception as e:
+        print(f"[Aushadh AI] EasyOCR init error: {e}")
 
 def ocr_image(image_bytes: bytes) -> str:
+    global EASYOCR_READER
     try:
-        import pytesseract
+        import numpy as np
         from PIL import Image
         import io
         
+        init_ocr()
+        if EASYOCR_READER is None:
+            return ""
+        
         img = Image.open(io.BytesIO(image_bytes)).convert('RGB')
-        text = pytesseract.image_to_string(img, lang='eng')
-        print(f"[Aushadh AI] Tesseract extracted {len(text)} chars")
-        return text.strip()
+        img_array = np.array(img)
+        
+        result = EASYOCR_READER.readtext(img_array, detail=0)
+        text_lines = [str(line) for line in result if line]
+        text = ' '.join(text_lines)
+        print(f"[Aushadh AI] EasyOCR extracted {len(text)} chars")
+        return text
     except Exception as e:
-        print(f"[Aushadh AI] Tesseract error: {e}")
+        print(f"[Aushadh AI] EasyOCR error: {e}")
         return ""
 
 

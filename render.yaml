@@ -2,9 +2,7 @@ services:
   - type: web
     name: aushadh-ai
     runtime: docker
-    dockerfilePath: Dockerfile
-    buildCommand: echo "Using Dockerfile"
-    startCommand: echo "Using Dockerfile CMD"
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: GROQ_API_KEY
         sync: false
