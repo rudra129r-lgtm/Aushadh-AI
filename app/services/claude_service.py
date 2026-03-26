@@ -65,19 +65,20 @@ EASYOCR_READER = None
 
 def init_ocr():
     global EASYOCR_READER
+    if EASYOCR_READER is not None:
+        return
     try:
         import easyocr
-        print("[Aushadh AI] Initializing EasyOCR model download...")
-        EASYOCR_READER = easyocr.Reader(['en'], gpu=False, verbose=True)
-        print("[Aushadh AI] EasyOCR initialized successfully")
+        print("[Aushadh AI] EasyOCR: downloading model (first use may take 30s)...")
+        EASYOCR_READER = easyocr.Reader(['en'], gpu=False, verbose=False)
+        print("[Aushadh AI] EasyOCR ready")
     except Exception as e:
         print(f"[Aushadh AI] EasyOCR init error: {e}")
 
 def ocr_image(image_bytes: bytes) -> str:
     global EASYOCR_READER
     try:
-        if EASYOCR_READER is None:
-            init_ocr()
+        init_ocr()
         if EASYOCR_READER is None:
             return ""
         result = EASYOCR_READER.readtext(image_bytes, detail=0)
@@ -88,9 +89,6 @@ def ocr_image(image_bytes: bytes) -> str:
     except Exception as e:
         print(f"[Aushadh AI] EasyOCR error: {e}")
         return ""
-
-# Initialize EasyOCR at startup
-init_ocr()
 
 
 def extract_pdf_text(data: bytes) -> str:
