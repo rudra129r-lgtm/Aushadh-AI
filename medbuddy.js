@@ -1,9 +1,9 @@
 /**
  * Aushadh AI — Shared Utilities
- * Connects frontend to FastAPI backend at localhost:8000
+ * Connects frontend to FastAPI backend
  */
 
-const API = "http://localhost:8000/api";
+const API = window.location.origin + "/api";
 
 // ── Pre-baked Demo Data (Apollo Hospitals Sample - Severe Case) ─────
 const DEMO_DATA = {
