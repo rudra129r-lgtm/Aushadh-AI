@@ -99,3 +99,41 @@ async def get_me(current_user = Depends(get_current_user)):
         id=current_user.get("id", ""),
         email=current_user.get("email", "")
     )
+
+
+class MedicationsRequest(BaseModel):
+    medications: list
+
+
+@router.post("/auth/medications", summary="Save medications for user")
+async def save_medications(req: MedicationsRequest, current_user = Depends(get_current_user)):
+    user_id = current_user.get("id")
+    if not user_id:
+        raise HTTPException(status_code=400, detail="Invalid user")
+    
+    success = supabase_service.save_medications(user_id, req.medications)
+    if success:
+        return {"message": "Medications saved successfully"}
+    raise HTTPException(status_code=500, detail="Failed to save medications")
+
+
+@router.get("/auth/medications", summary="Get medications for current user")
+async def get_medications(current_user = Depends(get_current_user)):
+    user_id = current_user.get("id")
+    if not user_id:
+        raise HTTPException(status_code=400, detail="Invalid user")
+    
+    medications = supabase_service.get_medications(user_id)
+    return {"medications": medications}
+
+
+@router.delete("/auth/medications/{med_id}", summary="Delete a medication")
+async def delete_medication(med_id: str, current_user = Depends(get_current_user)):
+    user_id = current_user.get("id")
+    if not user_id:
+        raise HTTPException(status_code=400, detail="Invalid user")
+    
+    success = supabase_service.delete_medication(med_id, user_id)
+    if success:
+        return {"message": "Medication deleted successfully"}
+    raise HTTPException(status_code=500, detail="Failed to delete medication")
