@@ -61,11 +61,26 @@ CRITICAL RULES:
 
 # ── STEP 1: OCR using EasyOCR ────────────────────────────
 
-def ocr_image(image_bytes: bytes) -> str:
+EASYOCR_READER = None
+
+def init_ocr():
+    global EASYOCR_READER
     try:
         import easyocr
-        reader = easyocr.Reader(['en'], gpu=False, verbose=False)
-        result = reader.readtext(image_bytes, detail=0)
+        print("[Aushadh AI] Initializing EasyOCR model download...")
+        EASYOCR_READER = easyocr.Reader(['en'], gpu=False, verbose=True)
+        print("[Aushadh AI] EasyOCR initialized successfully")
+    except Exception as e:
+        print(f"[Aushadh AI] EasyOCR init error: {e}")
+
+def ocr_image(image_bytes: bytes) -> str:
+    global EASYOCR_READER
+    try:
+        if EASYOCR_READER is None:
+            init_ocr()
+        if EASYOCR_READER is None:
+            return ""
+        result = EASYOCR_READER.readtext(image_bytes, detail=0)
         text_lines = [str(line) for line in result if line]
         text = ' '.join(text_lines)
         print(f"[Aushadh AI] EasyOCR extracted {len(text)} chars")
@@ -73,6 +88,9 @@ def ocr_image(image_bytes: bytes) -> str:
     except Exception as e:
         print(f"[Aushadh AI] EasyOCR error: {e}")
         return ""
+
+# Initialize EasyOCR at startup
+init_ocr()
 
 
 def extract_pdf_text(data: bytes) -> str:
