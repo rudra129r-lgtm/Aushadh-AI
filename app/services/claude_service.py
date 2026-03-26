@@ -1,10 +1,9 @@
 """
 Aushadh AI AI Service — Maximum Accuracy Pipeline
-================================================
-Step 1: Tesseract OCR     → Extract text from images/PDFs
-Step 2: Groq (Llama)      → Fast first-pass extraction
-Step 3: OpenFDA API       → Validate & enrich drug info
-Step 4: Claude API        → Final validation & enrichment
+==================================================
+Step 1: PaddleOCR + EasyOCR   → Extract text from images/PDFs
+Step 2: Groq (Llama)          → Fast first-pass extraction
+Step 3: OpenFDA API           → Validate & enrich drug info
 """
 
 import os
@@ -59,51 +58,24 @@ CRITICAL RULES:
 11. recovery_days_min/max: extract from document (e.g. "rest for 7 days" → min=7, max=7; "2-3 weeks" → min=14, max=21). Return null only if truly not mentioned."""
 
 
-# ── STEP 1: OCR using EasyOCR ────────────────────────────
-
-EASYOCR_READER = None
-
-def init_ocr():
-    global EASYOCR_READER
-    if EASYOCR_READER is not None:
-        return
-    try:
-        import easyocr
-        print("[Aushadh AI] EasyOCR: initializing...")
-        EASYOCR_READER = easyocr.Reader(['en'], gpu=False, verbose=False)
-        print("[Aushadh AI] EasyOCR ready")
-    except Exception as e:
-        print(f"[Aushadh AI] EasyOCR init error: {e}")
+# ── STEP 1: OCR using PaddleOCR + EasyOCR fallback ──────────────────────────
 
 def ocr_image(image_bytes: bytes) -> str:
-    global EASYOCR_READER
+    """Extract text from image using PaddleOCR with EasyOCR fallback"""
     try:
-        import numpy as np
-        from PIL import Image
-        import io
+        from app.services.ocr_service import extract_text
+        print("[Aushadh AI] Step 1: OCR processing...")
+        result = extract_text(image_bytes)
         
-        print("[Aushadh AI] Step 1: Loading image...")
-        init_ocr()
+        if result["text"]:
+            print(f"[Aushadh AI] OCR extracted {len(result['text'])} chars using {result['method']}")
+            return result["text"]
         
-        print("[Aushadh AI] Step 2: EasyOCR initialized, processing image...")
-        if EASYOCR_READER is None:
-            print("[Aushadh AI] ERROR: EasyOCR reader is None")
-            return ""
+        print("[Aushadh AI] OCR failed to extract text")
+        return ""
         
-        img = Image.open(io.BytesIO(image_bytes)).convert('RGB')
-        img_array = np.array(img)
-        print(f"[Aushadh AI] Step 3: Image converted, shape: {img_array.shape}")
-        
-        print("[Aushadh AI] Step 4: Running EasyOCR recognition...")
-        result = EASYOCR_READER.readtext(img_array, detail=0)
-        print(f"[Aushadh AI] Step 5: Recognition complete, {len(result)} text blocks found")
-        
-        text_lines = [str(line) for line in result if line]
-        text = ' '.join(text_lines)
-        print(f"[Aushadh AI] EasyOCR extracted {len(text)} chars")
-        return text
     except Exception as e:
-        print(f"[Aushadh AI] EasyOCR error: {e}")
+        print(f"[Aushadh AI] OCR error: {e}")
         import traceback
         traceback.print_exc()
         return ""
@@ -111,47 +83,11 @@ def ocr_image(image_bytes: bytes) -> str:
 
 def extract_pdf_text(data: bytes) -> str:
     try:
-        import io
-        import pdfplumber
-
-        skip = re.compile(
-            r'(important instruction|test results are|laboratory|please retry|'
-            r'court|jurisdiction|iso \d|accredited|tel:|fax:|e-mail|page \d|'
-            r'computer generated|authorized medical|specimen|sample drawn)',
-            re.IGNORECASE
-        )
-
-        parts = []
-        with pdfplumber.open(io.BytesIO(data)) as pdf:
-            for page in pdf.pages:
-                t = page.extract_text()
-                if t:
-                    lines = [l.strip() for l in t.splitlines()
-                             if len(l.strip()) > 3 and not skip.search(l)]
-                    parts.append("\n".join(lines))
-
-        text = "\n".join(parts).strip()
-
-        if len(text) < 100:
-            print("[Aushadh AI] PDF sparse, trying OCR...")
-            try:
-                from pdf2image import convert_from_bytes
-                images = convert_from_bytes(data, dpi=200)
-                ocr_parts = []
-                for img in images[:3]:
-                    import io as _io
-                    buf = _io.BytesIO()
-                    img.save(buf, format='PNG')
-                    ocr_parts.append(ocr_image(buf.getvalue()))
-                text = "\n".join(ocr_parts)
-            except ImportError:
-                print("[Aushadh AI] pdf2image not installed")
-
-        print(f"[Aushadh AI] PDF: {len(text)} chars extracted from {len(pdf.pages)} pages")
-        # Increase limit to capture more content from multi-page PDFs
+        from app.services.ocr_service import extract_text_from_pdf
+        print("[Aushadh AI] Extracting text from PDF...")
+        text = extract_text_from_pdf(data)
+        print(f"[Aushadh AI] PDF: {len(text)} chars extracted")
         return text[:4000]
-    except ImportError:
-        raise Exception("Install pdfplumber: pip install pdfplumber")
     except Exception as e:
         raise Exception(str(e))
 
