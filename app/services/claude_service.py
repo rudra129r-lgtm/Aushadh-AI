@@ -417,36 +417,8 @@ async def analyse_image(data: bytes, media_type: str, age: str, language: str) -
             print(f"[Aushadh AI] EasyOCR extracted {len(extracted_text)} chars")
             return await analyse_text(extracted_text, age, language)
         
-        # Step 3: If EasyOCR failed, fallback to Groq vision with correct model
-        print("[Aushadh AI] EasyOCR failed or returned insufficient text, trying Groq vision...")
-        b64 = base64.standard_b64encode(data).decode()
-        messages = [
-            {"role": "system", "content": "You are a medical document reader. Extract ALL text visible in this prescription image exactly as written. Include clinic name, doctor, patient, every medicine, dosage, timing, and any advice. Return plain text only."},
-            {"role": "user", "content": [
-                {"type": "image_url", "image_url": {"url": f"data:{media_type};base64,{b64}"}},
-                {"type": "text", "text": "Read every word in this handwritten prescription and return all the text you can see."}
-            ]}
-        ]
-        
-        res = requests.post(
-            GROQ_URL,
-            headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json", "User-Agent": "Aushadh AIApp/1.0"},
-            json={"model": "llama-3.2-90b-vision", "messages": messages, "temperature": 0.1, "max_tokens": 2500},
-            timeout=120
-        )
-        
-        if not res.ok:
-            print(f"[Aushadh AI] Groq vision error: {res.status_code} - {res.text[:500]}")
-            raise Exception(f"Groq vision error: {res.text}")
-        
-        result = res.json()
-        extracted_text = result["choices"][0]["message"]["content"]
-        print(f"[Aushadh AI] Groq vision extracted {len(extracted_text)} chars: {extracted_text[:200]}...")
-        
-        if not extracted_text or len(extracted_text.strip()) < 20:
-            raise Exception("Could not extract text from image. Please try with a clearer image.")
-
-        return await analyse_text(extracted_text, age, language)
+        # Step 3: If EasyOCR failed, show error
+        raise Exception("Could not extract text from image. Please try with a clearer image or use text input.")
     except Exception as e:
         print(f"[Aushadh AI] Image analysis error: {str(e)}")
         raise Exception(str(e))
