@@ -59,21 +59,43 @@ CRITICAL RULES:
 11. recovery_days_min/max: extract from document (e.g. "rest for 7 days" → min=7, max=7; "2-3 weeks" → min=14, max=21). Return null only if truly not mentioned."""
 
 
-# ── STEP 1: OCR using EasyOCR ───────────────────────────
+# ── STEP 1: OCR using Tesseract + EasyOCR together ───────
 
 def ocr_image(image_bytes: bytes) -> str:
+    all_text_parts = []
+    
+    # Run Tesseract OCR
+    try:
+        import pytesseract
+        from PIL import Image
+        import io
+        
+        img = Image.open(io.BytesIO(image_bytes))
+        tesseract_text = pytesseract.image_to_string(img, lang='eng')
+        tesseract_cleaned = ' '.join(tesseract_text.split())
+        if tesseract_cleaned:
+            all_text_parts.append(tesseract_cleaned)
+            print(f"[Aushadh AI] Tesseract extracted {len(tesseract_cleaned)} chars")
+    except Exception as e:
+        print(f"[Aushadh AI] Tesseract error: {e}")
+    
+    # Run EasyOCR
     try:
         import easyocr
         reader = easyocr.Reader(['en'], gpu=False, verbose=False)
         result = reader.readtext(image_bytes, detail=0)
-        # Filter and join text lines
         text_lines = [str(line) for line in result if line]
-        text = ' '.join(text_lines)
-        print(f"[Aushadh AI] EasyOCR extracted {len(text)} chars")
-        return text
+        easyocr_text = ' '.join(text_lines)
+        if easyocr_text:
+            all_text_parts.append(easyocr_text)
+            print(f"[Aushadh AI] EasyOCR extracted {len(easyocr_text)} chars")
     except Exception as e:
         print(f"[Aushadh AI] EasyOCR error: {e}")
-        return ""
+    
+    # Combine results
+    combined = ' '.join(all_text_parts)
+    print(f"[Aushadh AI] Combined OCR: {len(combined)} chars")
+    return combined
 
 
 def extract_pdf_text(data: bytes) -> str:
