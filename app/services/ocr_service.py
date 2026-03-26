@@ -1,86 +1,106 @@
 """
-OCR Service - EasyOCR (already installed)
-==========================================
+OCR Service - OCR.space API (Cloud)
+====================================
+Uses OCR.space free API - no local dependencies needed
 """
 
 import io
-import numpy as np
-from PIL import Image
+import base64
+import requests
 import logging
 
 logger = logging.getLogger(__name__)
 
-EASYOCR_READER = None
+OCR_SPACE_API_KEY = None
+OCR_SPACE_URL = "https://api.ocr.space/parse/image"
 
 
-def init_easy_ocr():
-    global EASYOCR_READER
-    if EASYOCR_READER is not None:
-        return True
-    
-    try:
-        import easyocr
-        print("[OCR] Initializing EasyOCR...")
-        EASYOCR_READER = easyocr.Reader(['en'], gpu=False, verbose=False)
-        print("[OCR] EasyOCR ready")
-        return True
-    except Exception as e:
-        print(f"[OCR] EasyOCR init error: {e}")
-        return False
-
-
-def preprocess_image(image_bytes: bytes) -> np.ndarray:
-    """Load and preprocess image for OCR"""
-    img = Image.open(io.BytesIO(image_bytes)).convert('RGB')
-    img_array = np.array(img)
-    
-    max_size = 2048
-    h, w = img_array.shape[:2]
-    if max(h, w) > max_size:
-        scale = max_size / max(h, w)
-        new_h, new_w = int(h * scale), int(w * scale)
-        img_pil = Image.fromarray(img_array)
-        img_pil = img_pil.resize((new_w, new_h), Image.Resampling.LANCZOS)
-        img_array = np.array(img_pil)
-        logger.info(f"[OCR] Image resized to {new_h}x{new_w}")
-    
-    return img_array
+def init_ocr():
+    global OCR_SPACE_API_KEY
+    from dotenv import load_dotenv
+    import os
+    load_dotenv()
+    OCR_SPACE_API_KEY = os.environ.get("OCR_SPACE_API_KEY", "")
+    if OCR_SPACE_API_KEY:
+        print("[OCR] OCR.space API key loaded")
+    else:
+        print("[OCR] WARNING: OCR_SPACE_API_KEY not found in .env")
 
 
 def extract_text(image_bytes: bytes) -> dict:
-    """Extract text using EasyOCR"""
-    global EASYOCR_READER
+    """Extract text using OCR.space API"""
+    global OCR_SPACE_API_KEY
     
-    if not init_easy_ocr():
-        return {"text": None, "method": "failed", "error": "EasyOCR init failed"}
+    if not OCR_SPACE_API_KEY:
+        init_ocr()
+    
+    if not OCR_SPACE_API_KEY:
+        return {"text": None, "method": "failed", "error": "OCR API key not configured"}
     
     try:
-        logger.info("[OCR] Processing with EasyOCR...")
-        img_array = preprocess_image(image_bytes)
+        logger.info("[OCR] Calling OCR.space API...")
         
-        result = EASYOCR_READER.readtext(img_array, detail=0)
+        # Convert image to base64
+        b64_image = base64.b64encode(image_bytes).decode('utf-8')
         
-        text_lines = [str(line).strip() for line in result if line]
-        text = ' '.join(text_lines)
+        # Prepare payload
+        payload = {
+            "apikey": OCR_SPACE_API_KEY,
+            "base64Image": f"data:image/jpeg;base64,{b64_image}",
+            "language": "eng",  # English
+            "isOverlayRequired": "false",
+            "detectOrientation": "true",
+            "scale": "true",
+            "OCREngine": "2",  # Engine 2 is faster and better
+        }
         
-        logger.info(f"[OCR] EasyOCR extracted {len(text)} chars")
+        # Make request
+        response = requests.post(OCR_SPACE_URL, data=payload, timeout=30)
+        
+        if not response.ok:
+            logger.error(f"[OCR] API error: {response.status_code} - {response.text}")
+            return {"text": None, "method": "ocr_space", "error": f"API error: {response.status_code}"}
+        
+        result = response.json()
+        
+        # Check for errors
+        if result.get("IsErroredOnProcessing"):
+            error_msg = result.get("ErrorMessage", ["Unknown error"])
+            logger.error(f"[OCR] Processing error: {error_msg}")
+            return {"text": None, "method": "ocr_space", "error": str(error_msg)}
+        
+        # Extract text from results
+        parsed_results = result.get("ParsedResults", [])
+        if not parsed_results:
+            logger.warning("[OCR] No text found in image")
+            return {"text": None, "method": "ocr_space", "error": "No text found"}
+        
+        # Combine all text
+        text_parts = []
+        for parsed in parsed_results:
+            text = parsed.get("ParsedText", "")
+            if text:
+                text_parts.append(text)
+        
+        text = " ".join(text_parts)
+        logger.info(f"[OCR] OCR.space extracted {len(text)} chars")
         
         if len(text.strip()) >= 20:
-            return {"text": text, "method": "easyocr"}
+            return {"text": text, "method": "ocr_space"}
         
-        return {"text": None, "method": "easyocr", "error": "Text too short"}
+        return {"text": None, "method": "ocr_space", "error": "Text too short"}
         
     except Exception as e:
-        logger.error(f"[OCR] EasyOCR error: {e}")
+        logger.error(f"[OCR] OCR.space error: {e}")
         return {"text": None, "method": "failed", "error": str(e)}
 
 
 def extract_text_from_pdf(data: bytes) -> str:
-    """Extract text from PDF - tries direct extraction first, then OCR"""
-    import pdfplumber
-    import re
-    
+    """Extract text from PDF using OCR.space API"""
     try:
+        import pdfplumber
+        import re
+        
         skip = re.compile(
             r'(important instruction|test results are|laboratory|please retry|'
             r'court|jurisdiction|iso \d|accredited|tel:|fax:|e-mail|page \d|'
@@ -88,6 +108,7 @@ def extract_text_from_pdf(data: bytes) -> str:
             re.IGNORECASE
         )
         
+        # First try direct text extraction
         parts = []
         with pdfplumber.open(io.BytesIO(data)) as pdf:
             for page in pdf.pages:
@@ -99,7 +120,7 @@ def extract_text_from_pdf(data: bytes) -> str:
         
         text = "\n".join(parts).strip()
         
-        # If PDF has minimal text, try OCR
+        # If minimal text, try OCR
         if len(text) < 100:
             logger.info("[OCR] PDF has minimal text, trying OCR...")
             try:
@@ -114,7 +135,7 @@ def extract_text_from_pdf(data: bytes) -> str:
                         ocr_parts.append(result["text"])
                 text = "\n".join(ocr_parts)
             except ImportError:
-                logger.warning("[OCR] pdf2image not installed")
+                logger.warning("[OCR] pdf2image not installed, using direct extraction")
         
         logger.info(f"[OCR] PDF: {len(text)} chars extracted")
         return text[:4000]

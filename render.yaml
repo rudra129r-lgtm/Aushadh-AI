@@ -5,8 +5,6 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: python -m uvicorn main:app --host 0.0.0.0 --port 10000
     envVars:
-      - key: PYTHON_VERSION
-        value: "3.11"
       - key: GROQ_API_KEY
         sync: false
       - key: SUPABASE_URL
@@ -14,4 +12,6 @@ services:
       - key: SUPABASE_KEY
         sync: false
       - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: OCR_SPACE_API_KEY
         sync: false
