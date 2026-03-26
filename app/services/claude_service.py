@@ -431,7 +431,7 @@ async def analyse_image(data: bytes, media_type: str, age: str, language: str) -
         res = requests.post(
             GROQ_URL,
             headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json", "User-Agent": "Aushadh AIApp/1.0"},
-            json={"model": "llama-3.2-90b-vision-preview", "messages": messages, "temperature": 0.1, "max_tokens": 2500},
+            json={"model": "llama-3.2-90b-vision", "messages": messages, "temperature": 0.1, "max_tokens": 2500},
             timeout=120
         )
         
