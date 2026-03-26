@@ -59,53 +59,20 @@ CRITICAL RULES:
 11. recovery_days_min/max: extract from document (e.g. "rest for 7 days" → min=7, max=7; "2-3 weeks" → min=14, max=21). Return null only if truly not mentioned."""
 
 
-# ── STEP 1: OCR using EasyOCR ────────────────────────────
-
-EASYOCR_READER = None
-
-def init_ocr():
-    global EASYOCR_READER
-    if EASYOCR_READER is not None:
-        return
-    try:
-        import easyocr
-        print("[Aushadh AI] EasyOCR: downloading model (first use may take 30s)...")
-        EASYOCR_READER = easyocr.Reader(['en'], gpu=False, verbose=False)
-        print("[Aushadh AI] EasyOCR ready")
-    except Exception as e:
-        print(f"[Aushadh AI] EasyOCR init error: {e}")
+# ── STEP 1: OCR using Tesseract ────────────────────────────
 
 def ocr_image(image_bytes: bytes) -> str:
-    global EASYOCR_READER
     try:
-        import numpy as np
+        import pytesseract
         from PIL import Image
         import io
         
-        init_ocr()
-        if EASYOCR_READER is None:
-            print("[Aushadh AI] EasyOCR reader is None")
-            return ""
-        
-        # Convert bytes to numpy array for better compatibility
         img = Image.open(io.BytesIO(image_bytes)).convert('RGB')
-        img_array = np.array(img)
-        
-        print(f"[Aushadh AI] Image shape: {img_array.shape}")
-        result = EASYOCR_READER.readtext(img_array, detail=0)
-        
-        if not result:
-            print("[Aushadh AI] EasyOCR returned no text")
-            return ""
-        
-        text_lines = [str(line) for line in result if line]
-        text = ' '.join(text_lines)
-        print(f"[Aushadh AI] EasyOCR extracted {len(text)} chars")
-        return text
+        text = pytesseract.image_to_string(img, lang='eng')
+        print(f"[Aushadh AI] Tesseract extracted {len(text)} chars")
+        return text.strip()
     except Exception as e:
-        print(f"[Aushadh AI] EasyOCR error: {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"[Aushadh AI] Tesseract error: {e}")
         return ""
 
 
@@ -441,16 +408,14 @@ async def analyse_image(data: bytes, media_type: str, age: str, language: str) -
     try:
         print(f"[Aushadh AI] Processing image: {len(data)} bytes, type: {media_type}")
         
-        # Step 1: Try EasyOCR first
-        print("[Aushadh AI] Step 1: Trying EasyOCR...")
+        print("[Aushadh AI] Running OCR...")
         extracted_text = ocr_image(data)
         
-        # Step 2: If EasyOCR returns good text, use it
         if extracted_text and len(extracted_text.strip()) >= 20:
-            print(f"[Aushadh AI] EasyOCR extracted {len(extracted_text)} chars")
+            print(f"[Aushadh AI] OCR extracted {len(extracted_text)} chars")
             return await analyse_text(extracted_text, age, language)
         
-        # Step 3: If EasyOCR failed, show error
+        # Step 3: If OCR failed, show error
         raise Exception("Could not extract text from image. Please try with a clearer image or use text input.")
     except Exception as e:
         print(f"[Aushadh AI] Image analysis error: {str(e)}")
