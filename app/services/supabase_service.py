@@ -76,12 +76,12 @@ def save_medications(user_id: str, medications: list):
         }
         
         existing = requests.get(
-            f"{SUPABASE_URL}/rest/v1 medications?user_id=eq.{user_id}",
+            f"{SUPABASE_URL}/rest/v1/medications?user_id=eq.{user_id}",
             headers={"Authorization": f"Bearer {SUPABASE_KEY}", "apikey": SUPABASE_KEY}
         )
         if existing.status_code == 200 and existing.json():
             requests.delete(
-                f"{SUPABASE_URL}/rest/v1 medications?user_id=eq.{user_id}",
+                f"{SUPABASE_URL}/rest/v1/medications?user_id=eq.{user_id}",
                 headers=headers
             )
         
