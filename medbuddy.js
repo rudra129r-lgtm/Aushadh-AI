@@ -274,6 +274,34 @@ async function apiAnalyseFile(file, age, language) {
   }
 }
 
+// ── API: Analyse medical image (X-ray, MRI, CT) ────────
+async function apiAnalyseMedicalImage(file, age, language, imageType) {
+  console.log(`[Aushadh AI] Uploading medical image: ${file.name}, type: ${imageType}`);
+  const form = new FormData();
+  form.append('file', file);
+  if (age) form.append('age', age);
+  form.append('language', language || 'English');
+  form.append('image_type', imageType || 'X-ray');
+  
+  try {
+    const res = await fetch(`${API}/analyse/medical-image`, { method: 'POST', body: form });
+    console.log(`[Aushadh AI] Response status: ${res.status}`);
+    
+    if (!res.ok) {
+      const e = await res.json();
+      console.error(`[Aushadh AI] Error response: ${JSON.stringify(e)}`);
+      throw new Error(e.detail || 'Medical image analysis failed');
+    }
+    
+    const result = await res.json();
+    console.log(`[Aushadh AI] Medical image analysis result received`);
+    return result;
+  } catch (err) {
+    console.error(`[Aushadh AI] Medical image upload error: ${err.message}`);
+    throw err;
+  }
+}
+
 // ── API: Analyse text ─────────────────────────────────
 async function apiAnalyseText(text, age, language) {
   console.log(`[Aushadh AI] Analyzing text, length: ${text.length} chars`);
@@ -556,15 +584,26 @@ function getUnreadCount() {
   return getNotifications().filter(n => !n.read).length;
 }
 
+function clearAllNotifications() {
+  localStorage.setItem('medbuddy_notifications', JSON.stringify([]));
+  localStorage.removeItem('medbuddy_analysis');
+  sessionStorage.removeItem('medbuddy_analysis_backup');
+  renderNotifications();
+  updateNotificationBadge();
+}
+
 function createNotificationsPanel() {
   const style = document.createElement('style');
   style.textContent = `
     .mb-notif-panel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;max-width:380px;background:#fff;border-radius:20px;box-shadow:0 25px 80px rgba(0,0,0,0.25);z-index:9999;font-family:'Public Sans',sans-serif;max-height:70vh;overflow-y:auto}
     .mb-notif-backdrop{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);backdrop-filter:blur(8px);z-index:9998}
     .mb-notif-header{padding:16px 18px;border-bottom:1px solid #f1f4fa;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#fff;z-index:1}
+    .mb-notif-header-actions{display:flex;gap:8px;align-items:center}
     .mb-notif-header-title{font-weight:700;font-size:16px;color:#181c20}
     .mb-notif-close{background:none;border:none;font-size:20px;cursor:pointer;color:#6e797a;padding:4px}
     .mb-notif-close:hover{color:#181c20}
+    .mb-notif-clear{background:#f1f4fa;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;color:#006068;cursor:pointer;transition:all 0.15s}
+    .mb-notif-clear:hover{background:#e0f2f3;color:#004d52}
     .mb-notif-item{padding:14px 18px;border-bottom:1px solid #f1f4fa;cursor:pointer;transition:background 0.15s}
     .mb-notif-item:hover{background:#f7f9ff}
     .mb-notif-item.unread{background:#f0f9fa}
@@ -591,8 +630,11 @@ function createNotificationsPanel() {
   
   const header = document.createElement('div');
   header.className = 'mb-notif-header';
-  header.innerHTML = '<span class="mb-notif-header-title">🔔 Notifications</span><button class="mb-notif-close" onclick="hideNotificationsPanel()">×</button>';
+  header.innerHTML = '<span class="mb-notif-header-title">🔔 Notifications</span><div class="mb-notif-header-actions"><button class="mb-notif-clear">Clear all</button><button class="mb-notif-close">×</button></div>';
   panel.appendChild(header);
+  
+  header.querySelector('.mb-notif-clear').addEventListener('click', clearAllNotifications);
+  header.querySelector('.mb-notif-close').addEventListener('click', hideNotificationsPanel);
   
   document.body.appendChild(panel);
   document.body.appendChild(backdrop);
@@ -696,6 +738,12 @@ function renderNotifications() {
   const contentDiv = document.createElement('div');
   contentDiv.innerHTML = html;
   panel.appendChild(contentDiv);
+  
+  // Re-attach event listeners after rebuilding
+  const clearBtn = panel.querySelector('.mb-notif-clear');
+  const closeBtn = panel.querySelector('.mb-notif-close');
+  if (clearBtn) clearBtn.addEventListener('click', clearAllNotifications);
+  if (closeBtn) closeBtn.addEventListener('click', hideNotificationsPanel);
 }
 
 function handleNotificationClick(type, id) {

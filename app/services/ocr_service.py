@@ -1,34 +1,196 @@
 """
-OCR Service - OCR.space API (Cloud)
-====================================
-Uses OCR.space free API - no local dependencies needed
+OCR Service - Google Cloud Vision API (Primary) + OCR.space (Fallback)
+======================================================================
+Google Cloud Vision has excellent handwriting recognition (1,000 free req/month)
 """
 
 import io
 import base64
 import requests
 import logging
+from PIL import Image, ImageEnhance, ImageFilter
+import os
 
 logger = logging.getLogger(__name__)
 
 OCR_SPACE_API_KEY = None
 OCR_SPACE_URL = "https://api.ocr.space/parse/image"
 
+GOOGLE_VISION_AVAILABLE = False
+vision_client = None
+
 
 def init_ocr():
-    global OCR_SPACE_API_KEY
+    global OCR_SPACE_API_KEY, GOOGLE_VISION_AVAILABLE, vision_client
+    
     from dotenv import load_dotenv
-    import os
     load_dotenv()
+    
     OCR_SPACE_API_KEY = os.environ.get("OCR_SPACE_API_KEY", "")
+    
+    # Try to initialize Google Cloud Vision
+    try:
+        from google.cloud import vision
+        GOOGLE_APPLICATION_CREDENTIALS = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", "")
+        
+        if GOOGLE_APPLICATION_CREDENTIALS and os.path.exists(GOOGLE_APPLICATION_CREDENTIALS):
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_APPLICATION_CREDENTIALS
+            vision_client = vision.ImageAnnotatorClient()
+            GOOGLE_VISION_AVAILABLE = True
+            print("[OCR] Google Cloud Vision API initialized")
+        else:
+            print("[OCR] WARNING: GOOGLE_APPLICATION_CREDENTIALS not found in .env")
+            print("[OCR] Falling back to OCR.space (limited handwriting support)")
+    except ImportError:
+        print("[OCR] google-cloud-vision not installed. Run: pip install google-cloud-vision")
+        print("[OCR] Using OCR.space only (limited handwriting support)")
+    
     if OCR_SPACE_API_KEY:
-        print("[OCR] OCR.space API key loaded")
-    else:
-        print("[OCR] WARNING: OCR_SPACE_API_KEY not found in .env")
+        print("[OCR] OCR.space API key loaded (fallback)")
+
+
+def preprocess_image_for_ocr(image_bytes: bytes) -> bytes:
+    """Enhance image for better OCR results - especially for handwritten text"""
+    try:
+        img = Image.open(io.BytesIO(image_bytes))
+        
+        # Convert to RGB if needed
+        if img.mode != 'RGB':
+            img = img.convert('RGB')
+        
+        # Convert to grayscale for better text extraction
+        img = img.convert('L')
+        
+        # Increase contrast significantly
+        enhancer = ImageEnhance.Contrast(img)
+        img = enhancer.enhance(2.0)
+        
+        # Sharpen the image
+        img = img.filter(ImageFilter.SHARPEN)
+        
+        # Save to bytes
+        output = io.BytesIO()
+        img.save(output, format='PNG')
+        return output.getvalue()
+        
+    except Exception as e:
+        logger.warning(f"[OCR] Image preprocessing failed: {e}")
+        return image_bytes
+
+
+def extract_text_google_vision(image_bytes: bytes) -> dict:
+    """Extract text using Google Cloud Vision API (better for handwriting)"""
+    global vision_client
+    
+    try:
+        from google.cloud import vision as gvision
+        
+        logger.info("[OCR] Calling Google Cloud Vision API...")
+        
+        # Preprocess image
+        enhanced_bytes = preprocess_image_for_ocr(image_bytes)
+        
+        image = gvision.Image(content=enhanced_bytes)
+        
+        # Use document_text_detection for full text extraction (better for handwriting)
+        response = vision_client.document_text_detection(image=image)
+        
+        if response.error and response.error.message:
+            logger.error(f"[OCR] Google Vision error: {response.error.message}")
+            return {"text": None, "method": "google_vision", "error": response.error.message}
+        
+        # Extract full text
+        full_text = ""
+        if response.full_text_annotation:
+            full_text = response.full_text_annotation.text
+        
+        if full_text and len(full_text.strip()) >= 10:
+            logger.info(f"[OCR] Google Vision extracted {len(full_text)} chars")
+            return {"text": full_text, "method": "google_vision"}
+        
+        logger.warning(f"[OCR] Google Vision returned empty/short text: '{full_text[:100] if full_text else 'None'}'")
+        return {"text": None, "method": "google_vision", "error": "No text detected"}
+        
+    except Exception as e:
+        logger.error(f"[OCR] Google Vision error: {e}")
+        return {"text": None, "method": "google_vision", "error": str(e)}
 
 
 def extract_text(image_bytes: bytes) -> dict:
-    """Extract text using OCR.space API"""
+    """Extract text using both OCR methods, returns the best result"""
+    
+    # Ensure OCR is initialized
+    if not globals().get('GOOGLE_VISION_AVAILABLE', False) and not globals().get('OCR_SPACE_API_KEY'):
+        init_ocr()
+    
+    results = []
+    
+    # Run Google Vision if available
+    if globals().get('GOOGLE_VISION_AVAILABLE', False):
+        gv_result = extract_text_google_vision(image_bytes)
+        if gv_result.get("text"):
+            gv_result["score"] = _calculate_text_score(gv_result["text"])
+            results.append(gv_result)
+            logger.info(f"[OCR] Google Vision score: {gv_result['score']:.2f}")
+    
+    # Run OCR.space if available
+    if globals().get('OCR_SPACE_API_KEY'):
+        ocr_result = extract_text_ocr_space(image_bytes)
+        if ocr_result.get("text"):
+            ocr_result["score"] = _calculate_text_score(ocr_result["text"])
+            results.append(ocr_result)
+            logger.info(f"[OCR] OCR.space score: {ocr_result['score']:.2f}")
+    
+    if not results:
+        return {"text": None, "method": "failed", "error": "No OCR method succeeded"}
+    
+    # Return best result
+    best = max(results, key=lambda x: x["score"])
+    logger.info(f"[OCR] Best result: {best['method']} (score: {best['score']:.2f})")
+    return best
+
+
+def _calculate_text_score(text: str) -> float:
+    """Calculate a quality score for extracted text"""
+    if not text:
+        return 0.0
+    
+    score = 0.0
+    
+    # More characters = higher score (up to a point)
+    char_count = len(text.strip())
+    score += min(char_count / 500, 1.0) * 30
+    
+    # Word count
+    words = text.split()
+    word_count = len(words)
+    score += min(word_count / 100, 1.0) * 20
+    
+    # Check for common prescription patterns (medical terms, dosages, etc.)
+    prescription_indicators = [
+        r'\d+mg', r'\d+ml', r'\d+mcg', r'tablet', r'capsule', r'syrup',
+        r'once', r'twice', r'daily', r'morning', r'night', r'mg/',
+        r'Rx', r' prescription', r'patient', r'doctor', r'date',
+        r'\d+/\d+', r'\+\d{10,}', r'\d{10}'
+    ]
+    import re
+    for pattern in prescription_indicators:
+        if re.search(pattern, text, re.IGNORECASE):
+            score += 5
+    
+    # Penalize garbled text (too many special characters)
+    special_char_ratio = sum(1 for c in text if c in '�??') / max(char_count, 1)
+    score -= special_char_ratio * 30
+    
+    # Penalize very short text
+    if char_count < 50:
+        score *= 0.5
+    
+    return min(score, 100)
+
+
+def extract_text_ocr_space(image_bytes: bytes) -> dict:
+    """Extract text using OCR.space API (fallback)"""
     global OCR_SPACE_API_KEY
     
     if not OCR_SPACE_API_KEY:
@@ -38,44 +200,43 @@ def extract_text(image_bytes: bytes) -> dict:
         return {"text": None, "method": "failed", "error": "OCR API key not configured"}
     
     try:
-        logger.info("[OCR] Calling OCR.space API...")
+        logger.info("[OCR] Calling OCR.space API (fallback)...")
+        
+        # Preprocess image
+        enhanced_bytes = preprocess_image_for_ocr(image_bytes)
         
         # Convert image to base64
-        b64_image = base64.b64encode(image_bytes).decode('utf-8')
+        b64_image = base64.b64encode(enhanced_bytes).decode('utf-8')
         
         # Prepare payload
         payload = {
             "apikey": OCR_SPACE_API_KEY,
             "base64Image": f"data:image/jpeg;base64,{b64_image}",
-            "language": "eng",  # English
+            "language": "eng",
             "isOverlayRequired": "false",
             "detectOrientation": "true",
             "scale": "true",
-            "OCREngine": "2",  # Engine 2 is faster and better
+            "OCREngine": "2",
         }
         
         # Make request
         response = requests.post(OCR_SPACE_URL, data=payload, timeout=30)
         
         if not response.ok:
-            logger.error(f"[OCR] API error: {response.status_code} - {response.text}")
+            logger.error(f"[OCR] API error: {response.status_code}")
             return {"text": None, "method": "ocr_space", "error": f"API error: {response.status_code}"}
         
         result = response.json()
         
-        # Check for errors
         if result.get("IsErroredOnProcessing"):
             error_msg = result.get("ErrorMessage", ["Unknown error"])
             logger.error(f"[OCR] Processing error: {error_msg}")
             return {"text": None, "method": "ocr_space", "error": str(error_msg)}
         
-        # Extract text from results
         parsed_results = result.get("ParsedResults", [])
         if not parsed_results:
-            logger.warning("[OCR] No text found in image")
             return {"text": None, "method": "ocr_space", "error": "No text found"}
         
-        # Combine all text
         text_parts = []
         for parsed in parsed_results:
             text = parsed.get("ParsedText", "")

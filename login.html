@@ -48,6 +48,13 @@
     100% { background-position: 200% 0; }
   }
 
+  /* ==================== CUSTOM DROPDOWN ==================== */
+  .custom-dropdown{position:relative}
+  .dropdown-trigger:focus{border-color:#006068!important;box-shadow:0 0 0 3px rgba(0,96,104,0.1)!important}
+  .dropdown-menu{box-shadow:0 4px 20px rgba(0,96,104,0.15)}
+  .dropdown-option.selected{background:#006068!important;color:#fff!important}
+  .dropdown-option.selected .bg-\[\#006068\]{opacity:1!important}
+
   /* ==================== LEFT PANEL STYLES ==================== */
   .left-panel {
     background: linear-gradient(135deg, #001f23 0%, #006068 100%);
@@ -459,12 +466,26 @@
           </div>
           <p class="error-msg" id="signup-pw-err">Password must be at least 8 characters.</p>
 
-          <div class="fl-wrap">
-            <select id="signup-lang" class="fl-input pl-11 appearance-none cursor-pointer">
+          <div class="fl-wrap custom-dropdown" data-selected="english">
+            <button type="button" class="dropdown-trigger fl-input pl-11 appearance-none cursor-pointer w-full text-left relative">
+              <span class="dropdown-selected-text">English</span>
+              <span class="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 text-outline text-sm">expand_more</span>
+            </button>
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">language</span>
+            <div class="dropdown-menu absolute z-50 mt-1 w-full bg-white rounded-xl shadow-xl border border-outline-variant/30 overflow-hidden hidden">
+              <div class="py-1">
+                <button type="button" class="dropdown-option w-full px-4 py-2.5 text-sm text-left hover:bg-[#006068]/10 hover:text-[#006068] transition-colors flex items-center gap-2" data-value="english">
+                  <span class="w-2 h-2 rounded-full bg-[#006068] opacity-0"></span>English
+                </button>
+                <button type="button" class="dropdown-option w-full px-4 py-2.5 text-sm text-left hover:bg-[#006068]/10 hover:text-[#006068] transition-colors flex items-center gap-2" data-value="hindi">
+                  <span class="w-2 h-2 rounded-full bg-[#006068] opacity-0"></span>Hindi (हिंदी)
+                </button>
+              </div>
+            </div>
+            <select id="signup-lang" class="hidden">
               <option value="english">English</option>
               <option value="hindi">Hindi (हिंदी)</option>
             </select>
-            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">language</span>
             <label class="fl-label">Preferred Language</label>
           </div>
 
@@ -681,6 +702,19 @@
       else handleSignUp();
     }
   });
+
+  /* ==================== CUSTOM DROPDOWN ==================== */
+  document.querySelectorAll('.custom-dropdown').forEach(dropdown=>{
+    const trigger=dropdown.querySelector('.dropdown-trigger');
+    const menu=dropdown.querySelector('.dropdown-menu');
+    const hiddenSelect=dropdown.querySelector('select');
+    const selectedText=dropdown.querySelector('.dropdown-selected-text');
+    trigger.addEventListener('click',(e)=>{e.stopPropagation();document.querySelectorAll('.dropdown-menu').forEach(m=>{if(m!==menu)m.classList.add('hidden')});menu.classList.toggle('hidden')});
+    dropdown.querySelectorAll('.dropdown-option').forEach(opt=>{
+      opt.addEventListener('click',()=>{const val=opt.dataset.value;selectedText.textContent=opt.textContent.trim();hiddenSelect.value=val;dropdown.querySelectorAll('.dropdown-option').forEach(o=>o.classList.remove('selected','bg-[#006068]/10','text-[#006068]'));opt.classList.add('selected','bg-[#006068]/10','text-[#006068]');menu.classList.add('hidden')});
+    });
+  });
+  document.addEventListener('click',()=>{document.querySelectorAll('.dropdown-menu').forEach(m=>m.classList.add('hidden'))});
 </script>
 <script src="medbuddy.js"></script>
 </body>

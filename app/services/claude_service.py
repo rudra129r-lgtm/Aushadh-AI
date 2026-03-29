@@ -19,6 +19,7 @@ load_dotenv()
 GROQ_API_KEY      = os.environ.get("GROQ_API_KEY", "")
 GROQ_URL          = "https://api.groq.com/openai/v1/chat/completions"
 GROQ_MODEL        = "llama-3.3-70b-versatile"
+GEMINI_API_KEY    = os.environ.get("GEMINI_API_KEY", "")
 OPENFDA_URL       = "https://api.fda.gov/drug/label.json"
 
 # In-memory cache for OpenFDA (survives across requests)
@@ -398,6 +399,109 @@ async def analyse_pdf(data: bytes, age: str, language: str) -> dict:
             raise Exception("Could not extract text from PDF. Please use 'Paste Text' instead.")
         return await analyse_text(text, age, language)
     except Exception as e:
+        raise Exception(str(e))
+
+
+async def analyse_medical_image(data: bytes, media_type: str, age: str, language: str, image_type: str = "X-ray") -> dict:
+    """Analyze X-ray, MRI, CT scan or other medical images using Gemini Vision"""
+    try:
+        if not GEMINI_API_KEY:
+            raise Exception("GEMINI_API_KEY not configured. Please add it to .env file.")
+        
+        print(f"[Aushadh AI] Analyzing {image_type} with Gemini Vision...")
+        
+        base64_image = base64.b64encode(data).decode("utf-8")
+        
+        lang_instruction = "Respond in English" if language == "English" else f"Respond in {language}"
+        
+        prompt = f"""You are an expert radiologist analyzing medical images.
+
+Patient age: {age or 'Not specified'}
+Image type: {image_type}
+
+{language == "Hindi" and lang_instruction or ""}
+
+TASK: Analyze this medical image and provide a detailed report in JSON format.
+
+Output ONLY this exact JSON structure:
+{{
+  "confidence": 85,
+  "confidence_note": "Note about image quality and clarity",
+  "summary_en": "One sentence summary of findings in English",
+  "summary_hi": "Same summary in Hindi script",
+  "diagnosis": {{
+    "original_jargon": "Technical radiological findings",
+    "simple_english": "2-3 sentences explaining findings in plain English",
+    "simple_hindi": "Same explanation in Hindi"
+  }},
+  "findings": [
+    {{
+      "area": "Area/body part examined",
+      "observation": "What was observed",
+      "severity": "normal|abnormal|critical"
+    }}
+  ],
+  "abnormalities": [
+    {{
+      "description": "Description of abnormality",
+      "location": "Where observed",
+      "severity": "mild|moderate|severe"
+    }}
+  ],
+  "watch_for": {{
+    "original": "Clinical observations requiring attention",
+    "simple": "Plain English warning signs"
+  }},
+  "recommendations": [
+    "Follow-up imaging if needed",
+    "Consult specialist",
+    "Further tests recommended"
+  ],
+  "emergency": "Urgent findings requiring immediate medical attention (if any)",
+  "checklist": [
+    {{"category": "Follow-up", "text": "Action item", "done": false}}
+  ],
+  "report_type": "{image_type}"
+}}
+
+IMPORTANT:
+- Only report what you can actually see in the image
+- If image is unclear, set confidence lower and note limitations
+- Use "Not visible" or "Cannot determine" for unclear areas
+- Do not make up findings - be honest about limitations
+- {lang_instruction}"""
+
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
+        
+        payload = {
+            "contents": [{
+                "parts": [
+                    {"text": prompt},
+                    {"inline_data": {"mime_type": media_type, "data": base64_image}}
+                ]
+            }],
+            "generationConfig": {
+                "temperature": 0.1,
+                "maxOutputTokens": 3500
+            }
+        }
+        
+        response = requests.post(url, json=payload, timeout=90)
+        
+        if not response.ok:
+            raise Exception(f"Gemini API error: {response.status_code} - {response.text}")
+        
+        result = response.json()
+        raw = result["candidates"][0]["content"]["parts"][0]["text"]
+        
+        result_data = parse_json(raw)
+        result_data["pipeline"] = "Gemini Vision"
+        
+        print(f"[Aushadh AI] Medical image analysis complete. Confidence: {result_data.get('confidence', 0)}%")
+        return result_data
+        
+    except Exception as e:
+        print(f"[Aushadh AI] Medical image analysis error: {str(e)}")
         raise Exception(str(e))
 
 

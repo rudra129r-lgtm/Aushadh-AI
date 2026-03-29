@@ -18,6 +18,10 @@
   .input-field:focus{border-color:#006068;box-shadow:0 0 0 3px rgba(0,96,104,0.1)}
   .input-field:disabled{background:#f1f4fa;color:#6e797a;cursor:not-allowed}
   .avatar-ring{background:linear-gradient(135deg,#006068,#007b85);padding:3px;border-radius:50%}
+  .custom-dropdown{position:relative}
+  .dropdown-menu{box-shadow:0 4px 20px rgba(0,96,104,0.15)}
+  .dropdown-option.selected{background:#006068!important;color:#fff!important}
+  .dropdown-option.selected .bg-primary{opacity:1!important}
 </style>
 </head>
 <body class="bg-surface text-on-surface">
@@ -203,13 +207,27 @@
           </div>
           <div>
             <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2">Preferred Language</label>
-            <div class="relative">
-              <select id="f-lang" class="input-field pl-10 appearance-none" disabled>
-                <option value="english">English</option>
-                <option value="hindi">Hindi (हिंदी)</option>
-              </select>
+            <div class="relative custom-dropdown" data-selected="english">
+              <button type="button" class="dropdown-trigger input-field pl-10 appearance-none w-full text-left relative" disabled>
+                <span class="dropdown-selected-text">English</span>
+                <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline text-sm">expand_more</span>
+              </button>
               <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">language</span>
+              <div class="dropdown-menu absolute z-50 mt-1 w-full bg-white rounded-xl shadow-xl border border-outline-variant/30 overflow-hidden hidden">
+                <div class="py-1">
+                  <button type="button" class="dropdown-option w-full px-4 py-2.5 text-sm text-left hover:bg-primary/10 hover:text-primary transition-colors flex items-center gap-2" data-value="english">
+                    <span class="w-2 h-2 rounded-full bg-primary opacity-0"></span>English
+                  </button>
+                  <button type="button" class="dropdown-option w-full px-4 py-2.5 text-sm text-left hover:bg-primary/10 hover:text-primary transition-colors flex items-center gap-2" data-value="hindi">
+                    <span class="w-2 h-2 rounded-full bg-primary opacity-0"></span>Hindi (हिंदी)
+                  </button>
+                </div>
+              </div>
             </div>
+            <select id="f-lang" class="hidden">
+              <option value="english">English</option>
+              <option value="hindi">Hindi (हिंदी)</option>
+            </select>
           </div>
         </div>
 
@@ -649,6 +667,19 @@ function handleAvatarUpload(event) {
 
 // ── Init ──────────────────────────────────────────────
 loadProfile();
+
+// ── Custom Dropdown ────────────────────────────────────
+document.querySelectorAll('.custom-dropdown').forEach(dropdown=>{
+  const trigger=dropdown.querySelector('.dropdown-trigger');
+  const menu=dropdown.querySelector('.dropdown-menu');
+  const hiddenSelect=dropdown.querySelector('select');
+  const selectedText=dropdown.querySelector('.dropdown-selected-text');
+  trigger.addEventListener('click',(e)=>{e.stopPropagation();document.querySelectorAll('.dropdown-menu').forEach(m=>{if(m!==menu)m.classList.add('hidden')});menu.classList.toggle('hidden')});
+  dropdown.querySelectorAll('.dropdown-option').forEach(opt=>{
+    opt.addEventListener('click',()=>{const val=opt.dataset.value;selectedText.textContent=opt.textContent.trim();hiddenSelect.value=val;dropdown.querySelectorAll('.dropdown-option').forEach(o=>o.classList.remove('selected','bg-primary/10','text-primary'));opt.classList.add('selected','bg-primary/10','text-primary');menu.classList.add('hidden')});
+  });
+});
+document.addEventListener('click',()=>{document.querySelectorAll('.dropdown-menu').forEach(m=>m.classList.add('hidden'))});
 </script>
 </body>
 </html>

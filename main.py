@@ -31,6 +31,13 @@ async def lifespan(app: FastAPI):
     else:
         print("  [X] GROQ_API_KEY not found in .env!")
     
+    gemini = os.environ.get("GEMINI_API_KEY", "")
+    if gemini and gemini != "your_gemini_api_key_here":
+        print(f"  [OK] Gemini API Key loaded: ...{gemini[-6:]}")
+        print(f"  [AI] Vision Model: Gemini 1.5 Flash (Medical Images)")
+    else:
+        print("  [X] GEMINI_API_KEY not configured in .env (X-ray/MRI analysis disabled)")
+    
     supabase_url = os.environ.get("SUPABASE_URL", "")
     if supabase_url:
         print(f"  [OK] Supabase URL loaded")

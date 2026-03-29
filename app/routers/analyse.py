@@ -13,6 +13,22 @@ ALLOWED = {
     "image/jpg",
     "image/png",
     "text/plain",
+    "image/dicom",      # DICOM medical images
+    "application/dicom",
+}
+
+MEDICAL_IMAGE_TYPES = {
+    "image/jpeg",
+    "image/jpg", 
+    "image/png",
+}
+
+# Image type detection keywords
+IMAGE_TYPE_KEYWORDS = {
+    "xray": ["x-ray", "xray", "chest xray", "chest x-ray", "lung xray"],
+    "mri": ["mri", "magnetic"],
+    "ct": ["ct scan", "cat scan", "computed tomography"],
+    "ultrasound": ["ultrasound", "usg", "sonography"],
 }
 
 MAX_SIZE = 10 * 1024 * 1024  # 10MB
@@ -21,8 +37,9 @@ MAX_SIZE = 10 * 1024 * 1024  # 10MB
 @router.post("/analyse/file", summary="Analyse uploaded prescription file")
 async def analyse_file(
     file: UploadFile = File(...),
-    age:      Optional[str] = Form(None),
-    language: Optional[str] = Form("English"),
+    age:       Optional[str] = Form(None),
+    language:  Optional[str] = Form("English"),
+    doc_type:  Optional[str] = Form(None),
 ):
     logger.info(f"Received file upload: {file.filename}, type: {file.content_type}")
     
@@ -31,7 +48,7 @@ async def analyse_file(
         logger.warning(f"Unsupported file type: {file.content_type}")
         raise HTTPException(
             status_code=415,
-            detail=f"Unsupported file type: {file.content_type}. Use PDF, JPG, PNG or TXT."
+            detail=f"Unsupported file type: {file.content_type}. Use PDF, JPG, PNG, DICOM or TXT."
         )
 
     data = await file.read()
@@ -46,9 +63,35 @@ async def analyse_file(
             logger.info("Processing as PDF...")
             result = await claude_service.analyse_pdf(data, age or "", language or "English")
 
-        elif file.content_type in ("image/jpeg", "image/jpg", "image/png"):
-            logger.info("Processing as image...")
-            result = await claude_service.analyse_image(data, file.content_type, age or "", language or "English")
+        elif file.content_type in MEDICAL_IMAGE_TYPES:
+            # Detect if this is a medical image (X-ray, MRI, CT, etc.)
+            is_medical = doc_type in ["xray", "mri", "ct", "ultrasound", "medical"] if doc_type else False
+            
+            # Also check filename for hints
+            filename_lower = (file.filename or "").lower()
+            for img_type, keywords in IMAGE_TYPE_KEYWORDS.items():
+                if any(kw in filename_lower for kw in keywords):
+                    is_medical = True
+                    doc_type = img_type
+                    break
+            
+            if is_medical:
+                image_type_map = {
+                    "xray": "X-ray",
+                    "mri": "MRI Scan",
+                    "ct": "CT Scan",
+                    "ultrasound": "Ultrasound",
+                    "medical": "Medical Image"
+                }
+                image_type = image_type_map.get(doc_type or "medical", "Medical Image")
+                logger.info(f"Processing as medical image ({image_type})...")
+                result = await claude_service.analyse_medical_image(
+                    data, file.content_type, age or "", language or "English", image_type
+                )
+            else:
+                # Regular prescription/image analysis
+                logger.info("Processing as prescription image...")
+                result = await claude_service.analyse_image(data, file.content_type, age or "", language or "English")
 
         else:  # text/plain
             text = data.decode("utf-8", errors="replace")
@@ -135,3 +178,36 @@ Electronically signed by Dr. Rajesh Kumar, Interventional Cardiologist"""
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Sample analysis failed: {str(e)}")
+
+
+@router.post("/analyse/medical-image", summary="Analyse X-ray, MRI, CT scan or other medical images")
+async def analyse_medical_image(
+    file:       UploadFile = File(...),
+    age:        Optional[str] = Form(None),
+    language:   Optional[str] = Form("English"),
+    image_type: Optional[str] = Form("X-ray"),
+):
+    """Dedicated endpoint for analyzing medical images (X-rays, MRIs, CT scans, ultrasounds)"""
+    logger.info(f"Received medical image: {file.filename}, type: {file.content_type}, image_type: {image_type}")
+    
+    if file.content_type not in MEDICAL_IMAGE_TYPES:
+        raise HTTPException(
+            status_code=415,
+            detail=f"Medical image analysis supports JPG, PNG only. Received: {file.content_type}"
+        )
+    
+    data = await file.read()
+    logger.info(f"File size: {len(data)} bytes")
+    
+    if len(data) > MAX_SIZE:
+        raise HTTPException(status_code=413, detail="File too large. Max 10MB.")
+    
+    try:
+        result = await claude_service.analyse_medical_image(
+            data, file.content_type, age or "", language or "English", image_type or "X-ray"
+        )
+        logger.info("Medical image analysis completed successfully")
+        return result
+    except Exception as e:
+        logger.error(f"Medical image analysis failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
