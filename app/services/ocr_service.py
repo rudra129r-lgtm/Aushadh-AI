@@ -31,22 +31,40 @@ def init_ocr():
     # Try to initialize Google Cloud Vision
     try:
         from google.cloud import vision
-        GOOGLE_APPLICATION_CREDENTIALS = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", "")
+        import json
         
-        if GOOGLE_APPLICATION_CREDENTIALS and os.path.exists(GOOGLE_APPLICATION_CREDENTIALS):
-            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_APPLICATION_CREDENTIALS
+        GOOGLE_APPLICATION_CREDENTIALS = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", "")
+        creds_json = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS_JSON", "")
+        
+        print(f"[OCR] Debug - GOOGLE_APPLICATION_CREDENTIALS: {'set' if GOOGLE_APPLICATION_CREDENTIALS else 'empty'}")
+        print(f"[OCR] Debug - GOOGLE_APPLICATION_CREDENTIALS_JSON: {'set' if creds_json else 'empty'}")
+        
+        if not GOOGLE_APPLICATION_CREDENTIALS and not creds_json:
+            print("[OCR] WARNING: Google credentials not found")
+            print("[OCR] Falling back to OCR.space")
+        else:
+            # Check if it's JSON content or a file path
+            if creds_json and creds_json.strip().startswith("{"):
+                import tempfile
+                creds_path = os.path.join(tempfile.gettempdir(), "google_credentials.json")
+                with open(creds_path, "w") as f:
+                    f.write(creds_json)
+                os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = creds_path
+                print(f"[OCR] Google credentials loaded from env var")
+            elif GOOGLE_APPLICATION_CREDENTIALS and os.path.exists(GOOGLE_APPLICATION_CREDENTIALS):
+                print(f"[OCR] Google credentials loaded from file")
+            
             vision_client = vision.ImageAnnotatorClient()
             GOOGLE_VISION_AVAILABLE = True
             print("[OCR] Google Cloud Vision API initialized")
-        else:
-            print("[OCR] WARNING: GOOGLE_APPLICATION_CREDENTIALS not found in .env")
-            print("[OCR] Falling back to OCR.space (limited handwriting support)")
     except ImportError:
         print("[OCR] google-cloud-vision not installed. Run: pip install google-cloud-vision")
         print("[OCR] Using OCR.space only (limited handwriting support)")
+    except Exception as e:
+        print(f"[OCR] Error initializing: {e}")
     
     if OCR_SPACE_API_KEY:
-        print("[OCR] OCR.space API key loaded (fallback)")
+        print("[OCR] OCR.space API loaded")
 
 
 def preprocess_image_for_ocr(image_bytes: bytes) -> bytes:
