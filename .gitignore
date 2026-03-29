@@ -65,6 +65,11 @@ uploads/
 *.jpeg
 *.png
 
+# Credentials (NEVER commit)
+config/google_credentials.json
+*.json
+!package-lock.json
+
 # MedBuddy specific
 medbuddy_analysis
 medbuddy_notifications
