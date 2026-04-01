@@ -3,7 +3,7 @@
  * Connects frontend to FastAPI backend
  */
 
-const API = window.location.origin + "/api";
+var API = window.location.origin + "/api";
 
 // ── Pre-baked Demo Data (Apollo Hospitals Sample - Severe Case) ─────
 const DEMO_DATA = {
@@ -101,27 +101,119 @@ function loadDemoData() {
 }
 
 // ── Auth ──────────────────────────────────────────────
+let authValidated = false;
+
 function requireAuth() {
   const current = window.location.pathname.split('/').pop();
   const publicPages = ['index.html', 'login.html', ''];
-  if (!localStorage.getItem('medbuddy_logged_in') && !publicPages.includes(current)) {
-    // Save current page so we can redirect back after login
-    sessionStorage.setItem('medbuddy_redirect', window.location.href);
-    window.location.href = 'login.html';
+  const loggedIn = localStorage.getItem('medbuddy_logged_in');
+  const token = localStorage.getItem('medbuddy_token');
+  
+  console.log('=== requireAuth START ===');
+  console.log('current page:', current);
+  console.log('loggedIn:', loggedIn);
+  console.log('token exists:', !!token);
+  console.log('token value:', token ? token.substring(0, 20) + '...' : 'none');
+  
+  if (!publicPages.includes(current)) {
+    if (!loggedIn || !token) {
+      console.log('FAIL: No token - redirecting to login');
+      sessionStorage.setItem('medbuddy_redirect', window.location.href);
+      window.location.replace('/login.html');
+      return;
+    }
+    
+    console.log('Token exists, validating with server...');
+    
+    // Show loading overlay immediately - block all interaction
+    showAuthLoading();
+    
+    // Validate token with server - wait for response before allowing any access
+    const authUrl = `${API}/auth/me`;
+    
+    fetch(authUrl, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(res => {
+      console.log('Auth check response:', res.status, res.statusText);
+      if (!res.ok) {
+        console.log('FAIL: Auth check failed with', res.status);
+        clearAllStorage();
+        window.location.replace('/login.html');
+        return false;
+      }
+      return res.json();
+    })
+    .then(userData => {
+      console.log('Auth OK, user:', userData);
+      authValidated = true;
+      hideAuthLoading();
+      console.log('=== requireAuth PASSED ===');
+      return true;
+    })
+    .catch(err => {
+      console.error('FAIL: Auth check exception:', err);
+      clearAllStorage();
+      window.location.replace('/login.html');
+    });
   }
+}
+
+function showAuthLoading() {
+  // Prevent duplicate overlays
+  if (document.getElementById('auth-overlay')) return;
+  
+  // Create overlay immediately
+  const overlay = document.createElement('div');
+  overlay.id = 'auth-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:#fff;z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px';
+  overlay.innerHTML = '<div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div><p style="color:#181c20;font-family:Public Sans,sans-serif">Verifying session...</p>';
+  
+  // Insert at beginning of body to ensure it's on top
+  document.body.insertBefore(overlay, document.body.firstChild);
+  
+  // Make body visible in case it was hidden
+  document.body.style.display = '';
+}
+
+function hideAuthLoading() {
+  const overlay = document.getElementById('auth-overlay');
+  if (overlay) overlay.remove();
 }
 
 function getUser() {
   return JSON.parse(localStorage.getItem('medbuddy_user') || '{}');
 }
 
-function saveUser(user) {
+function saveUser(user, token) {
   localStorage.setItem('medbuddy_user', JSON.stringify(user));
+  if (token) {
+    localStorage.setItem('medbuddy_token', token);
+  }
+}
+
+function clearAllStorage() {
+  localStorage.removeItem('medbuddy_logged_in');
+  localStorage.removeItem('medbuddy_token');
+  localStorage.removeItem('medbuddy_user');
+  localStorage.removeItem('medbuddy_analysis');
+  localStorage.removeItem('medbuddy_history');
+  localStorage.removeItem('medbuddy_notifications');
+  localStorage.removeItem('medbuddy_dark_mode');
+  sessionStorage.removeItem('medbuddy_analysis_backup');
+  sessionStorage.removeItem('medbuddy_redirect');
 }
 
 function logout() {
-  localStorage.removeItem('medbuddy_logged_in');
-  window.location.href = 'index.html';
+  const token = localStorage.getItem('medbuddy_token');
+  if (token) {
+    fetch(`${API}/auth/logout`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    }).catch(() => {});
+  }
+  clearAllStorage();
+  window.location.replace('/login.html');
 }
 
 // ── Dark Mode ───────────────────────────────────────────
@@ -171,6 +263,11 @@ function saveAnalysis(data) {
   localStorage.setItem('medbuddy_analysis', json);
   sessionStorage.setItem('medbuddy_analysis_backup', json);
 
+  // Push to MongoDB if logged in
+  if (localStorage.getItem('medbuddy_logged_in') && data.medications) {
+    saveMedicationsToServer(data.medications);
+  }
+
   // Push to history (keep last 5)
   try {
     const history = getPrescriptionHistory();
@@ -195,6 +292,27 @@ function saveAnalysis(data) {
       type: 'analysis'
     });
   } catch(e) {}
+}
+
+async function saveMedicationsToServer(medications) {
+  try {
+    const token = localStorage.getItem('medbuddy_token');
+    if (!token) return;
+    
+    const response = await fetch(`${API}/auth/medications`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ medications })
+    });
+    if (response.ok) {
+      console.log('[Aushadh AI] Medications synced to MongoDB');
+    }
+  } catch(e) {
+    console.error('[Aushadh AI] Failed to sync medications:', e);
+  }
 }
 function getAnalysis() {
   // Try localStorage first, fall back to sessionStorage backup

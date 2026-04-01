@@ -247,13 +247,34 @@
 <script src="medbuddy.js"></script>
 <script>
 requireAuth();
-const data = getAnalysis();
 
-if (!data || !data.medications || data.medications.length === 0) {
+// Load medications from MongoDB if logged in
+async function loadMeds() {
+  const token = localStorage.getItem('medbuddy_token');
+  if (token) {
+    try {
+      const res = await fetch(`${window.location.origin}/api/auth/medications`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.medications && data.medications.length > 0) {
+          return data.medications;
+        }
+      }
+    } catch(e) {}
+  }
+  // Fall back to localStorage
+  return getAnalysis()?.medications || [];
+}
+
+(async () => {
+  const meds = await loadMeds();
+  
+  if (!meds || meds.length === 0) {
   document.getElementById('no-data').classList.remove('hidden');
 } else {
   document.getElementById('has-data').classList.remove('hidden');
-  const meds = data.medications;
 
   document.getElementById('stat-total').textContent = meds.length;
   document.getElementById('stat-morning').textContent = meds.filter(m => /morning|am|breakfast/i.test(m.timing)).length;

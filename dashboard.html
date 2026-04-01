@@ -226,7 +226,11 @@
 
 <script src="medbuddy.js"></script>
 <script>
+console.log('=== DASHBOARD PAGE LOADING ===');
+
 requireAuth();
+
+console.log('requireAuth finished, waiting for DOMContentLoaded...');
 
 function tryLiveDemo() {
   const btn = event.target.closest('button');
@@ -239,8 +243,9 @@ function tryLiveDemo() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-const user=getUser();
-let data=getAnalysis();
+  console.log('=== DASHBOARD DOMContentLoaded ===');
+  const user=getUser();
+  let data=getAnalysis();
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
 // User name

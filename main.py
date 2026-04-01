@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent
 
 load_dotenv()
 
-from app.routers import analyse, chat, export
+from app.routers import analyse, chat, export, auth
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -38,11 +38,11 @@ async def lifespan(app: FastAPI):
     else:
         print("  [X] GEMINI_API_KEY not configured in .env (X-ray/MRI analysis disabled)")
     
-    supabase_url = os.environ.get("SUPABASE_URL", "")
-    if supabase_url:
-        print(f"  [OK] Supabase URL loaded")
+    mongodb_uri = os.environ.get("MONGODB_URI", "")
+    if mongodb_uri:
+        print(f"  [OK] MongoDB URI loaded")
     else:
-        print("  [X] SUPABASE_URL not found in .env!")
+        print("  [X] MONGODB_URI not found in .env!")
     
     yield
 
@@ -59,6 +59,7 @@ app.add_middleware(
 app.include_router(analyse.router, prefix="/api", tags=["Analysis"])
 app.include_router(chat.router,    prefix="/api", tags=["Chat"])
 app.include_router(export.router,  prefix="/api", tags=["Export"])
+app.include_router(auth.router,    prefix="/api", tags=["Auth"])
 
 STATIC_FILES = [
     "index.html", "login.html", "dashboard.html", "documents.html", 
@@ -79,6 +80,10 @@ async def root():
     if (BASE_DIR / "index.html").exists():
         return FileResponse(BASE_DIR / "index.html")
     return {"message": "Aushadh AI API running!", "docs": "/docs"}
+
+@app.get("/.well-known/appspecific/com.chrome.devtools.json")
+async def chrome_devtools():
+    return {}
 
 @app.get("/{filename}")
 async def serve(filename: str):

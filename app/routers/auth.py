@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, Header
 from pydantic import BaseModel
 from typing import Optional
-from app.services import supabase_service
+from app.services import mongo_service
 
 router = APIRouter()
 
@@ -31,7 +31,7 @@ def get_current_user(authorization: Optional[str] = Header(None)):
         raise HTTPException(status_code=401, detail="Invalid authorization header")
     
     token = authorization.replace("Bearer ", "")
-    user = supabase_service.verify_token(token)
+    user = mongo_service.verify_token(token)
     
     if not user:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
@@ -42,12 +42,12 @@ def get_current_user(authorization: Optional[str] = Header(None)):
 @router.post("/auth/register", response_model=AuthResponse, summary="Register new user")
 async def register(req: RegisterRequest):
     try:
-        result = supabase_service.register(req.email, req.password)
+        result = mongo_service.register(req.email, req.password)
         
         if "access_token" not in result:
             raise HTTPException(status_code=400, detail="Registration failed")
         
-        user_data = supabase_service.verify_token(result["access_token"])
+        user_data = mongo_service.verify_token(result["access_token"])
         
         return AuthResponse(
             access_token=result["access_token"],
@@ -67,13 +67,13 @@ async def register(req: RegisterRequest):
 async def login(req: LoginRequest):
     try:
         print(f"Login request: {req.email}")
-        result = supabase_service.login(req.email, req.password)
+        result = mongo_service.login(req.email, req.password)
         print(f"Login result keys: {result.keys() if isinstance(result, dict) else 'not dict'}")
         
         if not result or "access_token" not in result:
             raise HTTPException(status_code=401, detail="Invalid credentials - no token")
         
-        user_data = supabase_service.verify_token(result["access_token"])
+        user_data = mongo_service.verify_token(result["access_token"])
         
         return AuthResponse(
             access_token=result["access_token"],
@@ -89,7 +89,7 @@ async def login(req: LoginRequest):
 
 @router.post("/auth/logout", summary="Logout user")
 async def logout(authorization: Optional[str] = Header(None)):
-    supabase_service.logout()
+    mongo_service.logout()
     return {"message": "Logged out successfully"}
 
 
@@ -111,7 +111,7 @@ async def save_medications(req: MedicationsRequest, current_user = Depends(get_c
     if not user_id:
         raise HTTPException(status_code=400, detail="Invalid user")
     
-    success = supabase_service.save_medications(user_id, req.medications)
+    success = mongo_service.save_medications(user_id, req.medications)
     if success:
         return {"message": "Medications saved successfully"}
     raise HTTPException(status_code=500, detail="Failed to save medications")
@@ -123,7 +123,7 @@ async def get_medications(current_user = Depends(get_current_user)):
     if not user_id:
         raise HTTPException(status_code=400, detail="Invalid user")
     
-    medications = supabase_service.get_medications(user_id)
+    medications = mongo_service.get_medications(user_id)
     return {"medications": medications}
 
 
@@ -133,7 +133,7 @@ async def delete_medication(med_id: str, current_user = Depends(get_current_user
     if not user_id:
         raise HTTPException(status_code=400, detail="Invalid user")
     
-    success = supabase_service.delete_medication(med_id, user_id)
+    success = mongo_service.delete_medication(med_id, user_id)
     if success:
         return {"message": "Medication deleted successfully"}
     raise HTTPException(status_code=500, detail="Failed to delete medication")

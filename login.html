@@ -510,6 +510,38 @@
 </div>
 
 <script>
+  // Override medbuddy.js saveUser to also save token
+  function saveUser(data, token) {
+    console.log('=== saveUser (login override) START ===');
+    console.log('token:', token ? token.substring(0, 20) + '...' : 'NONE');
+    
+    localStorage.setItem('medbuddy_user', JSON.stringify(data));
+    if (token) {
+      localStorage.setItem('medbuddy_token', token);
+    }
+    console.log('=== saveUser END ===');
+  }
+
+  /* Clear storage on login page - check if just logged in successfully */
+  const justLoggedIn = sessionStorage.getItem('just_logged_in');
+  
+  // IMPORTANT: Check justLoggedIn BEFORE clearing storage
+  if (!justLoggedIn) {
+    console.log('Fresh login page - clearing storage');
+    localStorage.removeItem('medbuddy_logged_in');
+    localStorage.removeItem('medbuddy_token');
+    localStorage.removeItem('medbuddy_user');
+    localStorage.removeItem('medbuddy_analysis');
+    localStorage.removeItem('medbuddy_history');
+    localStorage.removeItem('medbuddy_notifications');
+    sessionStorage.clear();
+  } else {
+    console.log('Just logged in - preserving storage');
+  }
+  
+  // Always clear the just_logged_in flag after checking
+  sessionStorage.removeItem('just_logged_in');
+
   /* ==================== 3D CARD MOUSE PARALLAX ==================== */
   const leftPanel = document.getElementById('left-panel');
   const card = document.getElementById('prescription-card');
@@ -624,14 +656,6 @@
     else { inp.type = 'password'; icon.textContent = 'visibility'; }
   }
 
-  /* ==================== SAVE USER ==================== */
-  function saveUser(data, token) {
-    localStorage.setItem('medbuddy_user', JSON.stringify(data));
-    if (token) {
-      localStorage.setItem('medbuddy_token', token);
-    }
-  }
-
   /* ==================== SIGN IN ==================== */
   function handleSignIn() {
     const email = document.getElementById('signin-email').value.trim();
@@ -648,10 +672,59 @@
 
     if (!valid) return;
 
-    // Simple local auth - just redirect with dummy data
-    saveUser({ name: email.split('@')[0], email, isGuest: false });
-    localStorage.setItem('medbuddy_logged_in', 'true');
-    window.location.href = 'dashboard.html';
+    // Disable button to prevent double submit
+    const btn = event.target.closest('button');
+    if (btn) { btn.disabled = true; btn.innerHTML = 'Signing in...'; }
+
+    fetch(`${API}/auth/login`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache'
+      },
+      body: JSON.stringify({ email, password: pw })
+    })
+    .then(res => {
+      console.log('Login response status:', res.status);
+      if (!res.ok) {
+        if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined text-sm">login</span> Sign In'; }
+        return res.json().then(data => {
+          throw new Error(data.detail || 'Invalid email or password');
+        });
+      }
+      return res.json();
+    })
+    .then(data => {
+      console.log('Login response data:', data);
+      if (!data || !data.access_token) {
+        console.log('No access_token in response');
+        showError('Login failed. Please try again.');
+        if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined text-sm">login</span> Sign In'; }
+        return Promise.reject(new Error('No token'));
+      }
+      console.log('=== LOGIN SUCCESS ===');
+      console.log('User:', data.user);
+      console.log('Token:', data.access_token.substring(0, 20) + '...');
+      
+      // Save ALL auth data BEFORE redirect
+      saveUser({ name: email.split('@')[0], email, isGuest: false }, data.access_token);
+      localStorage.setItem('medbuddy_logged_in', 'true');
+      sessionStorage.setItem('just_logged_in', 'true');
+      
+      // Verify storage is set correctly
+      const savedToken = localStorage.getItem('medbuddy_token');
+      const savedLoggedIn = localStorage.getItem('medbuddy_logged_in');
+      console.log('Verification - token:', savedToken ? savedToken.substring(0, 20) + '...' : 'NOT SAVED');
+      console.log('Verification - logged_in:', savedLoggedIn);
+      
+      console.log('Redirecting NOW to /dashboard.html...');
+      window.location.replace('/dashboard.html');
+    })
+    .catch(err => {
+      console.error('Login error:', err);
+      if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined text-sm">login</span> Sign In'; }
+      showError(err.message || 'Connection error. Please try again.');
+    });
   }
 
   /* ==================== SIGN UP ==================== */
@@ -671,25 +744,50 @@
     if (!terms) { show('signup-terms-err'); valid = false; } else hide('signup-terms-err');
     if (!valid) return;
 
-    // Simple local auth - just redirect with dummy data
-    saveUser({ name: fname + (lname ? ' ' + lname : ''), email, age, lang, isGuest: false });
-    localStorage.setItem('medbuddy_logged_in', 'true');
-    window.location.href = 'dashboard.html';
+    // Call API to register
+    fetch(`${API}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pw })
+    })
+    .then(res => {
+      console.log('Register response:', res.status, res.statusText);
+      if (!res.ok) return res.json().then(d => { throw new Error(d.detail || 'Registration failed'); });
+      return res.json();
+    })
+    .then(data => {
+      console.log('Register success:', data);
+      saveUser({ name: fname + (lname ? ' ' + lname : ''), email, age, lang, isGuest: false }, data.access_token);
+      localStorage.setItem('medbuddy_logged_in', 'true');
+      sessionStorage.setItem('just_logged_in', 'true');
+      window.location.replace('/dashboard.html');
+    })
+    .catch(err => {
+      console.error('Register error:', err);
+      alert(err.message || 'Registration failed');
+    });
   }
 
   /* ==================== DEMO LOGIN ==================== */
   function handleDemoLogin() {
     saveUser({ name: 'Demo Patient', email: 'demo@medbuddy.ai', age: '52', lang: 'english', isGuest: true });
     localStorage.setItem('medbuddy_logged_in', 'true');
+    sessionStorage.setItem('just_logged_in', 'true');
     loadDemoData();
     const btn = event.target.closest('button');
     if (btn) { btn.innerHTML = '<span class="material-symbols-outlined text-sm animate-spin">progress_activity</span> Loading demo...'; btn.disabled = true; }
-    setTimeout(() => { window.location.href = 'diagnosis.html'; }, 800);
+    window.location.replace('/diagnosis.html');
   }
 
   /* ==================== HELPERS ==================== */
   function show(id) { document.getElementById(id).style.display = 'block'; }
   function hide(id) { document.getElementById(id).style.display = 'none'; }
+  function showError(msg) {
+    const errDiv = document.getElementById('signin-error');
+    const errMsg = document.getElementById('signin-error-msg');
+    errMsg.textContent = msg;
+    errDiv.classList.remove('hidden');
+  }
 
   /* ==================== URL MODE ==================== */
   const urlParams = new URLSearchParams(window.location.search);
