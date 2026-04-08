@@ -11,6 +11,29 @@
 <style>
   .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
   .primary-gradient{background:linear-gradient(135deg,#006068 0%,#007b85 100%)}
+  .animate-gradient{background-size:200% 200%;animation:gradient-shift 8s ease infinite}
+  @keyframes gradient-shift {
+    0%{background-position:0% 50%}
+    50%{background-position:100% 50%}
+    100%{background-position:0% 50%}
+  }
+  .header-gradient {
+    background: linear-gradient(135deg, #002f34 0%, #004f56 30%, #006068 60%, #007b85 100%);
+    position: relative;
+  }
+  .header-gradient::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(circle at 20% 80%, rgba(0,96,104,0.4) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(150,241,252,0.2) 0%, transparent 40%),
+      radial-gradient(circle at 40% 40%, rgba(0,123,133,0.3) 0%, transparent 30%);
+    pointer-events: none;
+  }
   body{font-family:'Public Sans',sans-serif;overflow-x:hidden}
   h1,h2,h3,h4{font-family:'Manrope',sans-serif}
   .nav-link:hover{transform:translateX(4px)}
@@ -60,11 +83,17 @@
     <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="documents.html">
       <span class="material-symbols-outlined text-sm">description</span>Documents
     </a>
+    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="diagnosis.html">
+      <span class="material-symbols-outlined text-sm">summarize</span>Summary
+    </a>
     <a class="nav-link flex items-center gap-2 px-4 py-3 bg-surface-container-lowest text-primary rounded-r-full shadow-sm font-semibold text-sm" href="medications.html">
       <span class="material-symbols-outlined text-sm">medical_services</span>Medications
     </a>
     <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="checklist.html">
       <span class="material-symbols-outlined text-sm">fact_check</span>Checklist
+    </a>
+    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="profile.html">
+      <span class="material-symbols-outlined text-sm">account_circle</span>Profile
     </a>
   </nav>
   <div class="px-5 space-y-3 mt-auto">
@@ -78,21 +107,19 @@
 </aside>
 
 <main class="md:ml-56 min-h-screen pb-24 md:pb-12">
-  <!-- Header -->
-  <header class="sticky top-0 z-30 bg-surface/80 backdrop-blur-xl flex justify-between items-center px-6 md:px-10 py-4">
-    <div>
-      <div class="flex items-center gap-2 text-sm text-outline mb-1">
-        <a href="dashboard.html" class="hover:text-primary transition-colors flex items-center gap-1">
-          <span class="material-symbols-outlined text-sm">arrow_back</span>Dashboard
-        </a>
-        <span>/</span>
-        <span class="text-primary font-semibold">Medications</span>
-      </div>
-      <h2 class="font-headline font-extrabold text-2xl text-on-surface">Active Medications</h2>
-    </div>
-    <div class="flex items-center gap-3">
-      <div class="w-9 h-9 rounded-full bg-primary/10 border-2 border-primary-fixed flex items-center justify-center">
-        <span class="material-symbols-outlined text-primary text-sm">person</span>
+  <!-- Animated Green Header -->
+  <header class="sticky top-0 z-30 relative overflow-hidden">
+    <div class="absolute inset-0 header-gradient"></div>
+    <div class="relative px-6 md:px-10 py-5 flex justify-between items-center">
+      <div>
+        <div class="flex items-center gap-2 text-white/80 text-sm mb-1">
+          <a href="dashboard.html" class="hover:text-white transition-colors flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">arrow_back</span>Dashboard
+          </a>
+          <span>/</span>
+          <span class="text-white font-semibold">Medications</span>
+        </div>
+        <h2 class="font-headline font-extrabold text-2xl text-white">Active Medications</h2>
       </div>
     </div>
   </header>
@@ -158,7 +185,7 @@
       </div>
 
       <!-- Stats -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div class="bg-surface-container-lowest rounded-2xl p-5 border border-outline-variant/10 shadow-sm text-center">
           <p class="text-3xl font-black text-primary font-headline" id="stat-total">0</p>
           <p class="text-xs text-outline font-bold uppercase tracking-widest mt-1">Active Meds</p>
@@ -177,8 +204,50 @@
         </div>
       </div>
 
+      <!-- Adherence Stats -->
+      <div class="bg-gradient-to-r from-[#006068] to-[#007b85] rounded-2xl p-6 mb-8 text-white">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-headline font-bold text-lg">Adherence Tracker</h3>
+          <div class="flex items-center gap-3">
+            <button onclick="showAdherenceHistory()" class="text-white/80 text-sm hover:text-white font-semibold flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm">history</span>History
+            </button>
+            <button onclick="clearAdherenceData()" class="text-white/60 text-sm hover:text-white font-semibold flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm">delete_sweep</span>Clear
+            </button>
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-4">
+          <div class="text-center">
+            <p class="text-4xl font-black" id="adherence-rate">0%</p>
+            <p class="text-white/70 text-xs font-bold uppercase tracking-widest mt-1">30-Day Rate</p>
+          </div>
+          <div class="text-center">
+            <p class="text-4xl font-black" id="adherence-streak">0</p>
+            <p class="text-white/70 text-xs font-bold uppercase tracking-widest mt-1">Day Streak</p>
+          </div>
+          <div class="text-center">
+            <p class="text-4xl font-black" id="adherence-taken">0/0</p>
+            <p class="text-white/70 text-xs font-bold uppercase tracking-widest mt-1">Doses Taken</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Adherence History Modal -->
+      <div id="adherence-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full max-h-[80vh] overflow-hidden shadow-xl">
+          <div class="p-5 border-b border-outline-variant/10 flex items-center justify-between">
+            <h3 class="font-headline font-bold text-lg">Adherence History</h3>
+            <button onclick="closeAdherenceModal()" class="text-outline hover:text-on-surface">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          <div id="adherence-history-list" class="p-5 overflow-y-auto max-h-[60vh] space-y-3"></div>
+        </div>
+      </div>
+
       <!-- Medication cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8" id="med-cards"></div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8" id="med-cards"></div>
 
       <!-- Full table -->
       <div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm border border-outline-variant/10 mb-8">
@@ -221,15 +290,15 @@
       </div>
 
       <!-- CTAs -->
-      <div class="flex gap-3 flex-wrap pb-8">
-        <a href="diagnosis.html" class="flex items-center gap-2 primary-gradient text-white px-7 py-3 rounded-full font-bold shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all">
-          <span class="material-symbols-outlined text-sm">summarize</span>Health Summary
+      <div class="flex justify-center gap-3 flex-wrap mt-8 pt-8 border-t border-surface-container-high">
+        <a href="diagnosis.html" class="flex items-center gap-2 primary-gradient text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:shadow-primary/50 hover:-translate-y-0.5 active:scale-95 transition-all">
+          <span class="material-symbols-outlined text-sm">summarize</span> Health Summary
         </a>
-        <a href="checklist.html" class="flex items-center gap-2 bg-surface-container-high text-on-primary-fixed-variant px-7 py-3 rounded-full font-bold hover:bg-surface-container-highest transition-all">
-          <span class="material-symbols-outlined text-sm">fact_check</span>Checklist
+        <a href="checklist.html" class="flex items-center gap-2 primary-gradient text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:shadow-primary/50 hover:-translate-y-0.5 active:scale-95 transition-all">
+          <span class="material-symbols-outlined text-sm">fact_check</span> Checklist
         </a>
-        <a href="documents.html" class="flex items-center gap-2 border border-outline-variant text-on-surface-variant px-7 py-3 rounded-full font-bold hover:border-primary hover:text-primary transition-all">
-          <span class="material-symbols-outlined text-sm">upload_file</span>New Upload
+        <a href="documents.html" class="flex items-center gap-2 primary-gradient text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:shadow-primary/50 hover:-translate-y-0.5 active:scale-95 transition-all">
+          <span class="material-symbols-outlined text-sm">upload_file</span> New Upload
         </a>
       </div>
     </div>
@@ -248,172 +317,318 @@
 <script>
 requireAuth();
 
+console.log('=== Medications Page Debug ===');
+console.log('Token:', localStorage.getItem('medbuddy_token') ? 'exists' : 'none');
+console.log('Analysis:', getAnalysis() ? 'exists' : 'none');
+console.log('Analysis medications:', getAnalysis()?.medications);
+
 // Load medications from MongoDB if logged in
+var globalMeds = []; // Global variable for calendar functions
 async function loadMeds() {
   const token = localStorage.getItem('medbuddy_token');
+  console.log('Loading meds, token:', token ? 'yes' : 'no');
   if (token) {
     try {
       const res = await fetch(`${window.location.origin}/api/auth/medications`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      console.log('API response status:', res.status);
       if (res.ok) {
         const data = await res.json();
+        console.log('API returned meds:', data.medications?.length || 0);
         if (data.medications && data.medications.length > 0) {
           return data.medications;
         }
       }
-    } catch(e) {}
+    } catch(e) { console.log('API error:', e); }
   }
   // Fall back to localStorage
-  return getAnalysis()?.medications || [];
+  console.log('Falling back to localStorage');
+  const localMeds = getAnalysis()?.medications || [];
+  console.log('LocalStorage meds:', localMeds.length);
+  return localMeds;
+}
+
+// Load adherence stats
+async function loadAdherenceStats() {
+  const token = localStorage.getItem('medbuddy_token');
+  if (!token) return null;
+  try {
+    const res = await fetch(`${window.location.origin}/api/auth/adherence/stats?days=30`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch(e) { console.log('Adherence stats error:', e); }
+  return null;
+}
+
+// Load adherence history
+async function loadAdherenceHistory() {
+  const token = localStorage.getItem('medbuddy_token');
+  if (!token) return [];
+  try {
+    const res = await fetch(`${window.location.origin}/api/auth/adherence`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return data.records || [];
+    }
+  } catch(e) { console.log('Adherence history error:', e); }
+  return [];
+}
+
+// Save daily adherence
+async function saveAdherence(date, medications) {
+  const token = localStorage.getItem('medbuddy_token');
+  if (!token) return false;
+  try {
+    const res = await fetch(`${window.location.origin}/api/auth/adherence`, {
+      method: 'POST',
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ date, medications })
+    });
+    return res.ok;
+  } catch(e) { console.log('Save adherence error:', e); return false; }
+}
+
+// Show adherence history modal
+async function showAdherenceHistory() {
+  const records = await loadAdherenceHistory();
+  const container = document.getElementById('adherence-history-list');
+  
+  if (!records || records.length === 0) {
+    container.innerHTML = '<p class="text-center text-outline py-8">No adherence history yet</p>';
+  } else {
+    container.innerHTML = records.slice(0, 30).map(r => {
+      const taken = r.medications?.filter(m => m.taken).length || 0;
+      const total = r.medications?.length || 0;
+      const pct = total > 0 ? Math.round((taken / total) * 100) : 0;
+      const color = pct >= 80 ? 'text-secondary' : pct >= 50 ? 'text-amber-600' : 'text-error';
+      return `
+        <div class="flex items-center justify-between p-3 bg-surface-container-low rounded-xl">
+          <div>
+            <p class="font-bold text-sm">${new Date(r.date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
+            <p class="text-xs text-outline">${taken}/${total} doses taken</p>
+          </div>
+          <span class="font-black text-lg ${color}">${pct}%</span>
+        </div>`;
+    }).join('');
+  }
+  
+  document.getElementById('adherence-modal').classList.remove('hidden');
+}
+
+function closeAdherenceModal() {
+  document.getElementById('adherence-modal').classList.add('hidden');
+}
+
+// Clear today's adherence data
+function clearAdherenceData() {
+  const todayKey = 'taken_'+new Date().toDateString();
+  localStorage.removeItem(todayKey);
+  
+  // Reset all medication buttons
+  document.querySelectorAll('.taken-btn').forEach(btn => {
+    setTakenState(btn, false);
+  });
+  
+  // Calculate total doses
+  let totalDoses = 0;
+  globalMeds.forEach(m => {
+    totalDoses += getDosesPerDay(m.timing);
+  });
+  
+  // Reset display
+  document.getElementById('adherence-rate').textContent = '0%';
+  document.getElementById('adherence-streak').textContent = '0';
+  document.getElementById('adherence-taken').textContent = '0/' + totalDoses;
+  
+  showToast('Adherence data cleared for today');
 }
 
 (async () => {
+  let data = getAnalysis() || {};
+  
+  if (localStorage.getItem('medbuddy_logged_in')) {
+    const serverData = await loadAnalysisFromServer();
+    if (serverData) data = serverData;
+  }
+  
   const meds = await loadMeds();
+  const drugInteractions = data.drug_interactions || [];
+  globalMeds = meds; // Store in global for calendar functions
+  
+  console.log('Final meds to display:', meds.length);
+  console.log('Drug interactions:', drugInteractions.length);
+  console.log('Token check:', localStorage.getItem('medbuddy_token'));
   
   if (!meds || meds.length === 0) {
-  document.getElementById('no-data').classList.remove('hidden');
-} else {
-  document.getElementById('has-data').classList.remove('hidden');
+    console.log('Showing NO DATA message');
+    document.getElementById('no-data').classList.remove('hidden');
+  } else {
+    console.log('Showing HAS DATA, rendering...');
+    document.getElementById('has-data').classList.remove('hidden');
 
-  document.getElementById('stat-total').textContent = meds.length;
-  document.getElementById('stat-morning').textContent = meds.filter(m => /morning|am|breakfast/i.test(m.timing)).length;
-  document.getElementById('stat-evening').textContent = meds.filter(m => /evening|night|pm/i.test(m.timing)).length;
-  const durations = meds.map(m => m.duration).filter(Boolean);
-  document.getElementById('stat-days').textContent = durations.length ? durations[0] : '—';
+    document.getElementById('stat-total').textContent = meds.length;
+    document.getElementById('stat-morning').textContent = meds.filter(m => /morning|am|breakfast/i.test(m.timing)).length;
+    document.getElementById('stat-evening').textContent = meds.filter(m => /evening|night|pm/i.test(m.timing)).length;
+    const durations = meds.map(m => m.duration).filter(Boolean);
+    document.getElementById('stat-days').textContent = durations.length ? durations[0] : '—';
 
-  const icons = ['pill','medication','vital_signs','vaccines','science','biotech'];
-  const colors = [
-    'bg-secondary-container/30 text-secondary',
-    'bg-tertiary-fixed/30 text-tertiary',
-    'bg-error-container/30 text-error',
-    'bg-primary/10 text-primary',
-    'bg-secondary/10 text-secondary',
-    'bg-surface-container-highest text-outline'
-  ];
+    // Load and display adherence stats
+    const adherenceStats = await loadAdherenceStats();
+    if (adherenceStats) {
+      document.getElementById('adherence-rate').textContent = adherenceStats.adherence_rate + '%';
+      document.getElementById('adherence-streak').textContent = adherenceStats.streak;
+      document.getElementById('adherence-taken').textContent = (adherenceStats.taken_meds || 0) + '/' + (adherenceStats.total_meds || 0);
+    }
 
-  // ── TIMELINE ──────────────────────────────────────────
-  document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
-  const slots = [
-    { key:'morning',   label:'Morning',   emoji:'☀️',  bg:'bg-amber-50',   border:'border-amber-200',   badge:'bg-amber-100 text-amber-800',   match:/morning|am|breakfast|od|once\s*daily/i },
-    { key:'afternoon', label:'Afternoon', emoji:'🌤️', bg:'bg-sky-50',     border:'border-sky-200',     badge:'bg-sky-100 text-sky-800',       match:/afternoon|noon|midday|lunch/i },
-    { key:'night',     label:'Night',     emoji:'🌙',  bg:'bg-indigo-50',  border:'border-indigo-200',  badge:'bg-indigo-100 text-indigo-800', match:/night|evening|pm|bedtime|sleep/i }
-  ];
-  const tdsBd = { tds:/tds|tid|three\s*times/i, bd:/bd|twice|two\s*times/i };
+    const icons = ['pill','medication','vital_signs','vaccines','science','biotech'];
+    const colors = [
+      'bg-secondary-container/30 text-secondary',
+      'bg-tertiary-fixed/30 text-tertiary',
+      'bg-error-container/30 text-error',
+      'bg-primary/10 text-primary',
+      'bg-secondary/10 text-secondary',
+      'bg-surface-container-highest text-outline'
+    ];
 
-  function getMedSlots(m){
-    const t=m.timing||'';
-    const assigned=[];
-    if(tdsBd.tds.test(t)) return ['morning','afternoon','night'];
-    if(tdsBd.bd.test(t))  return ['morning','night'];
-    slots.forEach(s=>{ if(s.match.test(t)) assigned.push(s.key); });
-    return assigned.length ? assigned : ['morning']; // default morning
-  }
+    // ── TIMELINE ──────────────────────────────────────────
+    document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
+    const slots = [
+      { key:'morning',   label:'Morning',   emoji:'☀️',  bg:'bg-amber-50',   border:'border-amber-200',   badge:'bg-amber-100 text-amber-800',   match:/morning|am|breakfast|od|once\s*daily/i },
+      { key:'afternoon', label:'Afternoon', emoji:'🌤️', bg:'bg-sky-50',     border:'border-sky-200',     badge:'bg-sky-100 text-sky-800',       match:/afternoon|noon|midday|lunch/i },
+      { key:'night',     label:'Night',     emoji:'🌙',  bg:'bg-indigo-50',  border:'border-indigo-200',  badge:'bg-indigo-100 text-indigo-800', match:/night|evening|pm|bedtime|sleep/i }
+    ];
+    const tdsBd = { tds:/tds|tid|three\s*times/i, bd:/bd|twice|two\s*times/i };
 
-  const slotMeds = {morning:[],afternoon:[],night:[]};
-  meds.forEach(m=>{ getMedSlots(m).forEach(s=>slotMeds[s].push(m)); });
+    function getMedSlots(m){
+      const t=m.timing||'';
+      const assigned=[];
+      if(tdsBd.tds.test(t)) return ['morning','afternoon','night'];
+      if(tdsBd.bd.test(t))  return ['morning','night'];
+      slots.forEach(s=>{ if(s.match.test(t)) assigned.push(s.key); });
+      return assigned.length ? assigned : ['morning']; // default morning
+    }
 
-  document.getElementById('timeline-grid').innerHTML = slots.map(s=>`
-    <div class="p-6 ${s.bg}">
-      <div class="flex items-center gap-2 mb-4">
-        <span class="text-2xl">${s.emoji}</span>
-        <div>
-          <h3 class="font-headline font-bold text-sm text-on-surface">${s.label}</h3>
-          <p class="text-[10px] text-outline">${slotMeds[s.key].length} medicine${slotMeds[s.key].length!==1?'s':''}</p>
+    const slotMeds = {morning:[],afternoon:[],night:[]};
+    meds.forEach(m=>{ getMedSlots(m).forEach(s=>slotMeds[s].push(m)); });
+
+    document.getElementById('timeline-grid').innerHTML = slots.map(s=>`
+      <div class="p-6 ${s.bg}">
+        <div class="flex items-center gap-2 mb-4">
+          <span class="text-2xl">${s.emoji}</span>
+          <div>
+            <h3 class="font-headline font-bold text-sm text-on-surface">${s.label}</h3>
+            <p class="text-[10px] text-outline">${slotMeds[s.key].length} medicine${slotMeds[s.key].length!==1?'s':''}</p>
+          </div>
         </div>
-      </div>
-      ${slotMeds[s.key].length === 0
-        ? `<p class="text-xs text-outline italic">No medicines this time</p>`
-        : slotMeds[s.key].map(m=>`
-          <div class="bg-white rounded-xl p-3 mb-2 border ${s.border} shadow-sm">
-            <p class="font-bold text-xs text-on-surface">${esc(m.name)}</p>
-            <div class="flex items-center justify-between mt-1">
-              <span class="text-[10px] font-bold px-2 py-0.5 ${s.badge} rounded-full">${esc(m.dosage)}</span>
-              <span class="text-[10px] text-outline">${esc(m.with_food)}</span>
-            </div>
-          </div>`).join('')
-      }
-    </div>`).join('');
+        ${slotMeds[s.key].length === 0
+          ? `<p class="text-xs text-outline italic">No medicines this time</p>`
+          : slotMeds[s.key].map(m=>`
+            <div class="bg-white rounded-xl p-3 mb-2 border ${s.border} shadow-sm">
+              <p class="font-bold text-xs text-on-surface">${esc(m.name)}</p>
+              <div class="flex items-center justify-between mt-1">
+                <span class="text-[10px] font-bold px-2 py-0.5 ${s.badge} rounded-full">${esc(m.dosage)}</span>
+                <span class="text-[10px] text-outline">${esc(m.with_food)}</span>
+              </div>
+            </div>`).join('')
+        }
+      </div>`).join('');
 
-  // ── MED CARDS with FDA warnings ──────────────────────
-  document.getElementById('med-cards').innerHTML = meds.map((m, i) => {
-    const hasFda = m.fda_warnings || m.fda_interactions || m.fda_side_effects;
-    const fdaHtml = hasFda ? `
-      <div class="mt-3 border-t border-outline-variant/10 pt-3">
-        <button onclick="this.nextElementSibling.classList.toggle('hidden');this.querySelector('.arrow').classList.toggle('rotate-180')"
-          class="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-outline hover:text-error transition-colors w-full">
-          <span class="material-symbols-outlined text-xs">warning</span>
-          <span>FDA Info</span>
-          <span class="material-symbols-outlined text-xs arrow transition-transform ml-auto">expand_more</span>
+    // ── MED CARDS with FDA warnings ──────────────────────
+    document.getElementById('med-cards').innerHTML = meds.map((m, i) => {
+      const hasFda = m.fda_warnings || m.fda_interactions || m.fda_side_effects;
+      const fdaHtml = hasFda ? `
+        <div class="mt-3 border-t border-outline-variant/10 pt-3">
+          <button onclick="this.nextElementSibling.classList.toggle('hidden');this.querySelector('.arrow').classList.toggle('rotate-180')"
+            class="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-outline hover:text-error transition-colors w-full">
+            <span class="material-symbols-outlined text-xs">warning</span>
+            <span>FDA Info</span>
+            <span class="material-symbols-outlined text-xs arrow transition-transform ml-auto">expand_more</span>
+          </button>
+          <div class="hidden mt-2 space-y-1.5 text-[10px] text-on-surface-variant leading-relaxed">
+            ${m.fda_warnings   ? `<p class="bg-error-container/20 text-error p-2 rounded-lg"><strong>Warning:</strong> ${esc(m.fda_warnings.slice(0,180))}</p>` : ''}
+            ${m.fda_interactions ? `<p class="bg-amber-50 text-amber-800 p-2 rounded-lg"><strong>Interactions:</strong> ${esc(m.fda_interactions.slice(0,180))}</p>` : ''}
+            ${m.fda_side_effects ? `<p class="bg-surface-container p-2 rounded-lg"><strong>Side effects:</strong> ${esc(m.fda_side_effects.slice(0,180))}</p>` : ''}
+            ${m.storage ? `<p class="bg-surface-container p-2 rounded-lg"><strong>Storage:</strong> ${esc(m.storage.slice(0,120))}</p>` : ''}
+          </div>
+        </div>` : '';
+      return `
+      <div class="bg-surface-container-lowest p-5 rounded-2xl border border-outline-variant/10 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 flex flex-col h-full">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-xl ${colors[i%colors.length].split(' ')[0]} flex items-center justify-center flex-shrink-0">
+            <span class="material-symbols-outlined ${colors[i%colors.length].split(' ')[1]}" style="font-variation-settings:'FILL' 1">${icons[i%icons.length]}</span>
+          </div>
+          <div class="min-w-0 flex-1">
+            <h4 class="font-bold text-sm text-on-surface font-headline truncate">${esc(m.name)}</h4>
+            <p class="text-xs text-outline">${esc(m.dosage)}</p>
+          </div>
+          ${hasFda ? '<span class="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" title="FDA info available"></span>' : ''}
+        </div>
+        <div class="space-y-1.5 flex-1">
+          <div class="flex justify-between items-center bg-surface-container-low rounded-lg px-2.5 py-1.5">
+            <span class="text-on-surface-variant flex items-center gap-1 text-[10px]"><span class="material-symbols-outlined text-[10px]">schedule</span>Timing</span>
+            <span class="font-semibold text-[10px] text-right max-w-[60%]">${esc(m.timing)}</span>
+          </div>
+          <div class="flex justify-between items-center bg-surface-container-low rounded-lg px-2.5 py-1.5">
+            <span class="text-on-surface-variant flex items-center gap-1 text-[10px]"><span class="material-symbols-outlined text-[10px]">calendar_today</span>Duration</span>
+            <span class="font-semibold text-[10px]">${esc(m.duration)}</span>
+          </div>
+          <div class="flex justify-between items-center bg-surface-container-low rounded-lg px-2.5 py-1.5">
+            <span class="text-on-surface-variant flex items-center gap-1 text-[10px]"><span class="material-symbols-outlined text-[10px]">restaurant</span>With Food</span>
+            <span class="font-semibold text-[10px]">${esc(m.with_food)}</span>
+          </div>
+        </div>
+        ${m.simple_instruction ? `<p class="mt-2 text-[10px] text-on-surface-variant italic border-t border-outline-variant/10 pt-2 line-clamp-2">${esc(m.simple_instruction)}</p>` : ''}
+        ${fdaHtml}
+        <button onclick="markTaken(this,'${esc(m.name)}')" class="taken-btn mt-2 w-full flex items-center justify-center gap-1 bg-surface-container-low hover:bg-secondary-container/30 text-outline hover:text-secondary border border-outline-variant/20 py-1.5 rounded-lg text-xs font-bold transition-all">
+          <span class="material-symbols-outlined text-xs">check_circle</span>Mark as Taken
         </button>
-        <div class="hidden mt-2 space-y-1.5 text-[10px] text-on-surface-variant leading-relaxed">
-          ${m.fda_warnings   ? `<p class="bg-error-container/20 text-error p-2 rounded-lg"><strong>Warning:</strong> ${esc(m.fda_warnings.slice(0,180))}</p>` : ''}
-          ${m.fda_interactions ? `<p class="bg-amber-50 text-amber-800 p-2 rounded-lg"><strong>Interactions:</strong> ${esc(m.fda_interactions.slice(0,180))}</p>` : ''}
-          ${m.fda_side_effects ? `<p class="bg-surface-container p-2 rounded-lg"><strong>Side effects:</strong> ${esc(m.fda_side_effects.slice(0,180))}</p>` : ''}
-          ${m.storage ? `<p class="bg-surface-container p-2 rounded-lg"><strong>Storage:</strong> ${esc(m.storage.slice(0,120))}</p>` : ''}
-        </div>
-      </div>` : '';
-    return `
-    <div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/10 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5">
-      <div class="flex items-center gap-3 mb-4">
-        <div class="w-12 h-12 rounded-xl ${colors[i%colors.length].split(' ')[0]} flex items-center justify-center flex-shrink-0">
-          <span class="material-symbols-outlined ${colors[i%colors.length].split(' ')[1]}" style="font-variation-settings:'FILL' 1">${icons[i%icons.length]}</span>
-        </div>
-        <div class="min-w-0 flex-1">
-          <h4 class="font-bold text-on-surface font-headline truncate">${esc(m.name)}</h4>
-          <p class="text-xs text-outline">${esc(m.dosage)}</p>
-        </div>
-        ${hasFda ? '<span class="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" title="FDA info available"></span>' : ''}
-      </div>
-      <div class="space-y-2">
-        <div class="flex justify-between items-center bg-surface-container-low rounded-xl px-3 py-2">
-          <span class="text-on-surface-variant flex items-center gap-1 text-xs"><span class="material-symbols-outlined text-xs">schedule</span>Timing</span>
-          <span class="font-semibold text-xs text-right max-w-[60%]">${esc(m.timing)}</span>
-        </div>
-        <div class="flex justify-between items-center bg-surface-container-low rounded-xl px-3 py-2">
-          <span class="text-on-surface-variant flex items-center gap-1 text-xs"><span class="material-symbols-outlined text-xs">calendar_today</span>Duration</span>
-          <span class="font-semibold text-xs">${esc(m.duration)}</span>
-        </div>
-        <div class="flex justify-between items-center bg-surface-container-low rounded-xl px-3 py-2">
-          <span class="text-on-surface-variant flex items-center gap-1 text-xs"><span class="material-symbols-outlined text-xs">restaurant</span>With Food</span>
-          <span class="font-semibold text-xs">${esc(m.with_food)}</span>
-        </div>
-      </div>
-      ${m.simple_instruction ? `<p class="mt-3 text-xs text-on-surface-variant italic border-t border-outline-variant/10 pt-3">${esc(m.simple_instruction)}</p>` : ''}
-      ${fdaHtml}
-      <button onclick="markTaken(this,'${esc(m.name)}')" class="taken-btn mt-3 w-full flex items-center justify-center gap-1.5 bg-surface-container-low hover:bg-secondary-container/30 text-outline hover:text-secondary border border-outline-variant/20 py-2 rounded-xl text-xs font-bold transition-all">
-        <span class="material-symbols-outlined text-xs">check_circle</span>Mark as Taken Today
-      </button>
-    </div>`;
-  }).join('');
+      </div>`;
+    }).join('');
 
-  document.getElementById('med-table').innerHTML = meds.map((m,i) => `
-    <tr class="hover:bg-surface-container-low transition-colors">
-      <td class="px-6 py-4 text-sm font-black text-outline">${i+1}</td>
-      <td class="px-6 py-4"><p class="font-bold text-sm">${esc(m.name)}</p></td>
-      <td class="px-6 py-4"><span class="text-xs font-bold px-3 py-1 bg-surface-container-high rounded-full whitespace-nowrap">${esc(m.dosage)}</span></td>
-      <td class="px-6 py-4 text-sm whitespace-nowrap">${esc(m.timing)}</td>
-      <td class="px-6 py-4 text-sm whitespace-nowrap">${esc(m.duration)}</td>
-      <td class="px-6 py-4"><span class="text-xs font-bold px-2 py-1 bg-primary/10 text-primary rounded-full whitespace-nowrap">${esc(m.with_food)}</span></td>
-      <td class="px-6 py-4 text-xs text-on-surface-variant max-w-[200px]">${esc(m.simple_instruction||'—')}</td>
-    </tr>`).join('');
+    document.getElementById('med-table').innerHTML = meds.map((m,i) => `
+      <tr class="hover:bg-surface-container-low transition-colors">
+        <td class="px-6 py-4 text-sm font-black text-outline">${i+1}</td>
+        <td class="px-6 py-4"><p class="font-bold text-sm">${esc(m.name)}</p></td>
+        <td class="px-6 py-4"><span class="text-xs font-bold px-3 py-1 bg-surface-container-high rounded-full whitespace-nowrap">${esc(m.dosage)}</span></td>
+        <td class="px-6 py-4 text-sm whitespace-nowrap">${esc(m.timing)}</td>
+        <td class="px-6 py-4 text-sm whitespace-nowrap">${esc(m.duration)}</td>
+        <td class="px-6 py-4"><span class="text-xs font-bold px-2 py-1 bg-primary/10 text-primary rounded-full whitespace-nowrap">${esc(m.with_food)}</span></td>
+        <td class="px-6 py-4 text-xs text-on-surface-variant max-w-[200px]">${esc(m.simple_instruction||'—')}</td>
+      </tr>`).join('');
 
-  if (data.recovery_note) {
-    document.getElementById('recovery-block').classList.remove('hidden');
-    document.getElementById('recovery-text').textContent = data.recovery_note;
+    if (data.recovery_note) {
+      document.getElementById('recovery-block').classList.remove('hidden');
+      document.getElementById('recovery-text').textContent = data.recovery_note;
+    }
+
+    // Restore taken state from today
+    const todayKey = 'taken_'+new Date().toDateString();
+    const taken = JSON.parse(localStorage.getItem(todayKey)||'[]');
+    taken.forEach(name=>{
+      document.querySelectorAll('.taken-btn').forEach(btn=>{
+        if(btn.getAttribute('onclick').includes(name)){
+          setTakenState(btn, true);
+        }
+      });
+    });
+  } // END ELSE BLOCK
+
+  // Only render interactions and calendar if we have data
+  if (meds && meds.length > 0) {
+    renderInteractions(drugInteractions);
+    renderCalendar(meds);
   }
 
-  // Restore taken state from today
-  const todayKey = 'taken_'+new Date().toDateString();
-  const taken = JSON.parse(localStorage.getItem(todayKey)||'[]');
-  taken.forEach(name=>{
-    document.querySelectorAll('.taken-btn').forEach(btn=>{
-      if(btn.getAttribute('onclick').includes(name)){
-        setTakenState(btn, true);
-      }
-    });
-  });
-}
+})(); // Close the async IIFE
 
 function markTaken(btn, name){
   const isNowTaken = !btn.dataset.taken;
@@ -423,17 +638,109 @@ function markTaken(btn, name){
   if(isNowTaken){ if(!taken.includes(name)) taken.push(name); }
   else { taken = taken.filter(n=>n!==name); }
   localStorage.setItem(todayKey, JSON.stringify(taken));
+  
   if(isNowTaken) showToast(name+' marked as taken!');
+  
+  // Save adherence to MongoDB
+  saveAdherenceToMongo().catch(e => console.log('Save adherence error:', e));
+}
+
+// Get number of doses per day from timing string
+function getDosesPerDay(timing) {
+  const t = (timing || '').toLowerCase();
+  console.log('getDosesPerDay input:', timing, '-> parsed:', t);
+  
+  // Check for multiple doses
+  if (t.includes('twice') || t.includes('bd') || t.includes('2 times') || t.includes('2x') || t.includes('two times')) {
+    console.log('Found: twice daily = 2');
+    return 2;
+  }
+  if (t.includes('thrice') || t.includes('tds') || t.includes('tid') || t.includes('3 times') || t.includes('3x') || t.includes('three times')) {
+    console.log('Found: thrice daily = 3');
+    return 3;
+  }
+  if (t.includes('once') || t.includes('od') || t.includes('once daily') || t.includes('once a day') || t.includes('oncedaily')) {
+    console.log('Found: once daily = 1');
+    return 1;
+  }
+  
+  console.log('Default: 1');
+  return 1; // default
+}
+
+// Save today's adherence to MongoDB
+async function saveAdherenceToMongo() {
+  const token = localStorage.getItem('medbuddy_token');
+  if (!token) {
+    console.log('No token - not saving to MongoDB (local only)');
+    return;
+  }
+  
+  const todayKey = 'taken_'+new Date().toDateString();
+  const taken = JSON.parse(localStorage.getItem(todayKey)||'[]');
+  
+  console.log('Saving adherence - taken meds:', taken);
+  
+  // Get current medications with dose counts
+  const medications = globalMeds.flatMap(m => {
+    const doses = getDosesPerDay(m.timing);
+    const medTaken = taken.includes(m.name);
+    const slots = [];
+    
+    // Create entry for each dose slot
+    for (let i = 0; i < doses; i++) {
+      slots.push({
+        name: m.name,
+        taken: medTaken, // if user marked as taken, count all doses as taken
+        time_slot: /morning|am|breakfast/i.test(m.timing) ? 'morning' : 
+                   /night|evening|pm/i.test(m.timing) ? 'night' : 
+                   /afternoon|noon/i.test(m.timing) ? 'afternoon' : 'morning',
+        dose_number: i + 1
+      });
+    }
+    return slots;
+  });
+  
+  const today = new Date().toISOString().split('T')[0];
+  await saveAdherence(today, medications);
 }
 
 function setTakenState(btn, taken){
   btn.dataset.taken = taken ? '1' : '';
   btn.className = taken
-    ? 'taken-btn mt-3 w-full flex items-center justify-center gap-1.5 bg-secondary-container/30 text-secondary border border-secondary/30 py-2 rounded-xl text-xs font-bold transition-all'
-    : 'taken-btn mt-3 w-full flex items-center justify-center gap-1.5 bg-surface-container-low hover:bg-secondary-container/30 text-outline hover:text-secondary border border-outline-variant/20 py-2 rounded-xl text-xs font-bold transition-all';
+    ? 'taken-btn mt-2 w-full flex items-center justify-center gap-1 bg-secondary-container/30 text-secondary border border-secondary/30 py-1.5 rounded-lg text-xs font-bold transition-all'
+    : 'taken-btn mt-2 w-full flex items-center justify-center gap-1 bg-surface-container-low hover:bg-secondary-container/30 text-outline hover:text-secondary border border-outline-variant/20 py-1.5 rounded-lg text-xs font-bold transition-all';
   btn.querySelector('.material-symbols-outlined').textContent = taken ? 'task_alt' : 'check_circle';
   btn.querySelector('.material-symbols-outlined').style.fontVariationSettings = taken ? "'FILL' 1" : "'FILL' 0";
-  btn.childNodes[btn.childNodes.length-1].textContent = taken ? ' Taken Today' : 'Mark as Taken Today';
+  btn.childNodes[btn.childNodes.length-1].textContent = taken ? ' Taken' : 'Mark as Taken';
+  
+  // Update adherence stats in real-time
+  updateAdherenceDisplay();
+}
+
+// Update adherence display from localStorage
+function updateAdherenceDisplay() {
+  const todayKey = 'taken_'+new Date().toDateString();
+  const taken = JSON.parse(localStorage.getItem(todayKey)||'[]');
+  
+  // Calculate total doses needed (considering BD = 2, TDS = 3, etc.)
+  let totalDoses = 0;
+  globalMeds.forEach(m => {
+    totalDoses += getDosesPerDay(m.timing);
+  });
+  
+  // Calculate total doses taken
+  const takenCount = taken.length; // Each med marked counts as all doses taken
+  const takenDoses = taken.reduce((sum, medName) => {
+    const med = globalMeds.find(m => m.name === medName);
+    return sum + (med ? getDosesPerDay(med.timing) : 0);
+  }, 0);
+  
+  // Calculate today's rate
+  const rate = totalDoses > 0 ? Math.round((takenDoses / totalDoses) * 100) : 0;
+  document.getElementById('adherence-rate').textContent = rate + '%';
+  document.getElementById('adherence-streak').textContent = takenCount > 0 ? '1' : '0';
+  document.getElementById('adherence-taken').textContent = takenDoses + '/' + totalDoses;
 }
 
 function showToast(msg){
@@ -474,8 +781,8 @@ function parseDays(duration){
   const k=d.match(/(\d+)/);          return k ? parseInt(k[1]) : 0;
 }
 
-function renderCalendar(){
-  const calMeds=(data.medications||[]).filter(m=>parseDays(m.duration)>0);
+function renderCalendar(medsList){
+  const calMeds=(medsList || globalMeds || []).filter(m=>parseDays(m.duration)>0);
   if(calMeds.length===0) return;
   document.getElementById('calendar-section').classList.remove('hidden');
 
@@ -483,7 +790,7 @@ function renderCalendar(){
   const startDay=calOffset; // offset in days from today
   const days=7;
 
-  // Header
+  // Header - not clickable
   const headers=['<div class="text-xs font-bold text-on-surface-variant pr-3 py-1 text-right min-w-[120px]">Medicine</div>'];
   for(let i=0;i<days;i++){
     const d=new Date(today); d.setDate(today.getDate()+startDay+i);
@@ -528,13 +835,10 @@ function renderCalendar(){
 }
 
 function calShift(delta){
+  console.log('calShift called with delta:', delta);
   calOffset+=delta;
-  renderCalendar();
+  renderCalendar(globalMeds);
 }
-
-// Render interaction banner and calendar
-renderInteractions(data.drug_interactions||[]);
-renderCalendar();
 </script>
 </body>
 </html>

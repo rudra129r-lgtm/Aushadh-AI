@@ -179,16 +179,24 @@ const STATIC_STARTERS = [
 
 let chatHistory = [];
 let currentLang = 'English';
-const prescriptionData = getAnalysis();
 
-// Show context banner
-if (prescriptionData) {
-  document.getElementById('ctx-banner').classList.remove('hidden');
-  const dx = prescriptionData.diagnosis?.original_jargon || prescriptionData.summary_en || 'Prescription loaded';
-  document.getElementById('ctx-text').textContent = dx.slice(0, 80) + (dx.length > 80 ? '...' : '');
-} else {
-  document.getElementById('no-ctx-banner').classList.remove('hidden');
-}
+(async function initChat() {
+  let prescriptionData = getAnalysis();
+  
+  if (localStorage.getItem('medbuddy_logged_in')) {
+    const serverData = await loadAnalysisFromServer();
+    if (serverData) prescriptionData = serverData;
+  }
+  
+  // Show context banner
+  if (prescriptionData) {
+    document.getElementById('ctx-banner').classList.remove('hidden');
+    const dx = prescriptionData.diagnosis?.original_jargon || prescriptionData.summary_en || 'Prescription loaded';
+    document.getElementById('ctx-text').textContent = dx.slice(0, 80) + (dx.length > 80 ? '...' : '');
+  } else {
+    document.getElementById('no-ctx-banner').classList.remove('hidden');
+  }
+})();
 
 // Render starter chips
 const chipsEl = document.getElementById('chips-initial');

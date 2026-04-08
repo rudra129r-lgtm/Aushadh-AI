@@ -11,8 +11,33 @@
 <style>
   .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
   .primary-gradient{background:linear-gradient(135deg,#006068 0%,#007b85 100%)}
+  .animate-gradient{background-size:200% 200%;animation:gradient-shift 8s ease infinite}
+  @keyframes gradient-shift {
+    0%{background-position:0% 50%}
+    50%{background-position:100% 50%}
+    100%{background-position:0% 50%}
+  }
+  .header-gradient {
+    background: linear-gradient(135deg, #002f34 0%, #004f56 30%, #006068 60%, #007b85 100%);
+    position: relative;
+  }
+  .header-gradient::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(circle at 20% 80%, rgba(0,96,104,0.4) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(150,241,252,0.2) 0%, transparent 40%),
+      radial-gradient(circle at 40% 40%, rgba(0,123,133,0.3) 0%, transparent 30%);
+    pointer-events: none;
+  }
   body{font-family:'Public Sans',sans-serif;overflow-x:hidden}
   h1,h2,h3,h4{font-family:'Manrope',sans-serif}
+  .nav-link:hover{transform:translateX(4px)}
+  .nav-link{transition:transform 0.2s}
 
   @media print {
     body > *:not(#pdf-content) { display: none !important; }
@@ -30,53 +55,78 @@
 </style>
 </head>
 <body class="bg-surface text-on-surface">
-<nav class="bg-[#f7f9ff]/80 backdrop-blur-xl sticky top-0 z-50 shadow-sm">
-  <div class="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
-    <div class="flex items-center gap-8">
-      <a href="dashboard.html" class="flex items-center gap-2 text-2xl font-black text-[#006068] font-headline">
-        <img src="logo_green.png" alt="Aushadh AI" class="w-8 h-8 object-contain">
-        Aushadh AI
-      </a>
-      <div class="hidden md:flex gap-6">
-        <a class="text-slate-500 font-medium hover:text-[#007B85] transition-colors" href="dashboard.html">Dashboard</a>
-        <a class="text-[#006068] font-bold border-b-2 border-[#006068]" href="diagnosis.html">Summary</a>
-        <a class="text-slate-500 font-medium hover:text-[#007B85] transition-colors" href="medications.html">Medications</a>
-        <a class="text-slate-500 font-medium hover:text-[#007B85] transition-colors" href="checklist.html">Checklist</a>
-      </div>
-    </div>
-    <div class="flex items-center gap-3">
-      <div class="w-9 h-9 rounded-full bg-surface-container border border-outline-variant flex items-center justify-center">
-        <span class="material-symbols-outlined text-primary text-sm">person</span>
-      </div>
+
+<!-- Sidebar -->
+<aside class="hidden md:flex flex-col h-screen w-56 fixed left-0 top-0 bg-surface-container-low py-8 z-40">
+  <div class="px-5 mb-8 flex items-center gap-2">
+    <img src="logo_green.png" alt="Aushadh AI" class="w-8 h-8 object-contain">
+    <div>
+      <h1 class="text-lg font-bold text-primary">Aushadh AI</h1>
+      <p class="text-[10px] uppercase tracking-widest text-outline">Clinical Serenity</p>
     </div>
   </div>
-</nav>
+  <nav class="flex-1 space-y-1 px-3">
+    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="dashboard.html">
+      <span class="material-symbols-outlined text-sm">dashboard</span>Dashboard
+    </a>
+    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="documents.html">
+      <span class="material-symbols-outlined text-sm">description</span>Documents
+    </a>
+    <a class="nav-link flex items-center gap-2 px-4 py-3 bg-surface-container-lowest text-primary rounded-r-full shadow-sm font-semibold text-sm" href="diagnosis.html">
+      <span class="material-symbols-outlined text-sm">summarize</span>Summary
+    </a>
+    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="medications.html">
+      <span class="material-symbols-outlined text-sm">medical_services</span>Medications
+    </a>
+    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="checklist.html">
+      <span class="material-symbols-outlined text-sm">fact_check</span>Checklist
+    </a>
+    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="profile.html">
+      <span class="material-symbols-outlined text-sm">account_circle</span>Profile
+    </a>
+  </nav>
+  <div class="px-5 space-y-3 mt-auto">
+    <a href="documents.html" class="w-full primary-gradient text-white rounded-full py-2.5 text-sm font-bold shadow-lg flex items-center justify-center gap-1 active:scale-95">
+      <span class="material-symbols-outlined text-sm">upload</span>Upload Document
+    </a>
+    <a class="flex items-center gap-2 py-1.5 text-slate-500 text-sm hover:text-error transition-colors cursor-pointer" onclick="logout()">
+      <span class="material-symbols-outlined text-sm">logout</span>Logout
+    </a>
+  </div>
+</aside>
 
-<main class="max-w-7xl mx-auto px-6 py-10 flex flex-col md:flex-row gap-10">
-  <!-- Sidebar -->
-  <aside class="hidden md:flex flex-col w-56 space-y-4 flex-shrink-0">
-    <div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-outline-variant/10">
-      <div class="flex items-center gap-2 mb-4 pb-4 border-b border-outline-variant/10">
-        <img src="logo_green.png" alt="Aushadh AI" class="w-8 h-8 object-contain">
-        <span class="font-bold text-primary">Aushadh AI</span>
+<main class="md:ml-56 min-h-screen pb-24 md:pb-12">
+  <!-- Animated Green Header -->
+  <header class="sticky top-0 z-50 relative overflow-hidden">
+    <div class="absolute inset-0 header-gradient"></div>
+    <div class="relative px-6 md:px-10 py-5 flex justify-between items-start">
+      <div>
+        <div class="flex items-center gap-2 text-white/80 text-sm mb-1">
+          <a href="dashboard.html" class="hover:text-white transition-colors flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">arrow_back</span>Dashboard
+          </a>
+          <span>/</span>
+          <span class="text-white font-semibold">Summary</span>
+        </div>
+        <h2 class="font-headline font-extrabold text-2xl text-white">Your Health Summary</h2>
       </div>
-      <nav class="space-y-1">
-        <a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-surface-container-low rounded-lg transition-all text-sm font-semibold" href="dashboard.html"><span class="material-symbols-outlined text-sm">dashboard</span>Dashboard</a>
-        <a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-surface-container-low rounded-lg transition-all text-sm font-semibold" href="documents.html"><span class="material-symbols-outlined text-sm">description</span>Documents</a>
-        <a class="flex items-center gap-3 px-3 py-2.5 bg-surface-container-low text-primary rounded-lg text-sm font-bold" href="diagnosis.html"><span class="material-symbols-outlined text-sm">summarize</span>Summary</a>
-        <a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-surface-container-low rounded-lg transition-all text-sm font-semibold" href="medications.html"><span class="material-symbols-outlined text-sm">medical_services</span>Medications</a>
-        <a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 hover:bg-surface-container-low rounded-lg transition-all text-sm font-semibold" href="checklist.html"><span class="material-symbols-outlined text-sm">fact_check</span>Checklist</a>
-      </nav>
-      <div class="mt-6 pt-4 border-t border-outline-variant/10">
-        <a href="documents.html" class="w-full primary-gradient text-white font-bold py-2.5 rounded-full flex items-center justify-center gap-1 text-sm active:scale-95">
-          <span class="material-symbols-outlined text-sm">add</span> Upload New
+      <div class="flex gap-2 flex-wrap">
+        <div class="flex bg-white/20 border border-white/30 rounded-full p-1 gap-1">
+          <button onclick="setLang('en',this)" class="lang-btn px-4 py-1.5 rounded-full text-xs font-bold bg-white text-primary shadow-sm transition-all">EN</button>
+          <button onclick="setLang('hi',this)" class="lang-btn px-4 py-1.5 rounded-full text-xs font-bold text-white/70 transition-all">हि</button>
+        </div>
+        <button id="speak-btn" onclick="toggleSpeak()" class="flex items-center gap-1 bg-white/20 text-white border border-white/30 px-4 py-2 rounded-full font-bold text-sm hover:bg-white/30 transition-all">
+          <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">volume_up</span>
+          <span id="speak-label">Listen</span>
+        </button>
+        <a href="documents.html" class="flex items-center gap-1 bg-white/20 text-white border border-white/30 px-4 py-2 rounded-full font-bold text-sm hover:bg-white/30 transition-all">
+          <span class="material-symbols-outlined text-sm">refresh</span> New Upload
         </a>
       </div>
     </div>
-  </aside>
+  </header>
 
-  <!-- Main -->
-  <section class="flex-1">
+  <section class="max-w-7xl mx-auto px-6 md:px-10 mt-4">
 
     <!-- NO DATA STATE -->
     <div id="no-data" class="hidden text-center py-20">
@@ -94,24 +144,9 @@
     <div id="has-data" class="hidden space-y-6">
 
       <!-- ── PAGE HEADER ── -->
-      <div class="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 class="font-headline text-2xl md:text-3xl font-extrabold text-on-surface mb-1">Your Health Summary</h1>
-          <p class="text-sm text-on-surface-variant">AI-simplified from your prescription by Aushadh AI</p>
-        </div>
-        <div class="flex gap-2 flex-wrap">
-          <div class="flex bg-surface-container-low border border-outline-variant/20 rounded-full p-1 gap-1">
-            <button onclick="setLang('en',this)" class="lang-btn px-4 py-1.5 rounded-full text-xs font-bold bg-white text-primary shadow-sm transition-all">EN</button>
-            <button onclick="setLang('hi',this)" class="lang-btn px-4 py-1.5 rounded-full text-xs font-bold text-outline transition-all">हि</button>
-          </div>
-          <button id="speak-btn" onclick="toggleSpeak()" class="flex items-center gap-1 bg-secondary-container/30 text-secondary border border-secondary/20 px-4 py-2 rounded-full font-bold text-sm hover:bg-secondary hover:text-white transition-all">
-            <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">volume_up</span>
-            <span id="speak-label">Listen</span>
-          </button>
-          <a href="documents.html" class="flex items-center gap-1 bg-surface-container-high text-on-primary-fixed-variant px-4 py-2 rounded-full font-bold text-sm hover:bg-surface-container-highest transition-all">
-            <span class="material-symbols-outlined text-sm">refresh</span> New Upload
-          </a>
-        </div>
+      <div>
+        <h1 class="font-headline text-2xl md:text-3xl font-extrabold text-on-surface mb-1">Your Health Summary</h1>
+        <p class="text-sm text-on-surface-variant" id="header-subtitle">AI-simplified from your prescription by Aushadh AI</p>
       </div>
 
       <!-- ── PATIENT + DOCTOR INFO CARD ── -->
@@ -269,21 +304,21 @@
       </div>
 
       <!-- ── BOTTOM CTAs ── -->
-      <div class="flex gap-3 flex-wrap pb-8">
-        <a href="checklist.html" class="flex items-center gap-2 primary-gradient text-white px-6 py-3 rounded-full font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-95 transition-all text-sm">
+      <div class="flex justify-center gap-3 flex-wrap mt-8 pt-8 border-t border-surface-container-high">
+        <a href="checklist.html" class="flex items-center gap-2 primary-gradient text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:shadow-primary/50 hover:-translate-y-0.5 active:scale-95 transition-all">
           <span class="material-symbols-outlined text-sm">fact_check</span> Follow-up Checklist
         </a>
-        <a href="medications.html" class="flex items-center gap-2 bg-surface-container-high text-on-primary-fixed-variant px-6 py-3 rounded-full font-bold hover:bg-surface-container-highest transition-all text-sm">
+        <a href="medications.html" class="flex items-center gap-2 primary-gradient text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:shadow-primary/50 hover:-translate-y-0.5 active:scale-95 transition-all">
           <span class="material-symbols-outlined text-sm">medication</span> Full Medication Schedule
         </a>
-        <a href="chat.html" class="flex items-center gap-2 bg-secondary-container/30 text-secondary border border-secondary/20 px-6 py-3 rounded-full font-bold hover:bg-secondary hover:text-white transition-all text-sm">
+        <a href="chat.html" class="flex items-center gap-2 primary-gradient text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:shadow-primary/50 hover:-translate-y-0.5 active:scale-95 transition-all">
           <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">smart_toy</span> Ask AI a Question
         </a>
-        <button onclick="exportPdf()" class="flex items-center gap-2 border border-outline-variant text-on-surface-variant px-6 py-3 rounded-full font-bold hover:border-primary hover:text-primary transition-all text-sm">
+        <button onclick="exportPdf()" class="flex items-center gap-2 primary-gradient text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:shadow-primary/50 hover:-translate-y-0.5 active:scale-95 transition-all">
           <span class="material-symbols-outlined text-sm">picture_as_pdf</span> Export PDF
         </button>
       </div>
-    </div>
+    </section>
   </section>
 </main>
 
@@ -301,53 +336,57 @@
 requireAuth();
 let currentLang='en';
 let speaking=false;
-const data=getAnalysis();
 
-// Check if we need to show emergency alert (set during document upload)
-const showAlert = sessionStorage.getItem('showEmergencyAlert');
-sessionStorage.removeItem('showEmergencyAlert');
-
-if(!data){
-  document.getElementById('no-data').classList.remove('hidden');
-} else {
-  // Check for emergency/severe conditions - only if flagged during upload
-  if (showAlert === 'true') {
-    const emergency = checkForEmergency(data);
-    if (emergency && emergency.isSevere) {
-      setTimeout(() => showEmergencyAlert(emergency), 500);
-    }
+(async function initData() {
+  let data = getAnalysis();
+  
+  if (localStorage.getItem('medbuddy_logged_in')) {
+    const serverData = await loadAnalysisFromServer();
+    if (serverData) data = serverData;
   }
   
-  document.getElementById('has-data').classList.remove('hidden');
-  renderData(data);
-}
+  const showAlert = sessionStorage.getItem('showEmergencyAlert');
+  sessionStorage.removeItem('showEmergencyAlert');
+
+  if(!data){
+    document.getElementById('no-data').classList.remove('hidden');
+  } else {
+    if (showAlert === 'true') {
+      const emergency = checkForEmergency(data);
+      if (emergency && emergency.isSevere) {
+        setTimeout(() => showEmergencyAlert(emergency), 500);
+      }
+    }
+    
+    document.getElementById('has-data').classList.remove('hidden');
+    renderData(data);
+  }
+})();
 
 function renderData(d){
   // Confidence
   setTimeout(()=>{
     document.getElementById('conf-bar').style.width=(d.confidence||80)+'%';
     document.getElementById('conf-pct').textContent=(d.confidence||80)+'%';
+    const confNote=document.getElementById('conf-note');
+    if(confNote) confNote.textContent=(d.confidence>=90?'High confidence - detailed analysis available':d.confidence>=70?'Good confidence level':'Moderate confidence - verify with doctor');
   },300);
-  document.getElementById('conf-note').textContent=d.confidence_note||'';
 
   // Summary
-  document.getElementById('summary-text').textContent=d.summary_en||'—';
-
-  // Doctor info
-  if(d.doctor_name){
-    const doctorBlock = document.getElementById('doctor-block');
-    if(doctorBlock) doctorBlock.classList.remove('hidden');
-    document.getElementById('doctor-name').textContent=d.doctor_name;
-    document.getElementById('doctor-specialty').textContent=d.doctor_specialty||'';
+  const summaryEl = document.getElementById('summary-text');
+  if (summaryEl) {
+    summaryEl.textContent = currentLang === 'hi' ? (d.summary_hi || d.summary_en || '—') : (d.summary_en || '—');
   }
 
   // Diagnosis
   document.getElementById('dx-original').textContent=d.diagnosis?.original_jargon||'Not found in document';
-  document.getElementById('dx-simple').textContent=d.diagnosis?.simple_english||'—';
+  document.getElementById('dx-simple').textContent=currentLang==='hi'?(d.diagnosis?.simple_hindi||d.diagnosis?.simple_english||'—'):(d.diagnosis?.simple_english||'—');
 
   // Watch for
+  // Watch for
+  const watchSimple = currentLang === 'hi' ? (d.watch_for?.simple_hindi || d.watch_for?.simple) : (d.watch_for?.simple || '—');
   document.getElementById('watch-original').textContent=d.watch_for?.original||'—';
-  document.getElementById('watch-simple').textContent=d.watch_for?.simple||'—';
+  document.getElementById('watch-simple').textContent=watchSimple;
 
   // Side effects + emergency mini
   if((d.side_effects&&d.side_effects.length)||d.emergency){
@@ -379,17 +418,60 @@ function renderData(d){
   }
 }
 
-function setLang(l,btn){
+async function translateToHindi(text) {
+  if (!text || text === '—') return text;
+  try {
+    const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|hi`);
+    const data = await response.json();
+    return data.responseData?.translatedText || text;
+  } catch(e) { return text; }
+}
+
+async function setLang(l,btn){
   currentLang=l;
   document.querySelectorAll('.lang-btn').forEach(b=>b.className='lang-btn px-4 py-1.5 rounded-full text-xs font-bold text-outline transition-all');
   btn.className='lang-btn px-4 py-1.5 rounded-full text-xs font-bold bg-white text-primary shadow-sm transition-all';
   if(!data)return;
+  
   if(l==='hi'){
-    document.getElementById('summary-text').textContent=data.summary_hi||data.summary_en||'—';
-    document.getElementById('dx-simple').textContent=data.diagnosis?.simple_hindi||data.diagnosis?.simple_english||'—';
+    // Use existing Hindi data or translate
+    document.getElementById('summary-text').textContent=data.summary_hi || await translateToHindi(data.summary_en) || '—';
+    document.getElementById('dx-simple').textContent=data.diagnosis?.simple_hindi || await translateToHindi(data.diagnosis?.simple_english) || '—';
+    document.getElementById('watch-simple').textContent=data.watch_for?.simple_hindi || await translateToHindi(data.watch_for?.simple) || '—';
+    
+    // Medications - translate instructions
+    const medCards = document.getElementById('med-cards');
+    if (medCards && data.medications) {
+      for (let m of data.medications) {
+        if (!m.simple_instruction_hindi) {
+          m.simple_instruction_hindi = await translateToHindi(m.simple_instruction || '');
+        }
+      }
+      medCards.innerHTML = data.medications.map((m, i) => `
+        <div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/10 shadow-sm">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="font-bold text-sm">${esc(m.name)}</span>
+          </div>
+          <div class="text-xs text-outline">${esc(m.dosage)} - ${esc(m.timing)}</div>
+          <div class="text-xs text-on-surface-variant mt-1">${esc(m.simple_instruction_hindi || m.simple_instruction || '')}</div>
+        </div>`).join('');
+    }
   } else {
     document.getElementById('summary-text').textContent=data.summary_en||'—';
     document.getElementById('dx-simple').textContent=data.diagnosis?.simple_english||'—';
+    document.getElementById('watch-simple').textContent=data.watch_for?.simple||'—';
+    
+    const medCards = document.getElementById('med-cards');
+    if (medCards && data.medications) {
+      medCards.innerHTML = data.medications.map((m, i) => `
+        <div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/10 shadow-sm">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="font-bold text-sm">${esc(m.name)}</span>
+          </div>
+          <div class="text-xs text-outline">${esc(m.dosage)} - ${esc(m.timing)}</div>
+          <div class="text-xs text-on-surface-variant mt-1">${esc(m.simple_instruction || '')}</div>
+        </div>`).join('');
+    }
   }
 }
 

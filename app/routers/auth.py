@@ -137,3 +137,103 @@ async def delete_medication(med_id: str, current_user = Depends(get_current_user
     if success:
         return {"message": "Medication deleted successfully"}
     raise HTTPException(status_code=500, detail="Failed to delete medication")
+
+
+# ── Adherence Tracking ─────────────────────────────────────
+
+class AdherenceRequest(BaseModel):
+    date: str
+    medications: list
+
+
+@router.post("/auth/adherence", summary="Save daily adherence")
+async def save_adherence(req: AdherenceRequest, current_user = Depends(get_current_user)):
+    user_id = current_user.get("id")
+    if not user_id:
+        raise HTTPException(status_code=400, detail="Invalid user")
+    
+    success = mongo_service.save_adherence(user_id, req.date, req.medications)
+    if success:
+        return {"message": "Adherence saved successfully"}
+    raise HTTPException(status_code=500, detail="Failed to save adherence")
+
+
+@router.get("/auth/adherence", summary="Get adherence history")
+async def get_adherence(
+    start_date: str = None,
+    end_date: str = None,
+    current_user = Depends(get_current_user)
+):
+    user_id = current_user.get("id")
+    if not user_id:
+        raise HTTPException(status_code=400, detail="Invalid user")
+    
+    records = mongo_service.get_adherence(user_id, start_date, end_date)
+    return {"records": records}
+
+
+@router.get("/auth/adherence/stats", summary="Get adherence statistics")
+async def get_adherence_stats(
+    days: int = 30,
+    current_user = Depends(get_current_user)
+):
+    user_id = current_user.get("id")
+    if not user_id:
+        raise HTTPException(status_code=400, detail="Invalid user")
+    
+    stats = mongo_service.get_adherence_stats(user_id, days)
+    return stats
+
+
+# ── Analysis Data Storage ─────────────────────────────────────
+
+class AnalysisRequest(BaseModel):
+    analysis: dict
+
+
+class AnalysisHistoryRequest(BaseModel):
+    history: list
+
+
+@router.post("/auth/analysis", summary="Save current analysis data")
+async def save_analysis(req: AnalysisRequest, current_user = Depends(get_current_user)):
+    user_id = current_user.get("id")
+    if not user_id:
+        raise HTTPException(status_code=400, detail="Invalid user")
+    
+    success = mongo_service.save_analysis(user_id, req.analysis)
+    if success:
+        return {"message": "Analysis saved successfully"}
+    raise HTTPException(status_code=500, detail="Failed to save analysis")
+
+
+@router.get("/auth/analysis", summary="Get current analysis data")
+async def get_analysis(current_user = Depends(get_current_user)):
+    user_id = current_user.get("id")
+    if not user_id:
+        raise HTTPException(status_code=400, detail="Invalid user")
+    
+    analysis = mongo_service.get_analysis(user_id)
+    return {"analysis": analysis}
+
+
+@router.post("/auth/analysis/history", summary="Save analysis history")
+async def save_analysis_history(req: AnalysisHistoryRequest, current_user = Depends(get_current_user)):
+    user_id = current_user.get("id")
+    if not user_id:
+        raise HTTPException(status_code=400, detail="Invalid user")
+    
+    success = mongo_service.save_analysis_history(user_id, req.history)
+    if success:
+        return {"message": "Analysis history saved successfully"}
+    raise HTTPException(status_code=500, detail="Failed to save analysis history")
+
+
+@router.get("/auth/analysis/history", summary="Get analysis history")
+async def get_analysis_history(current_user = Depends(get_current_user)):
+    user_id = current_user.get("id")
+    if not user_id:
+        raise HTTPException(status_code=400, detail="Invalid user")
+    
+    history = mongo_service.get_analysis_history(user_id)
+    return {"history": history}

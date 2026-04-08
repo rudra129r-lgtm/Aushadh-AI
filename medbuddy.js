@@ -264,8 +264,11 @@ function saveAnalysis(data) {
   sessionStorage.setItem('medbuddy_analysis_backup', json);
 
   // Push to MongoDB if logged in
-  if (localStorage.getItem('medbuddy_logged_in') && data.medications) {
-    saveMedicationsToServer(data.medications);
+  if (localStorage.getItem('medbuddy_logged_in')) {
+    if (data.medications) {
+      saveMedicationsToServer(data.medications);
+    }
+    saveAnalysisToServer(data);
   }
 
   // Push to history (keep last 5)
@@ -283,7 +286,12 @@ function saveAnalysis(data) {
     };
     const filtered = history.filter(h => h.summary_en !== data.summary_en);
     filtered.unshift(entry);
-    localStorage.setItem('medbuddy_history', JSON.stringify(filtered.slice(0, 5)));
+    const newHistory = filtered.slice(0, 5);
+    localStorage.setItem('medbuddy_history', JSON.stringify(newHistory));
+
+    if (localStorage.getItem('medbuddy_logged_in')) {
+      saveAnalysisHistoryToServer(newHistory);
+    }
 
     // Save notification
     saveNotification({
@@ -292,6 +300,44 @@ function saveAnalysis(data) {
       type: 'analysis'
     });
   } catch(e) {}
+}
+
+async function saveAnalysisToServer(data) {
+  try {
+    const token = localStorage.getItem('medbuddy_token');
+    if (!token) return;
+    
+    await fetch(`${API}/auth/analysis`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ analysis: data })
+    });
+    console.log('[Aushadh AI] Analysis synced to MongoDB');
+  } catch(e) {
+    console.error('[Aushadh AI] Failed to sync analysis:', e);
+  }
+}
+
+async function saveAnalysisHistoryToServer(history) {
+  try {
+    const token = localStorage.getItem('medbuddy_token');
+    if (!token) return;
+    
+    await fetch(`${API}/auth/analysis/history`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ history })
+    });
+    console.log('[Aushadh AI] Analysis history synced to MongoDB');
+  } catch(e) {
+    console.error('[Aushadh AI] Failed to sync analysis history:', e);
+  }
 }
 
 async function saveMedicationsToServer(medications) {
@@ -315,14 +361,34 @@ async function saveMedicationsToServer(medications) {
   }
 }
 function getAnalysis() {
-  // Try localStorage first, fall back to sessionStorage backup
   const primary = localStorage.getItem('medbuddy_analysis');
   if (primary) return JSON.parse(primary);
   const backup = sessionStorage.getItem('medbuddy_analysis_backup');
   if (backup) {
-    // Restore to localStorage
     localStorage.setItem('medbuddy_analysis', backup);
     return JSON.parse(backup);
+  }
+  return null;
+}
+
+async function loadAnalysisFromServer() {
+  try {
+    const token = localStorage.getItem('medbuddy_token');
+    if (!token) return null;
+    
+    const response = await fetch(`${API}/auth/analysis`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (response.ok) {
+      const data = await response.json();
+      if (data.analysis) {
+        localStorage.setItem('medbuddy_analysis', JSON.stringify(data.analysis));
+        sessionStorage.setItem('medbuddy_analysis_backup', JSON.stringify(data.analysis));
+        return data.analysis;
+      }
+    }
+  } catch(e) {
+    console.error('[Aushadh AI] Failed to load analysis from server:', e);
   }
   return null;
 }
@@ -336,6 +402,28 @@ function getPrescriptionHistory() {
   try { return JSON.parse(localStorage.getItem('medbuddy_history') || '[]'); }
   catch(e) { return []; }
 }
+
+async function loadHistoryFromServer() {
+  try {
+    const token = localStorage.getItem('medbuddy_token');
+    if (!token) return null;
+    
+    const response = await fetch(`${API}/auth/analysis/history`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (response.ok) {
+      const data = await response.json();
+      if (data.history && data.history.length > 0) {
+        localStorage.setItem('medbuddy_history', JSON.stringify(data.history));
+        return data.history;
+      }
+    }
+  } catch(e) {
+    console.error('[Aushadh AI] Failed to load history from server:', e);
+  }
+  return null;
+}
+
 function loadHistoryEntry(id) {
   const history = getPrescriptionHistory();
   const entry = history.find(h => h.id === id);

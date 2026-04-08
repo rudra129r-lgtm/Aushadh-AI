@@ -39,6 +39,7 @@ def init_ocr():
         print(f"[OCR] Debug - GOOGLE_APPLICATION_CREDENTIALS: {'set' if GOOGLE_APPLICATION_CREDENTIALS else 'empty'}")
         print(f"[OCR] Debug - GOOGLE_APPLICATION_CREDENTIALS_JSON: {'set' if creds_json else 'empty'}")
         
+        google_ok = False
         if not GOOGLE_APPLICATION_CREDENTIALS and not creds_json:
             print("[OCR] WARNING: Google credentials not found")
             print("[OCR] Falling back to OCR.space")
@@ -51,12 +52,17 @@ def init_ocr():
                     f.write(creds_json)
                 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = creds_path
                 print(f"[OCR] Google credentials loaded from env var")
+                google_ok = True
             elif GOOGLE_APPLICATION_CREDENTIALS and os.path.exists(GOOGLE_APPLICATION_CREDENTIALS):
                 print(f"[OCR] Google credentials loaded from file")
+                google_ok = True
+            else:
+                print("[OCR] Google credentials file not found, using OCR.space")
             
-            vision_client = vision.ImageAnnotatorClient()
-            GOOGLE_VISION_AVAILABLE = True
-            print("[OCR] Google Cloud Vision API initialized")
+            if google_ok:
+                vision_client = vision.ImageAnnotatorClient()
+                GOOGLE_VISION_AVAILABLE = True
+                print("[OCR] Google Cloud Vision API initialized")
     except ImportError:
         print("[OCR] google-cloud-vision not installed. Run: pip install google-cloud-vision")
         print("[OCR] Using OCR.space only (limited handwriting support)")
@@ -220,25 +226,29 @@ def extract_text_ocr_space(image_bytes: bytes) -> dict:
     try:
         logger.info("[OCR] Calling OCR.space API (fallback)...")
         
+        # Debug: Log API key first few chars
+        logger.info(f"[OCR] API key: {OCR_SPACE_API_KEY[:8]}..." if OCR_SPACE_API_KEY else "[OCR] No API key")
+        
         # Preprocess image
         enhanced_bytes = preprocess_image_for_ocr(image_bytes)
         
         # Convert image to base64
         b64_image = base64.b64encode(enhanced_bytes).decode('utf-8')
+        logger.info(f"[OCR] Image size: {len(b64_image)} chars base64")
         
-        # Prepare payload
-        payload = {
-            "apikey": OCR_SPACE_API_KEY,
-            "base64Image": f"data:image/jpeg;base64,{b64_image}",
-            "language": "eng",
-            "isOverlayRequired": "false",
-            "detectOrientation": "true",
-            "scale": "true",
-            "OCREngine": "2",
+        # Prepare payload - use files for multipart upload
+        files = {
+            'apikey': (None, OCR_SPACE_API_KEY),
+            'language': (None, 'eng'),
+            'isOverlayRequired': (None, 'false'),
+            'detectOrientation': (None, 'true'),
+            'scale': (None, 'true'),
+            'OCREngine': (None, '2'),
+            'file': ('image.png', enhanced_bytes, 'image/png')
         }
         
-        # Make request
-        response = requests.post(OCR_SPACE_URL, data=payload, timeout=30)
+        # Make request with multipart form
+        response = requests.post(OCR_SPACE_URL, files=files, timeout=30)
         
         if not response.ok:
             logger.error(f"[OCR] API error: {response.status_code}")

@@ -48,6 +48,8 @@ def _ensure_indexes():
     try:
         db.users.create_index("email", unique=True)
         db.medications.create_index("user_id")
+        db.analyses.create_index("user_id")
+        db.analysis_history.create_index("user_id")
     except Exception as e:
         print(f"Index creation: {e}")
 
@@ -157,3 +159,160 @@ def delete_medication(med_id: str, user_id: str):
     except Exception as e:
         print(f"Delete medication error: {e}")
         return False
+
+
+# ── Analysis Data Storage ─────────────────────────────────────
+
+def save_analysis(user_id: str, analysis_data: dict):
+    """Save current analysis data"""
+    try:
+        db = get_db()
+        data = {
+            "user_id": user_id,
+            "analysis": analysis_data,
+            "updated_at": "now"
+        }
+        db.analyses.update_one(
+            {"user_id": user_id},
+            {"$set": data},
+            upsert=True
+        )
+        return True
+    except Exception as e:
+        print(f"Save analysis error: {e}")
+        return False
+
+
+def get_analysis(user_id: str):
+    """Get current analysis data"""
+    try:
+        db = get_db()
+        record = db.analyses.find_one({"user_id": user_id})
+        if record:
+            record["_id"] = str(record["_id"])
+            return record.get("analysis", {})
+        return None
+    except Exception as e:
+        print(f"Get analysis error: {e}")
+        return None
+
+
+def save_analysis_history(user_id: str, history: list):
+    """Save analysis history (last 5 analyses)"""
+    try:
+        db = get_db()
+        data = {
+            "user_id": user_id,
+            "history": history,
+            "updated_at": "now"
+        }
+        db.analysis_history.update_one(
+            {"user_id": user_id},
+            {"$set": data},
+            upsert=True
+        )
+        return True
+    except Exception as e:
+        print(f"Save analysis history error: {e}")
+        return False
+
+
+def get_analysis_history(user_id: str):
+    """Get analysis history"""
+    try:
+        db = get_db()
+        record = db.analysis_history.find_one({"user_id": user_id})
+        if record:
+            record["_id"] = str(record["_id"])
+            return record.get("history", [])
+        return []
+    except Exception as e:
+        print(f"Get analysis history error: {e}")
+        return []
+
+
+# ── Adherence Tracking ─────────────────────────────────────
+
+def save_adherence(user_id: str, date: str, medications: list):
+    """Save daily adherence record"""
+    try:
+        db = get_db()
+        data = {
+            "user_id": user_id,
+            "date": date,  # YYYY-MM-DD format
+            "medications": medications,  # list of {name, taken, time_slot}
+            "created_at": "now"
+        }
+        db.adherence.insert_one(data)
+        return True
+    except Exception as e:
+        print(f"Save adherence error: {e}")
+        return False
+
+
+def get_adherence(user_id: str, start_date: str = None, end_date: str = None):
+    """Get adherence history"""
+    try:
+        db = get_db()
+        query = {"user_id": user_id}
+        if start_date and end_date:
+            query["date"] = {"$gte": start_date, "$lte": end_date}
+        elif start_date:
+            query["date"] = {"$gte": start_date}
+        
+        records = list(db.adherence.find(query).sort("date", -1))
+        for r in records:
+            r["_id"] = str(r["_id"])
+        return records
+    except Exception as e:
+        print(f"Get adherence error: {e}")
+        return []
+
+
+def get_adherence_stats(user_id: str, days: int = 30):
+    """Calculate adherence statistics"""
+    try:
+        db = get_db()
+        from datetime import datetime, timedelta
+        end_date = datetime.now().strftime("%Y-%m-%d")
+        start_date = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
+        
+        records = list(db.adherence.find({
+            "user_id": user_id,
+            "date": {"$gte": start_date, "$lte": end_date}
+        }).sort("date", -1))
+        
+        if not records:
+            return {"total_days": 0, "adherence_rate": 0, "streak": 0}
+        
+        total_meds = 0
+        taken_meds = 0
+        days_with_data = len(records)
+        
+        for record in records:
+            for med in record.get("medications", []):
+                total_meds += 1
+                if med.get("taken"):
+                    taken_meds += 1
+        
+        adherence_rate = round((taken_meds / total_meds * 100), 1) if total_meds > 0 else 0
+        
+        # Calculate current streak
+        streak = 0
+        for record in records:
+            day_taken = sum(1 for m in record.get("medications", []) if m.get("taken"))
+            if day_taken > 0:
+                streak += 1
+            else:
+                break
+        
+        return {
+            "total_days": days_with_data,
+            "total_meds": total_meds,
+            "taken_meds": taken_meds,
+            "adherence_rate": adherence_rate,
+            "streak": streak
+        }
+    except Exception as e:
+        print(f"Get adherence stats error: {e}")
+        return {"total_days": 0, "adherence_rate": 0, "streak": 0}

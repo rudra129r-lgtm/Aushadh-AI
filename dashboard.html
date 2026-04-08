@@ -11,6 +11,29 @@
 <style>
   .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
   .primary-gradient{background:linear-gradient(135deg,#006068 0%,#007b85 100%)}
+  .animate-gradient{background-size:200% 200%;animation:gradient-shift 8s ease infinite}
+  @keyframes gradient-shift {
+    0%{background-position:0% 50%}
+    50%{background-position:100% 50%}
+    100%{background-position:0% 50%}
+  }
+  .header-gradient {
+    background: linear-gradient(135deg, #002f34 0%, #004f56 30%, #006068 60%, #007b85 100%);
+    position: relative;
+  }
+  .header-gradient::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(circle at 20% 80%, rgba(0,96,104,0.4) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(150,241,252,0.2) 0%, transparent 40%),
+      radial-gradient(circle at 40% 40%, rgba(0,123,133,0.3) 0%, transparent 30%);
+    pointer-events: none;
+  }
   body{font-family:'Public Sans',sans-serif;overflow-x:hidden}
   h1,h2,h3,h4{font-family:'Manrope',sans-serif}
   .nav-link:hover{transform:translateX(4px)}
@@ -69,11 +92,17 @@
     <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="documents.html">
       <span class="material-symbols-outlined text-sm">description</span>Documents
     </a>
+    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="diagnosis.html">
+      <span class="material-symbols-outlined text-sm">summarize</span>Summary
+    </a>
     <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="medications.html">
       <span class="material-symbols-outlined text-sm">medical_services</span>Medications
     </a>
     <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="checklist.html">
       <span class="material-symbols-outlined text-sm">fact_check</span>Checklist
+    </a>
+    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="profile.html">
+      <span class="material-symbols-outlined text-sm">account_circle</span>Profile
     </a>
   </nav>
   <div class="px-5 space-y-3 mt-auto">
@@ -86,19 +115,26 @@
   </div>
 </aside>
 
+<div class="fixed top-5 right-6 flex items-center gap-3 z-[999999]">
+  <div class="w-10 h-10 rounded-full bg-white/20 border-2 border-white/30 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform" onclick="toggleNotifications(event)">
+    <span class="material-symbols-outlined text-white/70 text-base">notifications</span>
+  </div>
+  <div id="dashboard-avatar" class="w-10 h-10 rounded-full bg-white flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-md" onclick="toggleProfile(event)">
+    <span class="material-symbols-outlined text-primary text-sm">person</span>
+  </div>
+</div>
+
 <main class="md:ml-56 min-h-screen pb-24 md:pb-12">
-  <!-- Header -->
-  <header class="sticky top-0 z-30 bg-surface/80 backdrop-blur-xl flex justify-between items-center px-6 md:px-10 py-4 max-w-7xl mx-auto">
-    <div>
-      <h2 class="font-headline font-extrabold text-2xl text-on-surface">Welcome back, <span id="user-name">there</span> 👋</h2>
-      <p class="text-sm text-outline" id="date-str"></p>
-    </div>
-    <div class="flex items-center gap-3">
-      <button class="p-2 text-on-surface-variant hover:bg-surface-container-high rounded-full transition-colors">
-        <span class="material-symbols-outlined">notifications</span>
-      </button>
-      <div class="w-9 h-9 rounded-full bg-primary/10 border-2 border-primary-fixed flex items-center justify-center">
-        <span class="material-symbols-outlined text-primary text-sm">person</span>
+  <!-- Animated Green Header -->
+  <header class="sticky top-0 z-50 relative overflow-hidden">
+    <div class="absolute inset-0 header-gradient"></div>
+    <div class="relative px-6 md:px-10 py-5 flex justify-between items-start">
+      <div class="flex items-center gap-4">
+        <img src="logo_white.png" alt="Aushadh AI" class="w-12 h-12 object-contain">
+        <div class="flex flex-col">
+          <h2 class="font-headline font-extrabold text-2xl text-white">Welcome back, <span id="user-name">there</span> 👋</h2>
+          <p class="text-sm text-white/70" id="date-str"></p>
+        </div>
       </div>
     </div>
   </header>
@@ -125,7 +161,7 @@
               <span class="w-2 h-2 bg-primary-fixed rounded-full animate-pulse"></span>
               AI Powered Analysis
             </span>
-            <span class="px-3 py-1 rounded-full bg-secondary/20 text-secondary text-[10px] font-bold uppercase tracking-widest">IAR Udaan 2026</span>
+            
           </div>
           
           <h3 class="text-2xl sm:text-3xl md:text-4xl font-headline font-extrabold text-white mb-3 leading-tight">Your Health,<br/><span class="gradient-text">Finally Clear.</span></h3>
@@ -242,23 +278,172 @@ function tryLiveDemo() {
   window.location.href = 'diagnosis.html';
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+function toggleNotifications(e) {
+  e.stopPropagation();
+  const existing = document.getElementById('notification-dropdown');
+  if (existing) {
+    existing.remove();
+    return;
+  }
+  
+  const data = getAnalysis();
+  const notifications = [];
+  
+  if (data) {
+    if (data.medications && data.medications.length > 0) {
+      notifications.push({ icon: 'medication', text: 'You have ' + data.medications.length + ' active medications', time: 'Now' });
+    }
+    if (data.checklist && data.checklist.length > 0) {
+      const pending = data.checklist.filter(item => !item.checked).length;
+      if (pending > 0) {
+        notifications.push({ icon: 'task_alt', text: pending + ' pending tasks in your checklist', time: 'Today' });
+      }
+    }
+    if (data.emergency) {
+      notifications.push({ icon: 'warning', text: 'Review emergency instructions', time: 'Urgent', urgent: true });
+    }
+    if (data.side_effects && data.side_effects.length > 0) {
+      notifications.push({ icon: 'medical_information', text: 'Check side effect alerts', time: 'Important' });
+    }
+  }
+  
+  if (notifications.length === 0) {
+    notifications.push({ icon: 'info', text: 'No new notifications', time: '' });
+  }
+  
+  const bell = e.target.closest('[onclick]').getBoundingClientRect();
+  
+  const dropdown = document.createElement('div');
+  dropdown.id = 'notification-dropdown';
+  dropdown.style.cssText = 'position:fixed;top:' + (bell.bottom + 10) + 'px;right:' + (window.innerWidth - bell.right - 40) + 'px;width:320px;background:#f7f9ff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,0.3);z-index:2147483647 !important;overflow:hidden;border:1px solid #bdc9ca';
+  dropdown.innerHTML = `
+    <div style="background:linear-gradient(135deg, #002f34 0%, #004f56 30%, #006068 60%, #007b85 100%);padding:16px;display:flex;align-items:center;justify-content:space-between">
+      <span style="color:white;font-family:'Manrope',sans-serif;font-weight:800;font-size:18px">Notifications</span>
+      <span class="material-symbols-outlined" style="color:white/70;cursor:pointer;font-size:20px" onclick="toggleNotifications(event)">close</span>
+    </div>
+    <div style="max-height:320px;overflow-y:auto;background:#f1f4fa">
+      ${notifications.map(n => `
+        <div style="padding:16px;border-bottom:1px solid #e5e8ee;cursor:pointer;background:white" onclick="${n.urgent ? "window.location.href='checklist.html'" : n.icon === 'medication' ? "window.location.href='medications.html'" : n.icon === 'task_alt' ? "window.location.href='checklist.html'" : n.icon === 'medical_information' ? "window.location.href='checklist.html'" : "window.location.href='dashboard.html'"}" onmouseover="this.style.background='#f1f4fa'" onmouseout="this.style.background='white'">
+          <div style="display:flex;align-items:start;gap:12px">
+            <span class="material-symbols-outlined" style="${n.urgent ? 'color:#ba1a1a' : '#006068'}">${n.icon}</span>
+            <div style="flex:1">
+              <p style="font-family:'Manrope',sans-serif;font-size:14px;font-weight:600;color:#181c20;${n.urgent ? 'color:#ba1a1a' : ''}">${n.text}</p>
+              <p style="font-size:12px;color:#6e797a;margin-top:4px;font-family:'Public Sans',sans-serif">${n.time}</p>
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+    <div style="padding:16px;background:#ebeef4;text-align:center;border-radius:0 0 16px 16px">
+      <a href="checklist.html" style="font-family:'Manrope',sans-serif;font-size:13px;font-weight:700;color:#006068;text-decoration:none">View all notifications →</a>
+    </div>
+  `;
+  
+  document.body.appendChild(dropdown);
+  
+  setTimeout(() => {
+    document.addEventListener('click', function handler(e) {
+      const dropdown = document.getElementById('notification-dropdown');
+      if (dropdown && !dropdown.contains(e.target) && !e.target.closest('[onclick*="toggleNotifications"]')) {
+        dropdown.remove();
+        document.removeEventListener('click', handler);
+      }
+    });
+  }, 0);
+}
+
+function toggleProfile(e) {
+  e.stopPropagation();
+  const existing = document.getElementById('profile-dropdown');
+  if (existing) {
+    existing.remove();
+    return;
+  }
+  
+  const user = getUser();
+  const avatarEl = document.getElementById('dashboard-avatar');
+  if (user.avatar) {
+    avatarEl.innerHTML = `<img src="${user.avatar}" class="w-full h-full object-cover rounded-full">`;
+  } else if (user.name) {
+    const initials = user.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+    avatarEl.innerHTML = `<span class="text-primary font-bold text-sm">${initials}</span>`;
+  }
+  
+  const rect = avatarEl.getBoundingClientRect();
+  
+  const dropdown = document.createElement('div');
+  dropdown.id = 'profile-dropdown';
+  dropdown.style.cssText = `position:fixed;top:${rect.bottom + 10}px;right:${window.innerWidth - rect.right}px;width:260px;background:#f7f9ff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,0.3);z-index:2147483647 !important;overflow:hidden;border:1px solid #bdc9ca;pointer-events:auto`;
+  dropdown.innerHTML = `
+    <div style="background:linear-gradient(135deg, #002f34 0%, #004f56 30%, #006068 60%, #007b85 100%);padding:24px;text-align:center;border-radius:16px 16px 0 0">
+      <div style="width:72px;height:72px;background:white;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.2)">
+        <span class="material-symbols-outlined" style="color:#006068;font-size:40px">person</span>
+      </div>
+      <p style="color:white;font-family:'Manrope',sans-serif;font-weight:700;font-size:18px">${user.name || 'User'}</p>
+      <p style="color:white/70;font-family:'Public Sans',sans-serif;font-size:13px;margin-top:4px">${user.email || ''}</p>
+    </div>
+    <div style="padding:12px;background:#fff;border-radius:0 0 16px 16px;border:1px solid #e5e8ee;border-top:none">
+      <a href="profile.html" style="display:flex;align-items:center;gap:12px;padding:14px 16px;text-decoration:none;color:#181c20;font-family:'Manrope',sans-serif;font-weight:600;font-size:14px;border-radius:10px" onmouseover="this.style.background='#f1f4fa'" onmouseout="this.style.background='transparent'">
+        <span class="material-symbols-outlined" style="color:#006068;font-size:20px">account_circle</span>
+        Profile Settings
+      </a>
+      <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;text-decoration:none;color:#181c20;font-family:'Manrope',sans-serif;font-weight:600;font-size:14px;border-radius:10px;cursor:pointer" onclick="logout()" onmouseover="this.style.background='#ffdad6'" onmouseout="this.style.background='transparent'">
+        <span class="material-symbols-outlined" style="color:#ba1a1a;font-size:20px">logout</span>
+        <span style="color:#ba1a1a">Logout</span>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(dropdown);
+  
+  // Update close handler to include avatar element
+  setTimeout(() => {
+    document.addEventListener('click', function handler(e) {
+      const dropdown = document.getElementById('profile-dropdown');
+      const avatarEl = document.getElementById('dashboard-avatar');
+      if (dropdown && !dropdown.contains(e.target) && !avatarEl.contains(e.target)) {
+        dropdown.remove();
+        document.removeEventListener('click', handler);
+      }
+    });
+  }, 0);
+}
+
+document.addEventListener('DOMContentLoaded', async function() {
   console.log('=== DASHBOARD DOMContentLoaded ===');
   const user=getUser();
   let data=getAnalysis();
-const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
-// User name
-document.getElementById('user-name').textContent=(user.name||user.email||'there').split(' ')[0];
+  // Load from server if logged in
+  if (localStorage.getItem('medbuddy_logged_in')) {
+    const serverData = await loadAnalysisFromServer();
+    if (serverData) data = serverData;
+    
+    const serverHistory = await loadHistoryFromServer();
+    if (serverHistory) {
+      localStorage.setItem('medbuddy_history', JSON.stringify(serverHistory));
+    }
+  }
 
-// Date
+  // User name
+  document.getElementById('user-name').textContent=(user.name||user.email||'there').split(' ')[0];
+  
+  // Update avatar on page load
+  const avatarEl = document.getElementById('dashboard-avatar');
+  if (user.avatar) {
+    avatarEl.innerHTML = `<img src="${user.avatar}" class="w-full h-full object-cover rounded-full">`;
+  } else if (user.name) {
+    const initials = user.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+    avatarEl.innerHTML = `<span class="text-primary font-bold text-sm">${initials}</span>`;
+  }
+
+  // Date
 document.getElementById('date-str').textContent=new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 
 // Right card - Last Analysis
 const rightCard=document.getElementById('right-card');
 if(data){
-  const medsList = data.medications?.slice(0,3).map(m => `• ${esc(m.name)} ${esc(m.dosage)}`).join('') || '';
-  const moreMeds = (data.medications?.length || 0) > 3 ? `\n+ ${data.medications.length - 3} more medicines` : '';
   rightCard.innerHTML=`
     <div class="primary-gradient text-white rounded-3xl p-6 flex flex-col h-full shadow-xl shadow-primary/10">
       <div class="flex justify-between items-start mb-4">
@@ -273,10 +458,6 @@ if(data){
         <div>
           <p class="text-white/60 text-[10px] font-bold uppercase tracking-widest">Summary</p>
           <p class="text-white/80 text-sm leading-relaxed">${esc((data.summary_en||'').slice(0,100)+(data.summary_en?.length>100?'...':''))}</p>
-        </div>
-        <div>
-          <p class="text-white/60 text-[10px] font-bold uppercase tracking-widest">Medications (${data.medications?.length||0})</p>
-          <p class="text-white/80 text-xs leading-relaxed whitespace-pre-line">${medsList}${moreMeds}</p>
         </div>
         <div class="flex items-center gap-4 pt-2">
           <div class="flex items-center gap-1">
@@ -344,28 +525,28 @@ if(data&&data.medications&&data.medications.length>0){
     </div>`;
 }
 
-// Prescription History
-const histSec=document.getElementById('history-section');
-const histCards=document.getElementById('history-cards');
-const history=getPrescriptionHistory();
-if(history.length>1){
-  histSec.classList.remove('hidden');
-  const currentSummary=data?.summary_en||'';
-  histCards.innerHTML=history.map(h=>{
-    const isCurrent=h.summary_en===currentSummary;
-    const dt=new Date(h.timestamp).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
-    return `<div onclick="${isCurrent?'':' loadHistoryEntry('+h.id+')'}" class="bg-surface-container-lowest p-5 rounded-2xl border ${isCurrent?'border-primary/40 shadow-md':'border-outline-variant/10 hover:shadow-md cursor-pointer'} transition-all relative">
-      ${isCurrent?'<span class="absolute top-3 right-3 text-[10px] font-black bg-primary text-white px-2 py-0.5 rounded-full">CURRENT</span>':''}
-      <p class="text-xs text-outline font-semibold mb-1">${esc(dt)}</p>
-      <p class="font-bold text-sm text-on-surface leading-snug mb-2">${esc(h.summary_en.substring(0,80))}${h.summary_en.length>80?'…':''}</p>
-      <div class="flex items-center gap-3 text-xs text-on-surface-variant">
-        <span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">pill</span>${h.med_count} med${h.med_count!==1?'s':''}</span>
-        ${h.doctor_name?`<span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">stethoscope</span>${esc(h.doctor_name)}</span>`:''}
-        <span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">verified</span>${h.confidence}%</span>
-      </div>
-    </div>`;
-  }).join('');
-}
+  // Prescription History
+  const histSec=document.getElementById('history-section');
+  const histCards=document.getElementById('history-cards');
+  const history=getPrescriptionHistory();
+  if(history.length>0){
+    histSec.classList.remove('hidden');
+    const currentSummary=data?.summary_en||'';
+    histCards.innerHTML=history.map(h=>{
+      const isCurrent=h.summary_en===currentSummary;
+      const dt=new Date(h.timestamp).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+      return `<div onclick="${isCurrent?'':' loadHistoryEntry('+h.id+')'}" class="bg-surface-container-lowest p-5 rounded-2xl border ${isCurrent?'border-primary/40 shadow-md':'border-outline-variant/10 hover:shadow-md cursor-pointer'} transition-all relative">
+        ${isCurrent?'<span class="absolute top-3 right-3 text-[10px] font-black bg-primary text-white px-2 py-0.5 rounded-full">CURRENT</span>':''}
+        <p class="text-xs text-outline font-semibold mb-1">${esc(dt)}</p>
+        <p class="font-bold text-sm text-on-surface leading-snug mb-2">${esc(h.summary_en.substring(0,80))}${h.summary_en.length>80?'…':''}</p>
+        <div class="flex items-center gap-3 text-xs text-on-surface-variant">
+          <span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">pill</span>${h.med_count} med${h.med_count!==1?'s':''}</span>
+          ${h.doctor_name?`<span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">stethoscope</span>${esc(h.doctor_name)}</span>`:''}
+          <span class="flex items-center gap-1"><span class="material-symbols-outlined text-xs">verified</span>${h.confidence}%</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
 });
 </script>
 </body>

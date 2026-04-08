@@ -11,6 +11,29 @@
 <style>
   .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
   .primary-gradient{background:linear-gradient(135deg,#006068 0%,#007b85 100%)}
+  .animate-gradient{background-size:200% 200%;animation:gradient-shift 8s ease infinite}
+  @keyframes gradient-shift {
+    0%{background-position:0% 50%}
+    50%{background-position:100% 50%}
+    100%{background-position:0% 50%}
+  }
+  .header-gradient {
+    background: linear-gradient(135deg, #002f34 0%, #004f56 30%, #006068 60%, #007b85 100%);
+    position: relative;
+  }
+  .header-gradient::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(circle at 20% 80%, rgba(0,96,104,0.4) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(150,241,252,0.2) 0%, transparent 40%),
+      radial-gradient(circle at 40% 40%, rgba(0,123,133,0.3) 0%, transparent 30%);
+    pointer-events: none;
+  }
   body{font-family:'Public Sans',sans-serif;overflow-x:hidden}
   h1,h2,h3,h4{font-family:'Manrope',sans-serif}
   .cl-item.checked .cl-text{text-decoration:line-through;opacity:0.5}
@@ -35,60 +58,62 @@
 </head>
 <body class="bg-surface text-on-surface">
 
-<header class="bg-[#f7f9ff]/80 backdrop-blur-xl sticky top-0 z-50 shadow-sm">
-  <div class="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
-    <div class="flex items-center gap-8">
-      <a href="dashboard.html" class="flex items-center gap-2 text-2xl font-black text-[#006068] font-headline">
-        <img src="logo_green.png" alt="Aushadh AI" class="w-8 h-8 object-contain">
-        Aushadh AI
-      </a>
-      <nav class="hidden md:flex gap-6">
-        <a class="text-slate-500 font-medium hover:text-[#007B85] transition-colors" href="dashboard.html">Dashboard</a>
-        <a class="text-slate-500 font-medium hover:text-[#007B85] transition-colors" href="documents.html">Documents</a>
-        <a class="text-slate-500 font-medium hover:text-[#007B85] transition-colors" href="medications.html">Medications</a>
-        <a class="text-[#006068] font-bold border-b-2 border-[#006068]" href="checklist.html">Checklist</a>
-      </nav>
-    </div>
-    <div class="flex items-center gap-3">
-      <div class="w-9 h-9 rounded-full bg-surface-container border border-outline-variant flex items-center justify-center">
-        <span class="material-symbols-outlined text-primary text-sm">person</span>
-      </div>
-    </div>
-  </div>
-</header>
 
-<div class="flex max-w-7xl mx-auto min-h-screen">
-<!-- Sidebar -->
-<aside class="hidden md:flex flex-col w-56 fixed left-0 top-16 h-full bg-surface-container-low py-8 z-30">
-  <div class="px-4 mb-4 flex items-center gap-2">
+<aside class="hidden md:flex flex-col h-screen w-56 fixed left-0 top-0 bg-surface-container-low py-8 z-40">
+  <div class="px-5 mb-8 flex items-center gap-2">
     <img src="logo_green.png" alt="Aushadh AI" class="w-8 h-8 object-contain">
     <div>
-      <p class="text-[#006068] font-bold text-sm">Aushadh AI</p>
-      <p class="text-[10px] text-slate-500 uppercase tracking-widest">Clinical Serenity</p>
+      <h1 class="text-lg font-bold text-primary">Aushadh AI</h1>
+      <p class="text-[10px] uppercase tracking-widest text-outline">Clinical Serenity</p>
     </div>
   </div>
-    <nav class="flex-grow space-y-1 px-3">
-      <a class="flex items-center gap-2 px-3 py-2.5 text-slate-600 hover:bg-surface-container-high/50 hover:translate-x-1 transition-all font-semibold text-sm rounded-lg" href="dashboard.html"><span class="material-symbols-outlined text-sm">dashboard</span>Dashboard</a>
-      <a class="flex items-center gap-2 px-3 py-2.5 text-slate-600 hover:bg-surface-container-high/50 hover:translate-x-1 transition-all font-semibold text-sm rounded-lg" href="documents.html"><span class="material-symbols-outlined text-sm">description</span>Documents</a>
-      <a class="flex items-center gap-2 px-3 py-2.5 text-slate-600 hover:bg-surface-container-high/50 hover:translate-x-1 transition-all font-semibold text-sm rounded-lg" href="medications.html"><span class="material-symbols-outlined text-sm">medical_services</span>Medications</a>
-      <a class="flex items-center gap-2 px-3 py-2.5 bg-white text-primary rounded-r-full shadow-sm font-semibold text-sm" href="checklist.html"><span class="material-symbols-outlined text-sm">fact_check</span>Checklist</a>
-    </nav>
-    <div class="px-4 mt-auto space-y-3">
-      <a href="documents.html" class="w-full py-2.5 primary-gradient text-white rounded-full font-bold text-sm flex items-center justify-center gap-1">
-        <span class="material-symbols-outlined text-sm">upload</span> Upload
-      </a>
-      <a class="flex items-center gap-2 py-1.5 text-slate-600 hover:text-error transition-colors text-sm" href="#" onclick="logout()">
-        <span class="material-symbols-outlined text-sm">logout</span>Logout
-      </a>
-    </div>
-  </aside>
+  <nav class="flex-1 space-y-1 px-3">
+    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="dashboard.html">
+      <span class="material-symbols-outlined text-sm">dashboard</span>Dashboard
+    </a>
+    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="documents.html">
+      <span class="material-symbols-outlined text-sm">description</span>Documents
+    </a>
+    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="diagnosis.html">
+      <span class="material-symbols-outlined text-sm">summarize</span>Summary
+    </a>
+    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="medications.html">
+      <span class="material-symbols-outlined text-sm">medical_services</span>Medications
+    </a>
+    <a class="nav-link flex items-center gap-2 px-4 py-3 bg-surface-container-lowest text-primary rounded-r-full shadow-sm font-semibold text-sm" href="checklist.html">
+      <span class="material-symbols-outlined text-sm">fact_check</span>Checklist
+    </a>
+    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="profile.html">
+      <span class="material-symbols-outlined text-sm">account_circle</span>Profile
+    </a>
+  </nav>
+  <div class="px-5 space-y-3 mt-auto">
+    <a href="documents.html" class="w-full primary-gradient text-white rounded-full py-2.5 text-sm font-bold shadow-lg flex items-center justify-center gap-1 active:scale-95">
+      <span class="material-symbols-outlined text-sm">upload</span>Upload Document
+    </a>
+    <a class="flex items-center gap-2 py-1.5 text-slate-500 text-sm hover:text-error transition-colors cursor-pointer" onclick="logout()">
+      <span class="material-symbols-outlined text-sm">logout</span>Logout
+    </a>
+  </div>
+</aside>
 
-  <main class="flex-1 md:ml-56 p-6 md:p-10 mb-24 md:mb-0">
-    <div class="mb-3 flex items-center gap-2 text-sm">
-      <a href="dashboard.html" class="text-outline hover:text-primary transition-colors flex items-center gap-1"><span class="material-symbols-outlined text-sm">arrow_back</span>Dashboard</a>
-      <span class="text-outline">/</span>
-      <span class="text-primary font-semibold">Follow-up Guide</span>
+<main class="md:ml-56 min-h-screen pb-24 md:pb-12">
+  <!-- Page Header -->
+  <header class="sticky top-0 z-30 relative overflow-hidden">
+    <div class="absolute inset-0 header-gradient"></div>
+    <div class="relative px-6 md:px-10 py-5 flex justify-between items-center">
+      <div>
+        <div class="flex items-center gap-2 text-white/80 text-sm mb-1">
+          <a href="dashboard.html" class="hover:text-white transition-colors flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">arrow_back</span>Dashboard
+          </a>
+          <span>/</span>
+          <span class="text-white font-semibold">Checklist</span>
+        </div>
+        <h2 class="font-headline font-extrabold text-2xl text-white">Follow-up Guide</h2>
+      </div>
     </div>
+  </header>
 
     <!-- NO DATA -->
     <div id="no-data" class="hidden text-center py-20">
@@ -104,9 +129,9 @@
 
     <!-- HAS DATA -->
     <div id="has-data" class="hidden">
-      <header class="mb-8">
+      <header class="mb-8 text-center pt-8">
         <h1 class="text-2xl md:text-4xl font-extrabold text-on-surface leading-tight">Post-Consultation<br/><span class="text-primary-container">Follow-up Guide</span></h1>
-        <p class="text-on-surface-variant mt-2 max-w-xl">Your personalised breakdown of what to watch for and your next steps.</p>
+        <p class="text-on-surface-variant mt-2 max-w-xl mx-auto">Your personalised breakdown of what to watch for and your next steps.</p>
       </header>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -181,23 +206,23 @@
 
       <footer class="mt-12 text-center border-t border-surface-container-high pt-8 pb-10">
         <div class="flex justify-center gap-3 flex-wrap">
-          <a href="diagnosis.html" class="flex items-center gap-2 primary-gradient text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg active:scale-95 transition-all">
+          <a href="diagnosis.html" class="flex items-center gap-2 primary-gradient text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:shadow-primary/50 hover:-translate-y-0.5 active:scale-95 transition-all">
             <span class="material-symbols-outlined text-sm">summarize</span> Health Summary
           </a>
-          <a href="medications.html" class="flex items-center gap-2 bg-surface-container-high text-on-primary-fixed-variant px-6 py-2.5 rounded-full font-bold text-sm hover:bg-surface-container-highest transition-all">
+          <a href="medications.html" class="flex items-center gap-2 primary-gradient text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:shadow-primary/50 hover:-translate-y-0.5 active:scale-95 transition-all">
             <span class="material-symbols-outlined text-sm">medication</span> Medications
           </a>
-          <a href="documents.html" class="flex items-center gap-2 border border-outline-variant text-on-surface-variant px-6 py-2.5 rounded-full font-bold text-sm hover:border-primary hover:text-primary transition-all">
+          <a href="documents.html" class="flex items-center gap-2 primary-gradient text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:shadow-primary/50 hover:-translate-y-0.5 active:scale-95 transition-all">
             <span class="material-symbols-outlined text-sm">upload_file</span> New Upload
           </a>
-          <button onclick="showFindHospitalPopup()" class="flex items-center gap-2 bg-error text-white px-6 py-2.5 rounded-full font-bold text-sm hover:bg-error/90 transition-all shadow-md">
+          <button onclick="showFindHospitalPopup()" class="flex items-center gap-2 bg-error text-white px-6 py-2.5 rounded-full font-bold text-sm hover:bg-error/90 hover:shadow-lg hover:shadow-error/50 hover:-translate-y-0.5 transition-all shadow-md">
             <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">local_hospital</span> Find a Hospital
           </button>
         </div>
       </footer>
     </div>
-  </main>
-</div>
+  </section>
+</main>
 
 <nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-white/80 backdrop-blur-xl border-t border-slate-100/10 shadow-[0_-4px_24px_rgba(24,28,32,0.06)]">
   <a class="flex flex-col items-center text-slate-400" href="dashboard.html"><span class="material-symbols-outlined">home</span><span class="text-[10px] uppercase mt-1">Home</span></a>
@@ -213,13 +238,20 @@
 <script src="medbuddy.js"></script>
 <script>
 requireAuth();
-const data=getAnalysis();
 
-let checkedCount=0, totalCount=0;
+(async function initData() {
+  let data = getAnalysis();
+  
+  if (localStorage.getItem('medbuddy_logged_in')) {
+    const serverData = await loadAnalysisFromServer();
+    if (serverData) data = serverData;
+  }
 
-if(!data){
-  document.getElementById('no-data').classList.remove('hidden');
-} else {
+  let checkedCount=0, totalCount=0;
+
+  if(!data){
+    document.getElementById('no-data').classList.remove('hidden');
+  } else {
   document.getElementById('has-data').classList.remove('hidden');
 
   // Family summary
@@ -289,7 +321,8 @@ if(!data){
   });
   document.getElementById('checklist-container').innerHTML=html||'<p class="text-outline text-sm">No checklist items found.</p>';
   updateProgress();
-}
+  }
+})();
 
 function toggleItem(i,label){
   const cb=document.getElementById('cb-'+i);
