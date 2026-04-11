@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>Aushadh AI | My Profile</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Public+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Public+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <script>tailwind.config={theme:{extend:{colors:{"surface-container-low":"#f1f4fa","surface":"#f7f9ff","secondary":"#3b6934","outline-variant":"#bdc9ca","secondary-fixed":"#bcf0ae","on-primary-fixed-variant":"#004f56","surface-container-high":"#e5e8ee","on-primary":"#ffffff","tertiary":"#005a91","on-secondary-fixed":"#002201","on-secondary-container":"#3f6d38","error":"#ba1a1a","on-surface":"#181c20","surface-container":"#ebeef4","primary":"#006068","surface-container-highest":"#dfe3e8","on-primary-fixed":"#001f23","surface-container-lowest":"#ffffff","error-container":"#ffdad6","outline":"#6e797a","on-surface-variant":"#3e494a","on-secondary":"#ffffff","primary-fixed":"#96f1fc","primary-container":"#007b85","on-error":"#ffffff","secondary-container":"#b9eeab","on-secondary-fixed-variant":"#23501e"},fontFamily:{"headline":["Manrope"],"body":["Public Sans"]}}}}</script>
 <style>
   .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
@@ -26,48 +26,100 @@
   .dropdown-menu{box-shadow:0 4px 20px rgba(0,96,104,0.15)}
   .dropdown-option.selected{background:#006068!important;color:#fff!important}
   .dropdown-option.selected .bg-primary{opacity:1!important}
+  /* Sidebar styles - same as other pages */
+  .sidebar-clean { background: linear-gradient(180deg, #f8fafc 0%, #f1f4fa 100%); border-right: 1px solid #e2e8f0; }
+  .sidebar-logo { animation: logoFloat 3s ease-in-out infinite; }
+  @keyframes logoFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+  .nav-item { position: relative; transition: all 0.2s ease; }
+  .nav-item:hover { background: rgba(0, 96, 104, 0.05); }
+  .nav-item::after { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 3px; height: 0; background: linear-gradient(180deg, #006068, #3b6934); border-radius: 0 2px 2px 0; transition: height 0.2s ease; }
+  .nav-item:hover::after { height: 24px; }
+  .nav-item.active-nav { background: linear-gradient(90deg, rgba(0, 96, 104, 0.1) 0%, transparent 100%); }
+  .nav-item.active-nav::after { height: 32px; }
+  .nav-item .icon { transition: transform 0.2s ease; }
+  .nav-item:hover .icon { transform: scale(1.1); }
+  .nav-item.active-nav .icon { color: #006068; }
+  .logout-section { padding: 8px 16px; margin: 0 8px; }
+  .logout-btn { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; color: #6b7280; font-weight: 500; font-size: 14px; cursor: pointer; transition: all 0.3s ease; }
+  .logout-btn:hover { background: rgba(220, 38, 38, 0.1); transform: translateX(4px); }
+  .logout-btn:hover .logout-text { color: #dc2626; }
+  .logout-btn .icon-wrapper { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: rgba(220, 38, 38, 0.1); border-radius: 8px; transition: all 0.3s ease; }
+  .logout-btn:hover .icon-wrapper { transform: scale(1.1) rotate(-5deg); }
+  .logout-btn:hover .material-symbols-outlined { color: #dc2626; animation: logoutIcon 0.5s ease infinite; }
+  @keyframes logoutIcon { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
+  .logout-text { transition: all 0.3s ease; }
+  #lang-en, #lang-hi { color: #6e797a; background: transparent; }
+  #lang-en.active, #lang-hi.active { background: #006068; color: white; box-shadow: 0 2px 8px rgba(0,96,104,0.3); }
+  html.dark #lang-en, html.dark #lang-hi { color: #909090; }
+  html.dark #lang-en.active, html.dark #lang-hi.active { background: #3b6934; box-shadow: 0 2px 8px rgba(59,105,52,0.3); }
+  .sidebar-separator { width: 3px; height: 100%; background: linear-gradient(180deg, transparent, #006068 20%, #3b6934 50%, #006068 80%, transparent); background-size: 100% 200%; animation: separatorFlow 3s ease-in-out infinite; box-shadow: 0 0 12px rgba(0, 96, 104, 0.5), 0 0 24px rgba(59, 105, 52, 0.3); }
+  @keyframes separatorFlow { 0%, 100% { background-position: 0% 0%; } 50% { background-position: 0% 200%; } }
+  html.dark .sidebar-separator { background: linear-gradient(180deg, transparent, #3b6934 20%, #4ade80 50%, #3b6934 80%, transparent); box-shadow: 0 0 15px rgba(59, 105, 52, 0.6), 0 0 30px rgba(74, 222, 128, 0.3); }
 </style>
 </head>
 <body class="bg-surface text-on-surface">
 
 <!-- Sidebar -->
-<aside class="hidden md:flex flex-col h-screen w-56 fixed left-0 top-0 bg-surface-container-low py-8 z-40">
-  <div class="px-5 mb-8 flex items-center gap-2">
-    <img src="logo_green.png" alt="Aushadh AI" class="w-8 h-8 object-contain">
+<aside class="hidden md:flex flex-col h-screen w-56 fixed left-0 top-0 sidebar-clean py-8 z-40">
+  <div class="px-5 mb-6 flex items-center gap-2">
+    <img src="logo_green.png" alt="Aushadh AI" class="w-8 h-8 object-contain sidebar-logo">
     <div>
       <h1 class="text-lg font-bold text-primary">Aushadh AI</h1>
       <p class="text-[10px] uppercase tracking-widest text-outline">Clinical Serenity</p>
     </div>
   </div>
+  <div class="mx-4 mb-6 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
   <nav class="flex-1 space-y-1 px-3">
-    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="dashboard.html">
-      <span class="material-symbols-outlined text-sm">dashboard</span>Dashboard
+    <a class="nav-item flex items-center gap-2 px-4 py-3 text-slate-600 font-semibold text-sm" href="dashboard.html">
+      <span class="material-symbols-outlined text-sm icon">dashboard</span><span data-i18n="nav_dashboard">Dashboard</span>
     </a>
-    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="documents.html">
-      <span class="material-symbols-outlined text-sm">description</span>Documents
+    <a class="nav-item flex items-center gap-2 px-4 py-3 text-slate-600 font-semibold text-sm" href="documents.html">
+      <span class="material-symbols-outlined text-sm icon">description</span><span data-i18n="nav_documents">Documents</span>
     </a>
-    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="diagnosis.html">
-      <span class="material-symbols-outlined text-sm">summarize</span>Summary
+    <a class="nav-item flex items-center gap-2 px-4 py-3 text-slate-600 font-semibold text-sm" href="diagnosis.html">
+      <span class="material-symbols-outlined text-sm icon">summarize</span><span data-i18n="nav_summary">Summary</span>
     </a>
-    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="medications.html">
-      <span class="material-symbols-outlined text-sm">medical_services</span>Medications
+    <a class="nav-item flex items-center gap-2 px-4 py-3 text-slate-600 font-semibold text-sm" href="medications.html">
+      <span class="material-symbols-outlined text-sm icon">medical_services</span><span data-i18n="nav_medications">Medications</span>
     </a>
-    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="checklist.html">
-      <span class="material-symbols-outlined text-sm">fact_check</span>Checklist
+    <a class="nav-item flex items-center gap-2 px-4 py-3 text-slate-600 font-semibold text-sm" href="checklist.html">
+      <span class="material-symbols-outlined text-sm icon">fact_check</span><span data-i18n="nav_checklist">Checklist</span>
     </a>
-    <a class="nav-link flex items-center gap-2 px-4 py-3 bg-surface-container-lowest text-primary rounded-r-full shadow-sm font-semibold text-sm" href="profile.html">
-      <span class="material-symbols-outlined text-sm">account_circle</span>Profile
+    <a class="nav-item flex items-center gap-2 px-4 py-3 text-slate-600 font-semibold text-sm" href="chat.html">
+      <span class="material-symbols-outlined text-sm icon">smart_toy</span><span data-i18n="nav_askai">Ask AI</span>
+    </a>
+    <a class="nav-item active-nav flex items-center gap-2 px-4 py-3 bg-surface-container-lowest text-primary rounded-r-lg font-semibold text-sm" href="profile.html">
+      <span class="material-symbols-outlined text-sm icon">account_circle</span><span data-i18n="nav_profile">Profile</span>
     </a>
   </nav>
-  <div class="px-5 space-y-3 mt-auto">
-    <a href="documents.html" class="w-full primary-gradient text-white rounded-full py-2.5 text-sm font-bold shadow-lg flex items-center justify-center gap-1 active:scale-95">
-      <span class="material-symbols-outlined text-sm">upload</span>Upload Document
-    </a>
-    <a class="flex items-center gap-2 py-1.5 text-slate-500 text-sm hover:text-error transition-colors cursor-pointer" onclick="logout()">
-      <span class="material-symbols-outlined text-sm">logout</span>Logout
+  <div class="mx-4 mt-6 mb-4 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
+    
+  <!-- Language Toggle -->
+  <div class="mx-4 mb-4">
+    <div class="flex items-center justify-between bg-surface-container-low rounded-full p-1 border border-outline-variant/20">
+      <button onclick="setLanguage('en')" id="lang-en" class="flex-1 py-2 rounded-full text-xs font-bold transition-all duration-200">
+        English
+      </button>
+      <button onclick="setLanguage('hi')" id="lang-hi" class="flex-1 py-2 rounded-full text-xs font-bold transition-all duration-200">
+        हिंदी
+      </button>
+    </div>
+  </div>
+
+  <div class="logout-section mt-auto">
+    <a class="logout-btn" onclick="logout()">
+      <div class="icon-wrapper">
+        <span class="material-symbols-outlined text-sm">logout</span>
+      </div>
+      <span class="logout-text" data-i18n="sign_out">Sign Out</span>
     </a>
   </div>
 </aside>
+
+<!-- Animated Sidebar Separator -->
+<div class="hidden md:block fixed left-56 top-0 h-screen z-50">
+  <div class="sidebar-separator"></div>
+</div>
 
 <!-- Main -->
 <main class="md:ml-56 min-h-screen pb-24 md:pb-12">
@@ -80,11 +132,11 @@
         <img src="logo_white.png" alt="Aushadh AI" class="w-12 h-12 object-contain">
         <div class="flex flex-col">
           <div class="flex items-center gap-2 text-sm text-white/60 mb-1">
-            <a href="dashboard.html" class="hover:text-white transition-colors">Dashboard</a>
+            <a href="dashboard.html" class="hover:text-white transition-colors" data-i18n="nav_dashboard">Dashboard</a>
             <span>/</span>
-            <span class="text-white">Profile</span>
+            <span class="text-white" data-i18n="nav_profile">Profile</span>
           </div>
-          <h2 class="font-headline font-extrabold text-2xl text-white">My Profile</h2>
+          <h2 class="font-headline font-extrabold text-2xl text-white" data-i18n="my_profile">My Profile</h2>
         </div>
       </div>
     </div>
@@ -111,13 +163,13 @@
           <h1 class="font-headline text-2xl md:text-3xl font-black text-white mb-1" id="profile-name">Loading...</h1>
           <p class="text-white/70 text-sm" id="profile-email">—</p>
           <div class="flex flex-wrap gap-2 mt-3 justify-center md:justify-start">
-            <span class="bg-white/15 text-white text-xs font-bold px-3 py-1 rounded-full" id="profile-age-badge">Age: —</span>
-            <span class="bg-white/15 text-white text-xs font-bold px-3 py-1 rounded-full" id="profile-lang-badge">🌐 English</span>
-            <span class="bg-white/15 text-white text-xs font-bold px-3 py-1 rounded-full" id="profile-member-badge">Member</span>
+            <span class="bg-white/15 text-white text-xs font-bold px-3 py-1 rounded-full" id="profile-age-badge" data-i18n="age_format">Age: —</span>
+            <span class="bg-white/15 text-white text-xs font-bold px-3 py-1 rounded-full" id="profile-lang-badge" data-i18n="language_en">🌐 English</span>
+            <span class="bg-white/15 text-white text-xs font-bold px-3 py-1 rounded-full" id="profile-member-badge" data-i18n="member">Member</span>
           </div>
         </div>
         <button onclick="toggleEdit()" id="edit-toggle-btn" class="bg-white text-primary font-bold px-6 py-2.5 rounded-full text-sm shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all flex items-center gap-2">
-          <span class="material-symbols-outlined text-sm">edit</span> Edit Profile
+          <span class="material-symbols-outlined text-sm">edit</span><span data-i18n="edit_profile">Edit Profile</span>
         </button>
       </div>
     </div>
@@ -126,19 +178,19 @@
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
     <div class="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/10 shadow-sm text-center">
       <p class="text-3xl font-black text-primary" id="stat-analyses">0</p>
-      <p class="text-xs text-outline font-bold uppercase tracking-widest mt-1">Analyses Done</p>
+      <p class="text-xs text-outline font-bold uppercase tracking-widest mt-1" data-i18n="analyses_done">Analyses Done</p>
     </div>
     <div class="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/10 shadow-sm text-center">
       <p class="text-3xl font-black text-secondary" id="stat-meds">0</p>
-      <p class="text-xs text-outline font-bold uppercase tracking-widest mt-1">Active Meds</p>
+      <p class="text-xs text-outline font-bold uppercase tracking-widest mt-1" data-i18n="active_meds">Active Meds</p>
     </div>
     <div class="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/10 shadow-sm text-center">
       <p class="text-3xl font-black text-tertiary" id="stat-tasks">0</p>
-      <p class="text-xs text-outline font-bold uppercase tracking-widest mt-1">Tasks Pending</p>
+      <p class="text-xs text-outline font-bold uppercase tracking-widest mt-1" data-i18n="tasks_pending">Tasks Pending</p>
     </div>
     <div class="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/10 shadow-sm text-center">
       <p class="text-3xl font-black text-on-surface" id="stat-confidence">—</p>
-      <p class="text-xs text-outline font-bold uppercase tracking-widest mt-1">Last Confidence</p>
+      <p class="text-xs text-outline font-bold uppercase tracking-widest mt-1" data-i18n="last_confidence">Last Confidence</p>
     </div>
   </div>
 
@@ -149,53 +201,53 @@
       <div class="flex items-center justify-between mb-6">
         <h2 class="font-headline font-bold text-xl text-on-surface flex items-center gap-2">
           <span class="material-symbols-outlined text-primary text-sm">badge</span>
-          Personal Information
+          <span data-i18n="personal_info">Personal Information</span>
         </h2>
-        <span id="edit-indicator" class="hidden text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">Editing</span>
+        <span id="edit-indicator" class="hidden text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full"><span data-i18n="editing">Editing</span></span>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div>
-          <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2">First Name</label>
+          <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2" data-i18n="first_name">First Name</label>
           <input id="f-fname" class="input-field" disabled placeholder="John" type="text"/>
         </div>
         <div>
-          <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2">Last Name</label>
+          <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2" data-i18n="last_name">Last Name</label>
           <input id="f-lname" class="input-field" disabled placeholder="Doe" type="text"/>
         </div>
         <div>
-            <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2">Email Address</label>
+            <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2" data-i18n="email_address">Email Address</label>
             <div class="relative">
               <input id="f-email" class="input-field pl-10" disabled placeholder="you@example.com" type="email"/>
               <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">mail</span>
             </div>
           </div>
           <div>
-            <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2">Age</label>
+            <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2" data-i18n="age">Age</label>
             <div class="relative">
               <input id="f-age" class="input-field pl-10" disabled placeholder="e.g. 35" type="number" min="1" max="120"/>
               <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">person</span>
             </div>
           </div>
           <div>
-            <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2">Phone Number</label>
+            <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2" data-i18n="phone_number">Phone Number</label>
             <div class="relative">
               <input id="f-phone" class="input-field pl-10" disabled placeholder="+91 98765 43210" type="tel"/>
               <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">phone</span>
             </div>
           </div>
           <div>
-            <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2">City</label>
+            <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2" data-i18n="city">City</label>
             <div class="relative">
               <input id="f-city" class="input-field pl-10" disabled placeholder="Mumbai" type="text"/>
               <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">location_on</span>
             </div>
           </div>
           <div>
-            <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2">Blood Group</label>
+            <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2" data-i18n="blood_group">Blood Group</label>
             <div class="relative custom-dropdown" data-selected="">
               <button type="button" class="dropdown-trigger input-field pl-10 appearance-none w-full text-left relative" disabled>
-                <span class="dropdown-selected-text">Select blood group</span>
+                <span class="dropdown-selected-text" data-i18n="select_blood_group">Select blood group</span>
                 <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline text-sm">expand_more</span>
               </button>
               <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">bloodtype</span>
@@ -221,17 +273,17 @@
             </select>
           </div>
           <div>
-            <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2">Preferred Language</label>
+            <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2" data-i18n="preferred_language">Preferred Language</label>
             <div class="relative custom-dropdown" data-selected="english">
               <button type="button" class="dropdown-trigger input-field pl-10 appearance-none w-full text-left relative" disabled>
-                <span class="dropdown-selected-text">English</span>
+                <span class="dropdown-selected-text" data-i18n="language_english">English</span>
                 <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline text-sm">expand_more</span>
               </button>
               <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">language</span>
               <div class="dropdown-menu absolute z-50 mt-1 w-full bg-white rounded-xl shadow-xl border border-outline-variant/30 overflow-hidden hidden">
                 <div class="py-1">
                   <button type="button" class="dropdown-option w-full px-4 py-2.5 text-sm text-left hover:bg-primary/10 hover:text-primary transition-colors flex items-center gap-2" data-value="english">
-                    <span class="w-2 h-2 rounded-full bg-primary opacity-0"></span>English
+                    <span class="w-2 h-2 rounded-full bg-primary opacity-0"></span><span data-i18n="language_english">English</span>
                   </button>
                   <button type="button" class="dropdown-option w-full px-4 py-2.5 text-sm text-left hover:bg-primary/10 hover:text-primary transition-colors flex items-center gap-2" data-value="hindi">
                     <span class="w-2 h-2 rounded-full bg-primary opacity-0"></span>Hindi (हिंदी)
@@ -247,22 +299,19 @@
         </div>
 
         <div class="mt-5">
-          <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2">Known Allergies</label>
+          <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2" data-i18n="known_allergies">Known Allergies</label>
           <textarea id="f-allergies" class="input-field resize-none" rows="2" disabled placeholder="e.g. Penicillin, Sulfa drugs, Aspirin..."></textarea>
         </div>
 
         <div class="mt-5">
-          <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2">Medical Conditions</label>
+          <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-2" data-i18n="medical_conditions">Medical Conditions</label>
           <textarea id="f-conditions" class="input-field resize-none" rows="2" disabled placeholder="e.g. Diabetes Type 2, Hypertension..."></textarea>
         </div>
 
-        <!-- Save / Cancel buttons (hidden until edit mode) -->
-        <div id="save-btns" class="hidden mt-6 flex gap-3">
-          <button onclick="saveProfile()" class="flex-1 primary-gradient text-white font-bold py-3 rounded-full shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all flex items-center justify-center gap-2">
-            <span class="material-symbols-outlined text-sm">save</span> Save Changes
-          </button>
-          <button onclick="cancelEdit()" class="flex-1 border border-outline-variant text-on-surface-variant py-3 rounded-full font-bold hover:border-error hover:text-error transition-all">
-            Cancel
+        <!-- Save button (hidden until edit mode) -->
+        <div id="save-btns" class="hidden mt-6">
+          <button onclick="saveProfile()" class="w-full primary-gradient text-white font-bold py-3 rounded-full shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-sm">save</span><span data-i18n="save_changes">Save Changes</span>
           </button>
         </div>
       </div>
@@ -274,41 +323,44 @@
         <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/10 shadow-sm">
           <h3 class="font-headline font-bold text-base text-on-surface mb-4 flex items-center gap-2">
             <span class="material-symbols-outlined text-error text-sm" style="font-variation-settings:'FILL' 1">emergency</span>
-            Emergency Contact
+            <span data-i18n="emergency_contact">Emergency Contact</span>
           </h3>
           <div class="space-y-3">
             <div>
-              <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-1.5">Contact Name</label>
+              <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-1.5" data-i18n="contact_name">Contact Name</label>
               <input id="f-ec-name" class="input-field text-sm" disabled placeholder="Family member name"/>
             </div>
             <div>
-              <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-1.5">Phone</label>
+              <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-1.5" data-i18n="phone">Phone</label>
               <input id="f-ec-phone" class="input-field text-sm" disabled placeholder="+91 98765 43210" type="tel"/>
             </div>
             <div>
-              <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-1.5">Relationship</label>
+              <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-1.5" data-i18n="relationship">Relationship</label>
               <div class="relative custom-dropdown" data-selected="">
                 <button type="button" class="dropdown-trigger input-field text-sm pl-10 appearance-none w-full text-left relative" disabled>
                   <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">group</span>
-                  <span class="dropdown-selected-text pl-5">Select</span>
+                  <span class="dropdown-selected-text pl-5" data-i18n="select">Select</span>
                   <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline text-sm">expand_more</span>
                 </button>
                 <div class="dropdown-menu absolute z-50 mt-1 w-full bg-white rounded-xl shadow-xl border border-outline-variant/30 overflow-hidden hidden">
                   <div class="py-1">
-                    <button type="button" class="dropdown-option w-full px-4 py-2.5 text-sm text-left hover:bg-primary/10 hover:text-primary transition-colors" data-value="Spouse">Spouse</button>
-                    <button type="button" class="dropdown-option w-full px-4 py-2.5 text-sm text-left hover:bg-primary/10 hover:text-primary transition-colors" data-value="Parent">Parent</button>
-                    <button type="button" class="dropdown-option w-full px-4 py-2.5 text-sm text-left hover:bg-primary/10 hover:text-primary transition-colors" data-value="Child">Child</button>
-                    <button type="button" class="dropdown-option w-full px-4 py-2.5 text-sm text-left hover:bg-primary/10 hover:text-primary transition-colors" data-value="Sibling">Sibling</button>
-                    <button type="button" class="dropdown-option w-full px-4 py-2.5 text-sm text-left hover:bg-primary/10 hover:text-primary transition-colors" data-value="Friend">Friend</button>
-                    <button type="button" class="dropdown-option w-full px-4 py-2.5 text-sm text-left hover:bg-primary/10 hover:text-primary transition-colors" data-value="Other">Other</button>
+                    <button type="button" class="dropdown-option w-full px-4 py-2.5 text-sm text-left hover:bg-primary/10 hover:text-primary transition-colors" data-value="Spouse" data-i18n="rel_spouse">Spouse</button>
+                    <button type="button" class="dropdown-option w-full px-4 py-2.5 text-sm text-left hover:bg-primary/10 hover:text-primary transition-colors" data-value="Parent" data-i18n="rel_parent">Parent</button>
+                    <button type="button" class="dropdown-option w-full px-4 py-2.5 text-sm text-left hover:bg-primary/10 hover:text-primary transition-colors" data-value="Child" data-i18n="rel_child">Child</button>
+                    <button type="button" class="dropdown-option w-full px-4 py-2.5 text-sm text-left hover:bg-primary/10 hover:text-primary transition-colors" data-value="Sibling" data-i18n="rel_sibling">Sibling</button>
+                    <button type="button" class="dropdown-option w-full px-4 py-2.5 text-sm text-left hover:bg-primary/10 hover:text-primary transition-colors" data-value="Friend" data-i18n="rel_friend">Friend</button>
+                    <button type="button" class="dropdown-option w-full px-4 py-2.5 text-sm text-left hover:bg-primary/10 hover:text-primary transition-colors" data-value="Other" data-i18n="rel_other">Other</button>
                   </div>
                 </div>
               </div>
               <select id="f-ec-rel" class="hidden">
-                <option value="">Select</option>
-                <option>Spouse</option><option>Parent</option>
-                <option>Child</option><option>Sibling</option>
-                <option>Friend</option><option>Other</option>
+                <option value="" data-i18n="select">Select</option>
+                <option data-i18n="rel_spouse">Spouse</option>
+                <option data-i18n="rel_parent">Parent</option>
+                <option data-i18n="rel_child">Child</option>
+                <option data-i18n="rel_sibling">Sibling</option>
+                <option data-i18n="rel_friend">Friend</option>
+                <option data-i18n="rel_other">Other</option>
               </select>
             </div>
           </div>
@@ -318,19 +370,19 @@
         <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/10 shadow-sm">
           <h3 class="font-headline font-bold text-base text-on-surface mb-4 flex items-center gap-2">
             <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings:'FILL' 1">stethoscope</span>
-            Primary Doctor
+            <span data-i18n="primary_doctor">Primary Doctor</span>
           </h3>
           <div class="space-y-3">
             <div>
-              <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-1.5">Doctor Name</label>
+              <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-1.5" data-i18n="doctor_name">Doctor Name</label>
               <input id="f-doc-name" class="input-field text-sm" disabled placeholder="Dr. Aisha Sharma"/>
             </div>
             <div>
-              <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-1.5">Specialty</label>
+              <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-1.5" data-i18n="specialty">Specialty</label>
               <input id="f-doc-spec" class="input-field text-sm" disabled placeholder="General Physician"/>
             </div>
             <div>
-              <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-1.5">Hospital / Clinic</label>
+              <label class="block text-[10px] font-black uppercase tracking-widest text-outline mb-1.5" data-i18n="hospital_clinic">Hospital / Clinic</label>
               <input id="f-doc-hosp" class="input-field text-sm" disabled placeholder="Apollo Hospitals"/>
             </div>
           </div>
@@ -340,20 +392,20 @@
         <div class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/10 shadow-sm">
           <h3 class="font-headline font-bold text-base text-on-surface mb-4 flex items-center gap-2">
             <span class="material-symbols-outlined text-outline text-sm">settings</span>
-            Account
+            <span data-i18n="account">Account</span>
           </h3>
           <div class="space-y-2">
             <button onclick="clearData()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-surface-container-low transition-colors text-sm font-semibold text-on-surface-variant text-left">
               <span class="material-symbols-outlined text-sm text-outline">delete_sweep</span>
-              Clear Analysis Data
+              <span data-i18n="clear_data">Clear Analysis Data</span>
             </button>
             <button onclick="exportProfile()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-surface-container-low transition-colors text-sm font-semibold text-on-surface-variant text-left">
               <span class="material-symbols-outlined text-sm text-outline">download</span>
-              Export My Data
+              <span data-i18n="export_data">Export My Data</span>
             </button>
             <button onclick="logout()" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-error-container/30 transition-colors text-sm font-semibold text-error text-left">
               <span class="material-symbols-outlined text-sm">logout</span>
-              Sign Out
+              <span data-i18n="sign_out">Sign Out</span>
             </button>
           </div>
         </div>
@@ -364,10 +416,10 @@
 
 <!-- Bottom Nav Mobile -->
 <nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-white/80 backdrop-blur-xl border-t border-slate-100/10 shadow-[0_-4px_24px_rgba(24,28,32,0.06)]">
-  <a class="flex flex-col items-center text-slate-400" href="dashboard.html"><span class="material-symbols-outlined">home</span><span class="text-[10px] uppercase mt-1">Home</span></a>
-  <a class="flex flex-col items-center text-slate-400" href="documents.html"><span class="material-symbols-outlined">add_circle</span><span class="text-[10px] uppercase mt-1">Upload</span></a>
-  <a class="flex flex-col items-center text-slate-400" href="medications.html"><span class="material-symbols-outlined">pill</span><span class="text-[10px] uppercase mt-1">Meds</span></a>
-  <a class="flex flex-col items-center text-[#006068] bg-[#007B85]/10 rounded-2xl px-4 py-1" href="profile.html"><span class="material-symbols-outlined">person</span><span class="text-[10px] uppercase mt-1">Profile</span></a>
+  <a class="flex flex-col items-center text-slate-400" href="dashboard.html"><span class="material-symbols-outlined">home</span><span class="text-[10px] uppercase mt-1" data-i18n="nav_home">Home</span></a>
+  <a class="flex flex-col items-center text-slate-400" href="documents.html"><span class="material-symbols-outlined">add_circle</span><span class="text-[10px] uppercase mt-1" data-i18n="upload">Upload</span></a>
+  <a class="flex flex-col items-center text-slate-400" href="medications.html"><span class="material-symbols-outlined">pill</span><span class="text-[10px] uppercase mt-1" data-i18n="nav_meds">Meds</span></a>
+  <a class="flex flex-col items-center text-[#006068] bg-[#007B85]/10 rounded-2xl px-4 py-1" href="profile.html"><span class="material-symbols-outlined">person</span><span class="text-[10px] uppercase mt-1" data-i18n="nav_profile">Profile</span></a>
 </nav>
 
 <script src="medbuddy.js"></script>
@@ -449,7 +501,8 @@ function toggleEdit() {
 
   const btn = document.getElementById('edit-toggle-btn');
   if (isEditing) {
-    btn.innerHTML = '<span class="material-symbols-outlined text-sm">close</span> Cancel';
+    const closeText = getCurrentLanguage() === 'hi' ? 'बंद करें' : 'Cancel';
+    btn.innerHTML = '<span class="material-symbols-outlined text-sm">close</span> ' + closeText;
     btn.className = 'bg-white/20 border border-white/30 text-white font-bold px-6 py-2.5 rounded-full text-sm hover:-translate-y-0.5 active:scale-95 transition-all flex items-center gap-2';
   } else {
     cancelEdit();
@@ -463,7 +516,8 @@ function cancelEdit() {
   document.getElementById('edit-indicator').classList.add('hidden');
   document.getElementById('save-btns').classList.add('hidden');
   const btn = document.getElementById('edit-toggle-btn');
-  btn.innerHTML = '<span class="material-symbols-outlined text-sm">edit</span> Edit Profile';
+  const editText = getCurrentLanguage() === 'hi' ? 'एडिट प्रोफ़ाइल' : 'Edit Profile';
+  btn.innerHTML = '<span class="material-symbols-outlined text-sm">edit</span> ' + editText;
   btn.className = 'bg-white text-primary font-bold px-6 py-2.5 rounded-full text-sm shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all flex items-center gap-2';
   loadProfile(); // Reset fields
 }
@@ -501,7 +555,8 @@ function saveProfile() {
 
   cancelEdit();
   loadProfile();
-  showToast('✅ Profile saved successfully!');
+  const saveMsg = getCurrentLanguage() === 'hi' ? '✅ प्रोफ़ाइल सफलतापूर्वक सहेजी गई!' : '✅ Profile saved successfully!';
+  showToast(saveMsg);
 }
 
 // ── Clear analysis data ────────────────────────────────
@@ -692,6 +747,11 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
   loadProfile();
+  
+  // Apply translations after data loads
+  if (typeof applyTranslations === 'function') {
+    applyTranslations();
+  }
 });
 
 // ── Custom Dropdown ────────────────────────────────────
@@ -706,6 +766,13 @@ document.querySelectorAll('.custom-dropdown').forEach(dropdown=>{
   });
 });
 document.addEventListener('click',()=>{document.querySelectorAll('.dropdown-menu').forEach(m=>m.classList.add('hidden'))});
+
+// Highlight active language
+setTimeout(() => {
+  const lang = getCurrentLanguage();
+  document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+  document.getElementById('lang-hi').classList.toggle('active', lang === 'hi');
+}, 100);
 </script>
 </body>
 </html>

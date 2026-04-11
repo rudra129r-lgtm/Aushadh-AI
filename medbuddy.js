@@ -100,6 +100,470 @@ function loadDemoData() {
   saveAnalysis(DEMO_DATA);
 }
 
+// ── Language System ───────────────────────────────────
+const TRANSLATIONS = {
+  dashboard: {
+    nav_dashboard: { en: 'Dashboard', hi: 'डैशबोर्ड' },
+    nav_documents: { en: 'Documents', hi: 'दस्तावेज़' },
+    nav_summary: { en: 'Summary', hi: 'सारांश' },
+    nav_medications: { en: 'Medications', hi: 'दवाइयाँ' },
+    nav_checklist: { en: 'Checklist', hi: 'चेकलिस्ट' },
+    nav_askai: { en: 'Ask AI', hi: 'AI से पूछें' },
+    nav_profile: { en: 'Profile', hi: 'प्रोफ़ाइल' },
+    sign_out: { en: 'Sign Out', hi: 'साइन आउट' },
+    welcome_back: { en: 'Welcome back', hi: 'वापसी पर स्वागत है' },
+    your_health: { en: 'Your Health', hi: 'आपका स्वास्थ्य' },
+    finally_clear: { en: 'Finally Clear.', hi: 'अंत में स्पष्ट।' },
+    upload_prescription: { en: 'Upload Prescription', hi: 'नुस्खा अपलोड करें' },
+    try_live_demo: { en: 'Try Live Demo', hi: 'लाइव डेमो देखें' },
+    active_medications: { en: 'Active Medications', hi: 'सक्रिय दवाइयाँ' },
+    no_medications: { en: 'No medications yet', hi: 'अभी तक कोई दवाई नहीं' },
+    health_summary: { en: 'Health Summary', hi: 'स्वास्थ्य सारांश' },
+    health_summary_desc: { en: 'View your simplified diagnosis and plain-language explanation.', hi: 'अपना सरलीकृत निदान और सादी भाषा में समझना देखें।' },
+    followup_checklist: { en: 'Follow-up Checklist', hi: 'फॉलो-अप चेकलिस्ट' },
+    checklist_desc: { en: 'Side effects, alerts and tasks from your last consultation.', hi: 'आपकी पिछली जांच से साइड इफेक्ट्स, अलर्ट और कार्य।' },
+    medications_desc: { en: 'Full schedule, dosage and timing for all your prescriptions.', hi: 'आपके सभी नुस्खों के लिए पूरा शेड्यूल, खुराक और समय।' },
+    view_all: { en: 'View All', hi: 'सभी देखें' },
+    recent_prescriptions: { en: 'Recent Prescriptions', hi: 'हाल के नुस्खे' },
+    last_analysis: { en: 'Last Analysis', hi: 'पिछला विश्लेषण' },
+    diagnosis: { en: 'Diagnosis', hi: 'निदान' },
+    summary_label: { en: 'Summary', hi: 'सारांश' },
+    ai_confidence: { en: 'AI Confidence', hi: 'AI विश्वास' },
+    view_summary: { en: 'View Summary', hi: 'सारांश देखें' },
+    view_meds: { en: 'View Meds', hi: 'दवाइयाँ देखें' },
+    no_analysis: { en: 'No Analysis Yet', hi: 'अभी तक कोई विश्लेषण नहीं' },
+    upload_first: { en: 'Upload your first prescription to see your health summary here.', hi: 'अपना स्वास्थ्य सारांश यहाँ देखने के लिए अपना पहला नुस्खा अपलोड करें।' },
+    upload_now: { en: 'Upload Now', hi: 'अभी अपलोड करें' },
+    current: { en: 'CURRENT', hi: 'वर्तमान' },
+    medications_text: { en: 'Medications', hi: 'दवाइयाँ' },
+    med_subtitle: { en: 'Upload a prescription to see your medications', hi: 'अपनी दवाइयाँ देखने के लिए नुस्खा अपलोड करें' },
+    no_medications: { en: 'No medications yet', hi: 'अभी तक कोई दवाई नहीं' },
+    med_schedule_placeholder: { en: 'Your medication schedule will appear here after you upload a prescription.', hi: 'आपका दवाई का शेड्यूल यहाँ दिखेगा जब आप नुस्खा अपलोड करेंगे।' },
+    you_have_meds: { en: 'You have {count} medication{plural} in your prescription.', hi: 'आपके नुस्खे में {count} दवाई है।' },
+    meds_label: { en: 'meds', hi: 'दवाइयाँ' },
+    verified_label: { en: 'verified', hi: 'सत्यापित' },
+    medication_terms: {
+      timing: {
+        'once daily': 'प्रतिदिन एक बार',
+        'twice daily': 'दिन में दो बार',
+        'three times': 'दिन में तीन बार',
+        'morning': 'सुबह',
+        'afternoon': 'दोपहर',
+        'evening': 'शाम',
+        'night': 'रात में',
+        'after food': 'खाने के बाद',
+        'before food': 'खाने से पहले',
+        'with food': 'खाने के साथ',
+        'daily': 'प्रतिदिन',
+        'at bedtime': 'सोने से पहले',
+        'twice': 'दो बार',
+        'once': 'एक बार'
+      },
+      duration: {
+        'long-term': 'दीर्घकालिक',
+        'short-term': 'अल्पकालिक',
+        'lifetime': 'आजीवन',
+        'months': 'महीने',
+        'weeks': 'सप्ताह',
+        'days': 'दिन'
+      },
+      instructions: {
+        'take one tablet daily': 'एक गोली प्रतिदिन लें',
+        'take one tablet at bedtime': 'सोने से पहले एक गोली लें',
+        'take one tablet twice daily': 'दिन में दो बार एक गोली लें',
+        'take one tablet once daily': 'प्रतिदिन एक गोली लें'
+      },
+      not_specified: { en: 'Not specified', hi: 'निर्दिष्ट नहीं' },
+      no_specific_recovery: { en: 'No specific recovery period mentioned', hi: 'कोई विशेष स्वास्थ्य लाभ अवधि उल्लिखित नहीं है' }
+    }
+  },
+  documents: {
+    nav_dashboard: { en: 'Dashboard', hi: 'डैशबोर्ड' },
+    nav_documents: { en: 'Documents', hi: 'दस्तावेज़' },
+    nav_summary: { en: 'Summary', hi: 'सारांश' },
+    nav_medications: { en: 'Medications', hi: 'दवाइयाँ' },
+    nav_checklist: { en: 'Checklist', hi: 'चेकलिस्ट' },
+    nav_askai: { en: 'Ask AI', hi: 'AI से पूछें' },
+    nav_profile: { en: 'Profile', hi: 'प्रोफ़ाइल' },
+    sign_out: { en: 'Sign Out', hi: 'साइन आउट' },
+    upload_title: { en: 'Upload Your Document', hi: 'अपना दस्तावेज़ अपलोड करें' },
+    prescription_btn: { en: 'Prescription / Report', hi: 'नुस्खा / रिपोर्ट' },
+    medical_btn: { en: 'Medical Image (X-ray, MRI, CT Scan)', hi: 'मेडिकल इमेज (एक्स-रे, MRI, CT स्कैन)' },
+    drop_file_here: { en: 'Drop your file here', hi: 'अपनी फ़ाइल यहाँ छोड़ें' },
+    click_to_browse: { en: 'or click to browse from your device', hi: 'या अपने डिवाइस से ब्राउज़ करने के लिए क्लिक करें' },
+    analyzing: { en: 'Analyzing...', hi: 'विश्लेषण हो रहा है...' },
+    processing: { en: 'Processing your document', hi: 'आपका दस्तावेज़ प्रोसेस हो रहा है' },
+    previous_uploads: { en: 'Previous Uploads', hi: 'पिछली अपलोड' },
+    no_uploads: { en: 'No uploads yet', hi: 'अभी तक कोई अपलोड नहीं' },
+    view_analysis: { en: 'View Analysis', hi: 'विश्लेषण देखें' },
+    delete: { en: 'Delete', hi: 'हटाएं' },
+    load_sample: { en: 'Load Sample Prescription', hi: 'सैंपल नुस्खा लोड करें' },
+    analysis_options: { en: 'Analysis Options', hi: 'विश्लेषण विकल्प' },
+    patient_age: { en: 'Patient Age', hi: 'रोगी की आयु' },
+    image_type: { en: 'Image Type', hi: 'इमेज प्रकार' },
+    img_xray: { en: 'X-ray', hi: 'एक्स-रे' },
+    img_mri: { en: 'MRI Scan', hi: 'MRI स्कैन' },
+    img_ct: { en: 'CT Scan', hi: 'CT स्कैन' },
+    img_ultrasound: { en: 'Ultrasound', hi: 'अल्ट्रासाउंड' },
+    optional: { en: '(Optional)', hi: '(वैकल्पिक)' },
+    eg_45: { en: 'e.g. 45', hi: 'जैसे 45' },
+    output_language: { en: 'Output Language', hi: 'आउटपुट भाषा' },
+    analyse_with_ai: { en: 'Analyse with AI', hi: 'AI से विश्लेषण करें' },
+    ai_ready: { en: 'AI Ready to Analyse', hi: 'AI विश्लेषण के लिए तैयार' },
+    upload_instruction: { en: 'Upload your document or paste your prescription, then click Analyse.', hi: 'अपना दस्तावेज़ अपलोड करें या नुस्खा पेस्ट करें, फिर विश्लेषण के लिए क्लिक करें।' },
+    plain_diagnosis: { en: 'Plain-language diagnosis', hi: 'सरल भाषा में निदान' },
+    exact_schedule: { en: 'Exact medication schedule', hi: 'सही दवाई का शेड्यूल' },
+    side_effect_alerts: { en: 'Side effect alerts', hi: 'साइड इफेक्ट अलर्ट' },
+    followup_check: { en: 'Follow-up checklist', hi: 'फॉलो-अप चेकलिस्ट' },
+    no_document: { en: 'No document? Try this:', hi: 'कोई दस्तावेज़ नहीं? यह आज़माएं:' },
+    sample_prescription_title: { en: 'Apollo Hospitals — Bacterial Pneumonia discharge', hi: 'अपोलो अस्पताल — बैक्टीरियल निमोनिया डिस्चार्ज' },
+    disclaimer: { en: 'Aushadh AI only simplifies what your doctor wrote. It never adds advice, changes dosages, or uses outside information.', hi: 'Aushadh AI केवल जो आपके डॉक्टर ने लिखा है उसे सरल बनाता है। यह कभी सलाह नहीं जोड़ता, खुराक नहीं बदलता, या बाहरी जानकारी का उपयोग नहीं करता।' },
+    drop_medical_image: { en: 'Drop your medical image', hi: 'अपनी मेडिकल इमेज छोड़ें' },
+    xray_mri_ct: { en: 'X-ray, MRI, CT Scan, Ultrasound', hi: 'X-ray, MRI, CT स्कैन, अल्ट्रासाउंड' }
+  },
+  diagnosis: {
+    title: { en: 'Health Summary', hi: 'स्वास्थ्य सारांश' },
+    nav_dashboard: { en: 'Dashboard', hi: 'डैशबोर्ड' },
+    nav_documents: { en: 'Documents', hi: 'दस्तावेज़' },
+    nav_summary: { en: 'Summary', hi: 'सारांश' },
+    nav_medications: { en: 'Medications', hi: 'दवाइयाँ' },
+    nav_checklist: { en: 'Checklist', hi: 'चेकलिस्ट' },
+    nav_askai: { en: 'Ask AI', hi: 'AI से पूछें' },
+    nav_profile: { en: 'Profile', hi: 'प्रोफ़ाइल' },
+    sign_out: { en: 'Sign Out', hi: 'साइन आउट' },
+    your_health_summary: { en: 'Your Health Summary', hi: 'आपका स्वास्थ्य सारांश' },
+    ai_simplified: { en: 'AI-simplified from your prescription by Aushadh AI', hi: 'Aushadh AI द्वारा आपके नुस्खे से AI-सरलीकृत' },
+    verified: { en: 'verified', hi: 'सत्यापित' },
+    confidence_score: { en: 'AI Confidence Score', hi: 'AI विश्वास स्कोर' },
+    high_confidence: { en: 'High confidence - detailed analysis available', hi: 'उच्च विश्वास - विस्तृत विश्लेषण उपलब्ध' },
+    good_confidence: { en: 'Good confidence level', hi: 'अच्छा विश्वास स्तर' },
+    moderate_confidence: { en: 'Moderate confidence - verify with doctor', hi: 'मध्यम विश्वास - डॉक्टर से पुष्टि करें' },
+    what_happened: { en: 'What Happened — In Simple Words', hi: 'क्या हुआ — सादे शब्दों में' },
+    easy_read_summary: { en: 'Easy-to-read summary for you and your family', hi: 'आपके और परिवार के लिए आसान पठन सारांश' },
+    copy: { en: 'Copy', hi: 'कॉपी करें' },
+    share_whatsapp: { en: 'Share on WhatsApp', hi: 'WhatsApp पर साझा करें' },
+    listen: { en: 'Listen', hi: 'सुनें' },
+    read_aloud: { en: 'Read Aloud', hi: 'ऊपर से पढ़ें' },
+    diagnosis_explained: { en: 'Diagnosis Explained', hi: 'निदान समझाया' },
+    doctors_words: { en: "Doctor's Words → Plain Language", hi: "डॉक्टर के शब्द → सादी भाषा" },
+    doctors_original: { en: "Doctor's Original", hi: 'डॉक्टर का मूल' },
+    simplified_ai: { en: 'Simplified by AI', hi: 'AI द्वारा सरलीकृत' },
+    your_medications: { en: 'Your Medications', hi: 'आपकी दवाइयाँ' },
+    full_list: { en: 'Full List', hi: 'पूरी सूची' },
+    what_watch: { en: 'What to Watch For', hi: 'क्या ध्यान दें' },
+    doctors_notes: { en: "Doctor's Notes", hi: 'डॉक्टर के नोट्स' },
+    possible_side_effects: { en: 'Possible Side Effects', hi: 'संभावित साइड इफेक्ट्स' },
+    call_doctor: { en: 'Call doctor immediately if:', hi: 'तुरंत डॉक्टर को बुलाएं अगर:' },
+    followup_checklist: { en: 'Follow-up Checklist', hi: 'फॉलो-अप चेकलिस्ट' },
+    full_schedule: { en: 'Full Medication Schedule', hi: 'पूर्ण दवाई शेड्यूल' },
+    ask_ai_question: { en: 'Ask AI a Question', hi: 'AI से पूछें' },
+    export_pdf: { en: 'Export PDF', hi: 'PDF निर्यात करें' },
+    diagnosis_label: { en: 'Diagnosis', hi: 'निदान' },
+    original_diagnosis: { en: 'What the doctor wrote', hi: 'डॉक्टर ने क्या लिखा' },
+    simple_explanation: { en: 'What it means', hi: 'इसका क्या मतलब है' },
+    watch_for: { en: 'Watch For', hi: 'ध्यान दें' },
+    emergency: { en: 'EMERGENCY', hi: 'आपातकालीन' },
+    recovery: { en: 'Recovery', hi: 'स्वास्थ्य लाभ' },
+    share_summary: { en: 'Share Summary', hi: 'सारांश साझा करें' },
+    download_pdf: { en: 'Download PDF', hi: 'PDF डाउनलोड करें' },
+    view_medications: { en: 'View Medications', hi: 'दवाइयाँ देखें' },
+    patient_doctor_details: { en: 'Patient & Doctor Details', hi: 'रोगी और डॉक्टर विवरण' },
+    patient_age: { en: 'Patient Age', hi: 'रोगी की आयु' },
+    gender: { en: 'Gender', hi: 'लिंग' },
+    doctor_label: { en: 'Doctor', hi: 'डॉक्टर' },
+    hospital: { en: 'Hospital', hi: 'अस्पताल' },
+    recovery_timeline: { en: 'Recovery Timeline', hi: 'स्वास्थ्य लाभ समयरेखा' },
+    listen: { en: 'Listen', hi: 'सुनें' },
+    stop_listening: { en: 'Stop', hi: 'रुकें' },
+    no_medications_found: { en: 'No medications found in your document', hi: 'आपके दस्तावेज़ में कोई दवाई नहीं मिली' },
+    in_plain_words: { en: 'In Plain Words', hi: 'सादे शब्दों में' },
+    full_list: { en: 'Full List', hi: 'पूरी सूची' }
+  },
+  medications: {
+    title: { en: 'Medications', hi: 'दवाइयाँ' },
+    nav_dashboard: { en: 'Dashboard', hi: 'डैशबोर्ड' },
+    nav_documents: { en: 'Documents', hi: 'दस्तावेज़' },
+    nav_summary: { en: 'Summary', hi: 'सारांश' },
+    nav_medications: { en: 'Medications', hi: 'दवाइयाँ' },
+    nav_checklist: { en: 'Checklist', hi: 'चेकलिस्ट' },
+    nav_askai: { en: 'Ask AI', hi: 'AI से पूछें' },
+    nav_profile: { en: 'Profile', hi: 'प्रोफ़ाइल' },
+    sign_out: { en: 'Sign Out', hi: 'साइन आउट' },
+    active_meds: { en: 'Active Medications', hi: 'सक्रिय दवाइयाँ' },
+    active_meds_short: { en: 'Active Meds', hi: 'सक्रिय दवाइयाँ' },
+    dosage: { en: 'Dosage', hi: 'खुराक' },
+    timing: { en: 'Timing', hi: 'समय' },
+    duration: { en: 'Duration', hi: 'अवधि' },
+    instructions: { en: 'Instructions', hi: 'निर्देश' },
+    with_food: { en: 'With Food', hi: 'खाने के साथ' },
+    active: { en: 'ACTIVE', hi: 'सक्रिय' },
+    no_meds: { en: 'No medications found', hi: 'कोई दवाई नहीं मिली' },
+    print_schedule: { en: 'Print Schedule', hi: 'शेड्यूल प्रिंट करें' },
+    todays_schedule: { en: "Today's Schedule", hi: 'आज का शेड्यूल' },
+    when_to_take: { en: 'When to take each medicine', hi: 'कौन सी दवाई कब लेनी है' },
+    morning: { en: 'Morning', hi: 'सुबह' },
+    afternoon: { en: 'Afternoon', hi: 'दोपहर' },
+    night: { en: 'Night', hi: 'रात' },
+    no_meds_this_time: { en: 'No medicines this time', hi: 'इस समय कोई दवाई नहीं' },
+    medicines: { en: 'medicines', hi: 'दवाइयाँ' },
+    morning_dose: { en: 'Morning Dose', hi: 'सुबह की खुराक' },
+    evening_dose: { en: 'Evening Dose', hi: 'शाम की खुराक' },
+    longest_course: { en: 'Longest Course', hi: 'सबसे लंबी अवधि' },
+    not_specified: { en: 'Not specified', hi: 'निर्दिष्ट नहीं' },
+    adherence_tracker: { en: 'Adherence Tracker', hi: 'पालन ट्रैकर' },
+    history: { en: 'History', hi: 'इतिहास' },
+    clear: { en: 'Clear', hi: 'साफ करें' },
+    day_rate: { en: '30-Day Rate', hi: '30 दिन का रेट' },
+    day_streak: { en: 'Day Streak', hi: 'दिन की स्ट्रीक' },
+    doses_taken: { en: 'Doses Taken', hi: 'खुराक ली गई' },
+    full_medication_table: { en: 'Full Medication Table', hi: 'पूरी दवाइयों की तालिका' },
+    print: { en: 'Print', hi: 'प्रिंट' },
+    recovery_timeline: { en: 'Recovery Timeline', hi: 'स्वास्थ्य लाभ समयरेखा' },
+    no_specific_recovery: { en: 'No specific recovery period mentioned', hi: 'कोई विशेष स्वास्थ्य लाभ अवधि उल्लिखित नहीं है' },
+    health_summary: { en: 'Health Summary', hi: 'स्वास्थ्य सारांश' },
+    checklist: { en: 'Checklist', hi: 'चेकलिस्ट' },
+    new_upload: { en: 'New Upload', hi: 'नई अपलोड' },
+    no_meds_yet: { en: 'No Medications Yet', hi: 'अभी तक कोई दवाई नहीं' },
+    upload_prescription: { en: 'Upload your prescription to see your complete medication schedule here.', hi: 'अपना नुस्खा अपलोड करें अपना पूरा दवाई शेड्यूल यहाँ देखने के लिए।' },
+    upload_document: { en: 'Upload Document', hi: 'दस्तावेज़ अपलोड करें' },
+    mark_as_taken: { en: 'Mark as Taken', hi: 'लिया हुआ चिह्नित करें' },
+    medicine: { en: 'Medicine', hi: 'दवाई' }
+  },
+  checklist: {
+    title: { en: 'Checklist & Alerts', hi: 'चेकलिस्ट और अलर्ट' },
+    nav_dashboard: { en: 'Dashboard', hi: 'डैशबोर्ड' },
+    nav_documents: { en: 'Documents', hi: 'दस्तावेज़' },
+    nav_summary: { en: 'Summary', hi: 'सारांश' },
+    nav_medications: { en: 'Medications', hi: 'दवाइयाँ' },
+    nav_checklist: { en: 'Checklist', hi: 'चेकलिस्ट' },
+    nav_askai: { en: 'Ask AI', hi: 'AI से पूछें' },
+    nav_profile: { en: 'Profile', hi: 'प्रोफ़ाइल' },
+    sign_out: { en: 'Sign Out', hi: 'साइन आउट' },
+    all_tasks: { en: 'All Tasks', hi: 'सभी कार्य' },
+    pending: { en: 'Pending', hi: 'बाकी' },
+    completed: { en: 'Completed', hi: 'पूर्ण' },
+    side_effects: { en: 'Side Effects', hi: 'साइड इफेक्ट्स' },
+    high_severity: { en: 'High Priority', hi: 'उच्च प्राथमिकता' },
+    low_severity: { en: 'Low Priority', hi: 'कम प्राथमिकता' },
+    emergency_alert: { en: 'Emergency Alert', hi: 'आपातकालीन अलर्ट' },
+    no_tasks: { en: 'No tasks yet', hi: 'अभी तक कोई कार्य नहीं' },
+    followup_guide: { en: 'Follow-up Guide', hi: 'फॉलो-अप गाइड' },
+    post_consultation: { en: 'Post-Consultation', hi: 'परामर्श के बाद' },
+    personalized_breakdown: { en: "Your personalised breakdown of what to watch for and your next steps.", hi: 'आपके लिए क्या देखना है और आपके अगले कदमों का व्यक्तिगत विवरण।' },
+    side_effects_alerts: { en: 'Side Effects Alerts', hi: 'साइड इफेक्ट्स अलर्ट' },
+    view_medications: { en: 'View Medications', hi: 'दवाइयाँ देखें' },
+    your_followup_checklist: { en: 'Your Follow-up Checklist', hi: 'आपकी फॉलो-अप चेकलिस्ट' },
+    seek_help: { en: 'SEEK HELP', hi: 'मदद लें' },
+    expected: { en: 'EXPECTED', hi: 'अपेक्षित' },
+    watch: { en: 'WATCH', hi: 'ध्यान दें' },
+    family_status: { en: 'Family Status Update', hi: 'परिवार की स्थिति अपडेट' },
+    copy: { en: 'Copy', hi: 'कॉपी' },
+    whatsapp: { en: 'WhatsApp', hi: 'व्हाट्सएप' },
+    no_side_effects: { en: 'No side effects noted.', hi: 'कोई साइड इफेक्ट्स नहीं दर्ज किया गया।' },
+    find_hospital: { en: 'Find a Hospital', hi: 'अस्पताल खोजें' },
+    health_summary: { en: 'Health Summary', hi: 'स्वास्थ्य सारांश' },
+    medicines: { en: 'Medications', hi: 'दवाइयाँ' },
+    new_upload: { en: 'New Upload', hi: 'नई अपलोड' },
+    upload_document: { en: 'Upload Document', hi: 'दस्तावेज़ अपलोड करें' },
+    no_checklist_items: { en: 'No checklist items found.', hi: 'कोई चेकलिस्ट आइटम नहीं मिला।' }
+  },
+  chat: {
+    title: { en: 'Ask AI', hi: 'AI से पूछें' },
+    nav_dashboard: { en: 'Dashboard', hi: 'डैशबोर्ड' },
+    nav_documents: { en: 'Documents', hi: 'दस्तावेज़' },
+    nav_summary: { en: 'Summary', hi: 'सारांश' },
+    nav_medications: { en: 'Medications', hi: 'दवाइयाँ' },
+    nav_checklist: { en: 'Checklist', hi: 'चेकलिस्ट' },
+    nav_askai: { en: 'Ask AI', hi: 'AI से पूछें' },
+    nav_profile: { en: 'Profile', hi: 'प्रोफ़ाइल' },
+    sign_out: { en: 'Sign Out', hi: 'साइन आउट' },
+    placeholder: { en: 'Ask about your prescription...', hi: 'अपने नुस्खे के बारे में पूछें...' },
+    placeholder_alt: { en: 'Ask anything about your health...', hi: 'अपने स्वास्थ्य के बारे में कुछ भी पूछें...' },
+    send: { en: 'Send', hi: 'भेजें' },
+    suggested: { en: 'Suggested Questions', hi: 'सुझाए गए प्रश्न' },
+    thinking: { en: 'Thinking...', hi: 'सोच रहे हैं...' },
+    active_rx_context: { en: 'Active Prescription Context', hi: 'सक्रिय नुस्खा संदर्भ' },
+    rx_loaded: { en: 'Your prescription is loaded.', hi: 'आपका नुस्खा लोड है।' },
+    no_rx: { en: 'No prescription uploaded yet.', hi: 'अभी तक कोई नुस्खा अपलोड नहीं हुआ।' },
+    upload_for_accurate: { en: 'Upload one for accurate answers.', hi: 'सटीक उत्तरों के लिए एक अपलोड करें।' },
+    welcome_msg1: { en: "Hi! I'm Aushadh AI. I can answer questions about your uploaded prescription — dosages, timing, side effects, and what your diagnosis means.", hi: 'नमस्ते! मैं Aushadh AI हूं। मैं आपके अपलोड किए गए नुस्खे के बारे में प्रश्नों का उत्तर दे सकता हूं — खुराक, समय, साइड इफेक्ट्स, और आपका निदान क्या मतलब है।' },
+    welcome_msg2: { en: "I only answer from what your doctor wrote. For anything not in your prescription, I'll tell you to ask your doctor.", hi: 'मैं केवल आपके डॉक्टर ने जो लिखा है उसी से उत्तर देता हूं। नुस्खे में कुछ नहीं है तो मैं आपको बताऊंगा कि अपने डॉक्टर से पूछें।' },
+    aushadh_ai: { en: 'Aushadh AI', hi: 'Aushadh AI' },
+    you: { en: 'You', hi: 'आप' },
+    disclaimer: { en: 'Aushadh AI answers only from your prescription. Always consult your doctor for medical decisions.', hi: 'Aushadh AI केवल आपके नुस्खे से उत्तर देता है। चिकित्सा निर्णयों के लिए हमेशा अपने डॉक्टर से परामर्श करें।' },
+    loaded: { en: 'LOADED', hi: 'लोड' },
+    // Chat starter questions
+    starter_when_meds: { en: 'When should I take my medicines?', hi: 'मुझे दवाइयाँ कब लेनी है?' },
+    starter_foods_avoid: { en: 'What foods should I avoid?', hi: 'मुझे कौन सी दवाइयाँ नहीं लेनी है?' },
+    starter_doctor_again: { en: 'When should I see the doctor again?', hi: 'मुझे दोबारा कब दिखाना है?' },
+    starter_watch_signs: { en: 'What are the warning signs to watch for?', hi: 'मुझे कौन से चेतावनी के संकेत देखने चाहिए?' },
+    upload_one: { en: 'Upload one', hi: 'एक अपलोड करें' }
+  },
+  profile: {
+    title: { en: 'Profile', hi: 'प्रोफ़ाइल' },
+    nav_dashboard: { en: 'Dashboard', hi: 'डैशबोर्ड' },
+    nav_documents: { en: 'Documents', hi: 'दस्तावेज़' },
+    nav_summary: { en: 'Summary', hi: 'सारांश' },
+    nav_medications: { en: 'Medications', hi: 'दवाइयाँ' },
+    nav_checklist: { en: 'Checklist', hi: 'चेकलिस्ट' },
+    nav_askai: { en: 'Ask AI', hi: 'AI से पूछें' },
+    nav_profile: { en: 'Profile', hi: 'प्रोफ़ाइल' },
+    sign_out: { en: 'Sign Out', hi: 'साइन आउट' },
+    name: { en: 'Name', hi: 'नाम' },
+    email: { en: 'Email', hi: 'ईमेल' },
+    age: { en: 'Age', hi: 'उम्र' },
+    language: { en: 'Language', hi: 'भाषा' },
+    dark_mode: { en: 'Dark Mode', hi: 'डार्क मोड' },
+    save_changes: { en: 'Save Changes', hi: 'बदलाव सहेजें' },
+    cancel: { en: 'Cancel', hi: 'रद्द करें' },
+    saved: { en: 'Saved!', hi: 'सहेजा गया!' },
+    my_profile: { en: 'My Profile', hi: 'मेरी प्रोफ़ाइल' },
+    edit_profile: { en: 'Edit Profile', hi: 'एडिट प्रोफ़ाइल' },
+    analyses_done: { en: 'Analyses Done', hi: 'विश्लेषण पूर्ण' },
+    active_meds: { en: 'Active Meds', hi: 'सक्रिय दवाइयाँ' },
+    tasks_pending: { en: 'Tasks Pending', hi: 'कार्य बाकी' },
+    last_confidence: { en: 'Last Confidence', hi: 'अंतिम विश्वास' },
+    personal_info: { en: 'Personal Information', hi: 'व्यक्तिगत जानकारी' },
+    first_name: { en: 'First Name', hi: 'पहला नाम' },
+    last_name: { en: 'Last Name', hi: 'अंतिम नाम' },
+    email_address: { en: 'Email Address', hi: 'ईमेल पता' },
+    phone_number: { en: 'Phone Number', hi: 'फ़ोन नंबर' },
+    city: { en: 'City', hi: 'शहर' },
+    blood_group: { en: 'Blood Group', hi: 'रक्त समूह' },
+    select_blood_group: { en: 'Select blood group', hi: 'रक्त समूह चुनें' },
+    preferred_language: { en: 'Preferred Language', hi: 'पसंदीदा भाषा' },
+    language_english: { en: 'English', hi: 'अंग्रेज़ी' },
+    known_allergies: { en: 'Known Allergies', hi: 'ज्ञात एलर्जी' },
+    medical_conditions: { en: 'Medical Conditions', hi: 'चिकित्सा स्थितियाँ' },
+    emergency_contact: { en: 'Emergency Contact', hi: 'आपातकालीन संपर्क' },
+    contact_name: { en: 'Contact Name', hi: 'संपर्क नाम' },
+    phone: { en: 'Phone', hi: 'फ़ोन' },
+    relationship: { en: 'Relationship', hi: 'संबंध' },
+    primary_doctor: { en: 'Primary Doctor', hi: 'प्राथमिक डॉक्टर' },
+    doctor_name: { en: 'Doctor Name', hi: 'डॉक्टर का नाम' },
+    specialty: { en: 'Specialty', hi: 'विशेषता' },
+    hospital_clinic: { en: 'Hospital / Clinic', hi: 'अस्पताल / क्लीनिक' },
+    account: { en: 'Account', hi: 'खाता' },
+    clear_data: { en: 'Clear Analysis Data', hi: 'विश्लेषण डेटा साफ़ करें' },
+    export_data: { en: 'Export My Data', hi: 'मेरा डेटा निर्यात करें' },
+    member: { en: 'Member', hi: 'सदस्य' },
+    age_format: { en: 'Age:', hi: 'उम्र:' },
+    language_en: { en: '🌐 English', hi: '🌐 हिंदी' },
+    rel_spouse: { en: 'Spouse', hi: 'जीवनसाथी' },
+    rel_parent: { en: 'Parent', hi: 'माता-पिता' },
+    rel_child: { en: 'Child', hi: 'बच्चा' },
+    rel_sibling: { en: 'Sibling', hi: 'भाई-बहन' },
+    rel_friend: { en: 'Friend', hi: 'मित्र' },
+    rel_other: { en: 'Other', hi: 'अन्य' }
+  }
+};
+
+let currentLang = localStorage.getItem('medbuddy_language') || 'en';
+
+function getCurrentLanguage() {
+  return currentLang;
+}
+
+function setLanguage(lang) {
+  currentLang = lang;
+  localStorage.setItem('medbuddy_language', lang);
+  applyTranslations();
+  document.documentElement.lang = lang === 'hi' ? 'hi' : 'en';
+  // Update language toggle buttons
+  const enBtn = document.getElementById('lang-en');
+  const hiBtn = document.getElementById('lang-hi');
+  if (enBtn && hiBtn) {
+    enBtn.classList.toggle('active', lang === 'en');
+    hiBtn.classList.toggle('active', lang === 'hi');
+  }
+  // Reload page to refresh all content
+  window.location.reload();
+}
+
+function translateMedTerm(type, value) {
+  if (!value) return value;
+  const lang = getCurrentLanguage();
+  if (lang !== 'hi') return value;
+  
+  // Handle instructions specially
+  if (type === 'instructions' || type === 'instruction') {
+    const terms = TRANSLATIONS.dashboard?.medication_terms?.instructions;
+    if (terms) {
+      for (const [en, hi] of Object.entries(terms)) {
+        const regex = new RegExp(en, 'gi');
+        if (regex.test(value)) {
+          return value.replace(regex, hi);
+        }
+      }
+    }
+    return value;
+  }
+  
+  // Handle timing and duration
+  const terms = TRANSLATIONS.dashboard?.medication_terms?.[type];
+  if (!terms) return value;
+  let result = value;
+  for (const [en, hi] of Object.entries(terms)) {
+    const regex = new RegExp(en, 'gi');
+    if (regex.test(result)) {
+      result = result.replace(regex, hi);
+    }
+  }
+  return result;
+}
+
+function translateNotSpecified() {
+  const lang = getCurrentLanguage();
+  return lang === 'hi' ? 'निर्दिष्ट नहीं' : 'Not specified';
+}
+
+function translateChecklistItem(text) {
+  const lang = getCurrentLanguage();
+  if (lang === 'en') return text;
+  
+  const translations = {
+    'Schedule follow-up appointment in 1 month': '1 महीने में फॉलो-अप अपॉइंटमेंट शेड्यूल करें',
+    'Monitor blood pressure regularly': 'नियमित रूप से रक्तचाप की निगरानी करें',
+    'Stomach upset or dizziness': 'पेट की परेशान या चक्कर',
+    'Headache or fatigue': 'सिरदर्द या थकान',
+    'Allergic reactions or difficulty breathing': 'एलर्जी प्रतिक्रियाएं या सांस लेने में कठिनाई',
+    'Call doctor immediately if experiencing chest pain, shortness of breath, or severe allergic reactions': 'सीने में दर्द, सांस की तकलीफ या गंभीर एलर्जी प्रतिक्रियाओं का अनुभव होने पर तुरंत डॉक्टर को कॉल करें'
+  };
+  
+  return translations[text] || text;
+}
+
+function t(key) {
+  const page = window.location.pathname.split('/').pop().replace('.html', '');
+  const langKey = currentLang === 'hi' ? 'hi' : 'en';
+  
+  if (TRANSLATIONS[page] && TRANSLATIONS[page][key]) {
+    return TRANSLATIONS[page][key][langKey] || key;
+  }
+  return key;
+}
+
+function applyTranslations() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    el.textContent = t(key);
+  });
+  
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    el.placeholder = t(key);
+  });
+}
+
+// Initialize language on load
+(function initLanguage() {
+  const savedLang = localStorage.getItem('medbuddy_language');
+  if (savedLang) {
+    currentLang = savedLang;
+    document.documentElement.lang = savedLang === 'hi' ? 'hi' : 'en';
+  }
+})();
+
 // ── Auth ──────────────────────────────────────────────
 let authValidated = false;
 
@@ -113,7 +577,6 @@ function requireAuth() {
   console.log('current page:', current);
   console.log('loggedIn:', loggedIn);
   console.log('token exists:', !!token);
-  console.log('token value:', token ? token.substring(0, 20) + '...' : 'none');
   
   if (!publicPages.includes(current)) {
     if (!loggedIn || !token) {
@@ -125,10 +588,7 @@ function requireAuth() {
     
     console.log('Token exists, validating with server...');
     
-    // Show loading overlay immediately - block all interaction
-    showAuthLoading();
-    
-    // Validate token with server - wait for response before allowing any access
+    // Don't block page loading - do auth check in background
     const authUrl = `${API}/auth/me`;
     
     fetch(authUrl, {
@@ -140,21 +600,15 @@ function requireAuth() {
         console.log('FAIL: Auth check failed with', res.status);
         clearAllStorage();
         window.location.replace('/login.html');
-        return false;
+      } else {
+        console.log('Auth OK');
+        authValidated = true;
       }
-      return res.json();
-    })
-    .then(userData => {
-      console.log('Auth OK, user:', userData);
-      authValidated = true;
-      hideAuthLoading();
-      console.log('=== requireAuth PASSED ===');
-      return true;
     })
     .catch(err => {
-      console.error('FAIL: Auth check exception:', err);
-      clearAllStorage();
-      window.location.replace('/login.html');
+      console.error('Auth check exception:', err);
+      // Don't redirect on network error - let user see the page
+      authValidated = true;
     });
   }
 }
@@ -237,6 +691,43 @@ function updateDarkModeUI(isDark) {
   const text = document.getElementById('dark-mode-text');
   if (icon) icon.textContent = isDark ? 'light_mode' : 'dark_mode';
   if (text) text.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+}
+
+// ── Sidebar Toggle (Mobile) ─────────────────────────────────
+let sidebarOpen = false;
+
+function toggleSidebar() {
+  const sidebar = document.querySelector('aside');
+  const separator = document.querySelector('.sidebar-separator');
+  
+  if (!sidebarOpen) {
+    sidebar.classList.remove('hidden');
+    sidebar.classList.add('flex');
+    sidebar.classList.add('animate-fade-in');
+    if (separator) {
+      separator.classList.remove('hidden');
+      separator.classList.add('flex', 'animate-fade-in');
+    }
+    // Add overlay
+    if (!document.getElementById('sidebar-overlay')) {
+      const overlay = document.createElement('div');
+      overlay.id = 'sidebar-overlay';
+      overlay.className = 'fixed inset-0 bg-black/50 z-30 md:hidden';
+      overlay.onclick = toggleSidebar;
+      overlay.style.animation = 'fadeIn 0.2s ease-out';
+      document.body.appendChild(overlay);
+    }
+  } else {
+    sidebar.classList.add('hidden');
+    sidebar.classList.remove('flex', 'animate-fade-in');
+    if (separator) {
+      separator.classList.add('hidden');
+      separator.classList.remove('flex', 'animate-fade-in');
+    }
+    const overlay = document.getElementById('sidebar-overlay');
+    if (overlay) overlay.remove();
+  }
+  sidebarOpen = !sidebarOpen;
 }
 
 function initDarkMode() {
@@ -456,6 +947,7 @@ async function apiChatStarters(context, language) {
 // ── API: Analyse file ─────────────────────────────────
 async function apiAnalyseFile(file, age, language) {
   console.log(`[Aushadh AI] Uploading file: ${file.name}, size: ${file.size} bytes, type: ${file.type}`);
+  console.log(`[Aushadh AI] Language param: ${language}`);
   const form = new FormData();
   form.append('file', file);
   if (age) form.append('age', age);
@@ -466,9 +958,18 @@ async function apiAnalyseFile(file, age, language) {
     console.log(`[Aushadh AI] Response status: ${res.status}`);
     
     if (!res.ok) {
-      const e = await res.json();
-      console.error(`[Aushadh AI] Error response: ${JSON.stringify(e)}`);
-      throw new Error(e.detail || 'Analysis failed');
+      let errorMsg = 'Analysis failed';
+      try {
+        const e = await res.json();
+        errorMsg = e.detail || e.message || errorMsg;
+        console.error(`[Aushadh AI] Error response: ${JSON.stringify(e)}`);
+      } catch (jsonErr) {
+        // If JSON parsing fails, get text
+        const text = await res.text();
+        errorMsg = text || errorMsg;
+        console.error(`[Aushadh AI] Error response (text): ${text}`);
+      }
+      throw new Error(errorMsg);
     }
     
     const result = await res.json();
@@ -543,13 +1044,21 @@ async function apiAnalyseSample(language) {
 
 // ── API: Chat ─────────────────────────────────────────
 async function apiChat(message, history, context, language) {
-  const res = await fetch(`${API}/chat`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, history, context, language: language || 'English' }),
-  });
-  if (!res.ok) { const e = await res.json(); throw new Error(e.detail || 'Chat failed'); }
-  return res.json();
+  try {
+    const res = await fetch(`${API}/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, history, context, language: language || 'English' }),
+    });
+    if (!res.ok) { 
+      const e = await res.json().catch(() => ({ detail: 'Server error' })); 
+      throw new Error(e.detail || 'Chat failed'); 
+    }
+    return res.json();
+  } catch (e) {
+    console.error('apiChat error:', e);
+    throw e;
+  }
 }
 
 // ── API: Export txt ───────────────────────────────────
@@ -639,18 +1148,6 @@ function closeEmergencyAlert() {
   if (alert) alert.remove();
 }
 
-// Also add animation style
-const alertStyle = document.createElement('style');
-alertStyle.textContent = `
-  @keyframes bounce-in {
-    0% { transform: scale(0.8); opacity: 0; }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); opacity: 1; }
-  }
-  .animate-bounce-in { animation: bounce-in 0.4s ease forwards; }
-`;
-document.head.appendChild(alertStyle);
-
 // ── Toast ─────────────────────────────────────────────
 function showToast(msg, type = 'success') {
   const old = document.getElementById('mb-toast');
@@ -663,6 +1160,142 @@ function showToast(msg, type = 'success') {
   setTimeout(() => t.style.transform = 'translateX(-50%) translateY(0)', 10);
   setTimeout(() => { t.style.transform = 'translateX(-50%) translateY(80px)'; setTimeout(() => t.remove(), 300); }, 3000);
 }
+
+// ── Medication Reminder System ─────────────────────────────────────
+const MED_TIME_SLOTS = {
+  morning: { start: 6, end: 12, label: 'Morning', emoji: '☀️' },
+  afternoon: { start: 12, end: 18, label: 'Afternoon', emoji: '🌤️' },
+  night: { start: 18, end: 24, label: 'Night', emoji: '🌙' }
+};
+
+function getCurrentTimeSlot() {
+  const hour = new Date().getHours();
+  if (hour >= 6 && hour < 12) return 'morning';
+  if (hour >= 12 && hour < 18) return 'afternoon';
+  return 'night';
+}
+
+function medBelongsToSlot(medTiming, slot) {
+  const t = (medTiming || '').toLowerCase();
+  if (slot === 'morning') return /morning|am|breakfast|od|once\s*daily/i.test(t);
+  if (slot === 'afternoon') return /afternoon|noon|midday|lunch|tds|tid|three\s*times/i.test(t);
+  if (slot === 'night') return /night|evening|pm|bedtime|sleep|bd|twice/i.test(t);
+  return false;
+}
+
+function getMedicationsForSlot(meds, slot) {
+  if (!meds || !Array.isArray(meds)) return [];
+  return meds.filter(m => medBelongsToSlot(m.timing, slot));
+}
+
+function getUnmarkedMedications(meds, slot) {
+  if (!meds || meds.length === 0) return [];
+  const todayKey = 'taken_' + new Date().toDateString();
+  const taken = JSON.parse(localStorage.getItem(todayKey) || '[]');
+  const slotMeds = getMedicationsForSlot(meds, slot);
+  return slotMeds.filter(m => !taken.includes(m.name));
+}
+
+function hasSlotPassed(slot) {
+  const hour = new Date().getHours();
+  return hour > MED_TIME_SLOTS[slot].end;
+}
+
+function showMedicationAlert(meds, slot) {
+  const existing = document.getElementById('medication-alert-banner');
+  if (existing) existing.remove();
+  const slotInfo = MED_TIME_SLOTS[slot];
+  const missedMeds = getUnmarkedMedications(meds, slot);
+  if (missedMeds.length === 0) return;
+  const medList = missedMeds.map(m => `<span class="bg-amber-100 px-2 py-1 rounded-full text-xs font-bold mr-1">${m.name} ${m.dosage || ''}</span>`).join('');
+  const alertHtml = `<div id="medication-alert-banner" class="bg-amber-50 border-2 border-amber-300 rounded-xl p-4 mb-4">
+    <div class="flex items-start gap-3">
+      <span class="text-3xl">${slotInfo.emoji}</span>
+      <div class="flex-1">
+        <div class="flex items-center justify-between">
+          <p class="font-bold text-amber-800 text-sm">⏰ Medication Reminder</p>
+          <button onclick="dismissMedAlert()" class="text-amber-500 hover:text-amber-700 text-lg">&times;</button>
+        </div>
+        <p class="text-sm text-amber-700 mt-1"><strong>${slotInfo.label}</strong> slot passed. Not marked taken:</p>
+        <div class="mt-2 flex flex-wrap gap-1">${medList}</div>
+        <button onclick="markMissedMeds('${slot}')" class="mt-3 w-full bg-amber-400 hover:bg-amber-500 text-amber-900 font-bold text-sm py-2.5 rounded-lg">Mark All as Taken</button>
+      </div>
+    </div>
+  </div>`;
+  const main = document.querySelector('main');
+  if (main) main.insertAdjacentHTML('afterbegin', alertHtml);
+}
+
+function markMissedMeds(slot) {
+  const meds = window.globalMeds;
+  if (!meds) return;
+  const missedMeds = getUnmarkedMedications(meds, slot);
+  const todayKey = 'taken_' + new Date().toDateString();
+  let taken = JSON.parse(localStorage.getItem(todayKey) || '[]');
+  missedMeds.forEach(m => { if (!taken.includes(m.name)) taken.push(m.name); });
+  localStorage.setItem(todayKey, JSON.stringify(taken));
+  const banner = document.getElementById('medication-alert-banner');
+  if (banner) banner.remove();
+  updateReminderBadge();
+  if (typeof updateAdherenceDisplayFromLocalStorage === 'function') updateAdherenceDisplayFromLocalStorage();
+  showToast(missedMeds.length + ' medication(s) marked as taken!');
+}
+
+function dismissMedAlert() {
+  const banner = document.getElementById('medication-alert-banner');
+  if (banner) banner.style.display = 'none';
+  localStorage.setItem('med_alert_dismissed', Date.now().toString());
+}
+
+function updateReminderBadge() {
+  let meds = window.globalMeds;
+  if (!meds || meds.length === 0) {
+    const analysis = getAnalysis();
+    if (analysis && analysis.medications) meds = analysis.medications;
+  }
+  if (!meds || meds.length === 0) return;
+  const currentSlot = getCurrentTimeSlot();
+  const missedMeds = getUnmarkedMedications(meds, currentSlot);
+  const count = missedMeds.length;
+  ['reminder-badge', 'nav-reminder-badge'].forEach(id => {
+    const badge = document.getElementById(id);
+    if (badge) {
+      if (count > 0) {
+        badge.textContent = count > 9 ? '9+' : count;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+  });
+}
+
+function checkMedicationAlert() {
+  let meds = window.globalMeds;
+  if (!meds || meds.length === 0) {
+    const analysis = getAnalysis();
+    if (analysis && analysis.medications) meds = analysis.medications;
+  }
+  if (!meds || meds.length === 0) return;
+  const dismissedTime = parseInt(localStorage.getItem('med_alert_dismissed') || '0');
+  if (Date.now() - dismissedTime < 3600000) return;
+  const currentSlot = getCurrentTimeSlot();
+  const missedMeds = getUnmarkedMedications(meds, currentSlot);
+  if (missedMeds.length > 0 && hasSlotPassed(currentSlot)) {
+    showMedicationAlert(meds, currentSlot);
+  }
+}
+
+function initReminderSystem() {
+  setTimeout(() => { checkMedicationAlert(); updateReminderBadge(); }, 1000);
+  setInterval(() => { checkMedicationAlert(); updateReminderBadge(); }, 300000);
+}
+
+// Add animation style
+const reminderStyle = document.createElement('style');
+reminderStyle.textContent = `@keyframes pulse-slow { 0%,100%{opacity:1} 50%{opacity:0.85} } .animate-pulse-slow{animation:pulse-slow 2s ease-in-out infinite} @keyframes bounce-in{0%{transform:scale(0.8);opacity:0}50%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}} .animate-bounce-in{animation:bounce-in 0.4s ease forwards} @keyframes fadeIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}} .animate-fade-in{animation:fadeIn 0.2s ease-out}`;
+document.head.appendChild(reminderStyle);
+// ── End Medication Reminder System ─────────────────────────────────
 
 const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 

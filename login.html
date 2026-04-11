@@ -466,29 +466,6 @@
           </div>
           <p class="error-msg" id="signup-pw-err">Password must be at least 8 characters.</p>
 
-          <div class="fl-wrap custom-dropdown" data-selected="english">
-            <button type="button" class="dropdown-trigger fl-input pl-11 appearance-none cursor-pointer w-full text-left relative">
-              <span class="dropdown-selected-text">English</span>
-              <span class="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 text-outline text-sm">expand_more</span>
-            </button>
-            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">language</span>
-            <div class="dropdown-menu absolute z-50 mt-1 w-full bg-white rounded-xl shadow-xl border border-outline-variant/30 overflow-hidden hidden">
-              <div class="py-1">
-                <button type="button" class="dropdown-option w-full px-4 py-2.5 text-sm text-left hover:bg-[#006068]/10 hover:text-[#006068] transition-colors flex items-center gap-2" data-value="english">
-                  <span class="w-2 h-2 rounded-full bg-[#006068] opacity-0"></span>English
-                </button>
-                <button type="button" class="dropdown-option w-full px-4 py-2.5 text-sm text-left hover:bg-[#006068]/10 hover:text-[#006068] transition-colors flex items-center gap-2" data-value="hindi">
-                  <span class="w-2 h-2 rounded-full bg-[#006068] opacity-0"></span>Hindi (हिंदी)
-                </button>
-              </div>
-            </div>
-            <select id="signup-lang" class="hidden">
-              <option value="english">English</option>
-              <option value="hindi">Hindi (हिंदी)</option>
-            </select>
-            <label class="fl-label">Preferred Language</label>
-          </div>
-
           <label class="flex items-start gap-3 cursor-pointer">
             <input id="signup-terms" type="checkbox" class="mt-0.5 rounded border-outline text-primary focus:ring-primary/20 flex-shrink-0"/>
             <span class="text-xs text-on-surface-variant leading-relaxed">I agree to the <a href="#" class="text-primary font-bold hover:underline">Terms of Service</a> and <a href="#" class="text-primary font-bold hover:underline">Privacy Policy</a>. Aushadh AI does not store your medical documents.</span>
@@ -525,7 +502,8 @@
   /* Clear storage on login page - check if just logged in successfully */
   const justLoggedIn = sessionStorage.getItem('just_logged_in');
   
-  // IMPORTANT: Check justLoggedIn BEFORE clearing storage
+  // Always load from server after login - preserve user data
+  // This ensures user can access their previous records on dashboard
   if (!justLoggedIn) {
     console.log('Fresh login page - clearing storage');
     localStorage.removeItem('medbuddy_logged_in');
@@ -541,6 +519,9 @@
   
   // Always clear the just_logged_in flag after checking
   sessionStorage.removeItem('just_logged_in');
+  
+  // Clear fresh login flag (will be set on successful login)
+  sessionStorage.removeItem('fresh_login_after_logout');
 
   /* ==================== 3D CARD MOUSE PARALLAX ==================== */
   const leftPanel = document.getElementById('left-panel');
@@ -710,6 +691,7 @@
       saveUser({ name: email.split('@')[0], email, isGuest: false }, data.access_token);
       localStorage.setItem('medbuddy_logged_in', 'true');
       sessionStorage.setItem('just_logged_in', 'true');
+      sessionStorage.setItem('fresh_login_after_logout', 'true'); // Mark as fresh login for clearing
       
       // Verify storage is set correctly
       const savedToken = localStorage.getItem('medbuddy_token');

@@ -12,6 +12,7 @@ import base64
 import requests
 import re
 import asyncio
+import time
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -20,6 +21,8 @@ GROQ_API_KEY      = os.environ.get("GROQ_API_KEY", "")
 GROQ_URL          = "https://api.groq.com/openai/v1/chat/completions"
 GROQ_MODEL        = "llama-3.3-70b-versatile"
 GEMINI_API_KEY    = os.environ.get("GEMINI_API_KEY", "")
+AZURE_VISION_KEY  = os.environ.get("AZURE_VISION_KEY", "")
+AZURE_VISION_ENDPOINT = os.environ.get("AZURE_VISION_ENDPOINT", "")
 OPENFDA_URL       = "https://api.fda.gov/drug/label.json"
 
 # In-memory cache for OpenFDA (survives across requests)
@@ -299,12 +302,13 @@ Analyse this medical document and return ONLY this exact JSON. Start directly wi
   }},
   "medications": [
     {{
-      "name": "Exact medicine name",
-      "dosage": "e.g. 500mg",
-      "timing": "e.g. Morning and Night",
-      "duration": "e.g. 30 days",
-      "with_food": "Yes/No/Before meals/After meals/As prescribed",
-      "simple_instruction": "One plain sentence instruction"
+      "name": "Exact medicine name (keep in original language)",
+      "dosage": "e.g. 500mg (ALWAYS keep in English)",
+      "timing": "e.g. Morning and Night (ALWAYS keep in English)",
+      "duration": "e.g. 30 days (ALWAYS keep in English)",
+      "with_food": "Yes/No/Before meals/After meals/As prescribed (ALWAYS keep in English)",
+      "simple_instruction": "One plain sentence instruction in English ONLY",
+      "simple_instruction_hi": "Same instruction in Hindi script ONLY"
     }}
   ],
   "side_effects": [
@@ -403,30 +407,151 @@ async def analyse_pdf(data: bytes, age: str, language: str) -> dict:
 
 
 async def analyse_medical_image(data: bytes, media_type: str, age: str, language: str, image_type: str = "X-ray") -> dict:
-    """Analyze X-ray, MRI, CT scan or other medical images using Gemini Vision"""
+    """Analyze X-ray, MRI, CT scan - Azure primary, Gemini fallback, Groq last"""
+    
+    # First try with Azure (primary)
+    if AZURE_VISION_KEY and AZURE_VISION_ENDPOINT:
+        try:
+            result = await _analyse_with_azure(data, media_type, age, language, image_type)
+            return result
+        except Exception as e:
+            print(f"[Aushadh AI] Azure failed: {e}")
+    
+    # Second try with Gemini
     try:
-        if not GEMINI_API_KEY:
-            raise Exception("GEMINI_API_KEY not configured. Please add it to .env file.")
+        result = await _analyse_with_gemini(data, media_type, age, language, image_type)
+        return result
+    except Exception as e:
+        error_msg = str(e)
+        print(f"[Aushadh AI] Gemini failed: {error_msg}")
+    
+    # Last fallback with Groq
+    try:
+        result = await _analyse_with_groq_vision(data, media_type, age, language, image_type)
+        return result
+    except Exception as groq_err:
+        print(f"[Aushadh AI] Groq fallback also failed: {groq_err}")
+    
+    raise Exception("All image analysis services failed. Please try again later.")
+
+
+async def _analyse_with_azure(data: bytes, media_type: str, age: str, language: str, image_type: str) -> dict:
+    """Analyze using Azure Computer Vision OCR + Groq for medical analysis"""
+    if not AZURE_VISION_KEY or not AZURE_VISION_ENDPOINT:
+        raise Exception("Azure not configured")
+    
+    print(f"[Aushadh AI] Analyzing {image_type} with Azure Vision...")
+    
+    base64_image = base64.b64encode(data).decode("utf-8")
+    
+    # Use Azure OCR to extract text from image
+    headers = {
+        "Content-Type": "application/octet-stream",
+        "Ocp-Apim-Subscription-Key": AZURE_VISION_KEY
+    }
+    
+    params = {
+        "visualFeatures": "Categories,Description,Tags",
+        "language": "en"
+    }
+    
+    azure_url = f"{AZURE_VISION_ENDPOINT.rstrip('/')}/vision/v3.2/analyze"
+    
+    try:
+        response = requests.post(azure_url, headers=headers, params=params, data=data, timeout=60)
         
-        print(f"[Aushadh AI] Analyzing {image_type} with Gemini Vision...")
+        if response.status_code != 200:
+            raise Exception(f"Azure API error: {response.status_code}")
         
-        base64_image = base64.b64encode(data).decode("utf-8")
+        azure_result = response.json()
+        print(f"[Aushadh AI] Azure OCR result: {json.dumps(azure_result)[:500]}")
         
-        lang_instruction = "Respond in English" if language == "English" else f"Respond in {language}"
+        # Extract useful info from Azure
+        categories = azure_result.get("categories", [])
+        description = azure_result.get("description", {}).get("captions", [])
+        tags = azure_result.get("tags", [])
         
-        prompt = f"""You are an expert radiologist analyzing medical images.
+        # Build context for Groq to analyze
+        context_parts = []
+        if categories:
+            context_parts.append(f"Image categories: {', '.join([c.get('name', '') for c in categories[:5]])}")
+        if description:
+            context_parts.append(f"Image description: {description[0].get('text', '') if description else ''}")
+        if tags:
+            context_parts.append(f"Tags: {', '.join([t.get('name', '') for t in tags[:10]])}")
+        
+        context_parts.append(f"Patient age: {age or 'Not specified'}")
+        context_parts.append(f"Image type: {image_type}")
+        
+        # Use Groq to generate medical analysis from Azure results
+        prompt = f"""You are an expert radiologist. Based on Azure Computer Vision analysis of a medical image, provide a detailed medical report.
+
+Azure Vision Analysis:
+{chr(10).join(context_parts)}
 
 Patient age: {age or 'Not specified'}
 Image type: {image_type}
+Language: {language}
 
-{language == "Hindi" and lang_instruction or ""}
+Provide medical analysis in this JSON format:
+{{
+  "confidence": 75,
+  "confidence_note": "Analysis based on image recognition",
+  "summary_en": "Brief summary in English",
+  "summary_hi": "Brief summary in Hindi",
+  "diagnosis": {{
+    "original_jargon": "Technical observations from image analysis",
+    "simple_english": "Simple explanation in English",
+    "simple_hindi": "Simple explanation in Hindi"
+  }},
+  "findings": [],
+  "abnormalities": [],
+  "watch_for": {{"original": "Key observations", "simple": "Plain warning signs"}},
+  "emergency": "",
+  "medications": [],
+  "checklist": []
+}}"""
+
+        response = requests.post(
+            GROQ_URL,
+            headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
+            json={"model": GROQ_MODEL, "messages": [{"role": "user", "content": prompt}], "temperature": 0.3, "max_tokens": 2000},
+            timeout=45
+        )
+        
+        if response.ok:
+            raw = response.json()["choices"][0]["message"]["content"]
+            result_data = parse_json(raw)
+            result_data["pipeline"] = "Azure Vision + Groq"
+            print(f"[Aushadh AI] Azure + Groq analysis complete")
+            return result_data
+        else:
+            raise Exception("Groq failed to generate analysis")
+            
+    except Exception as e:
+        raise Exception(f"Azure analysis failed: {str(e)}")
+
+
+async def _analyse_with_gemini(data: bytes, media_type: str, age: str, language: str, image_type: str) -> dict:
+    """Analyze using Gemini Vision API - using vertex AI"""
+    if not GEMINI_API_KEY:
+        raise Exception("GEMINI_API_KEY not configured")
+    
+    print(f"[Aushadh AI] Analyzing {image_type} with Gemini Vision...")
+    
+    base64_image = base64.b64encode(data).decode("utf-8")
+    
+    prompt = f"""You are an expert radiologist analyzing medical images.
+
+Patient age: {age or 'Not specified'}
+Image type: {image_type}
 
 TASK: Analyze this medical image and provide a detailed report in JSON format.
 
 Output ONLY this exact JSON structure:
 {{
   "confidence": 85,
-  "confidence_note": "Note about image quality and clarity",
+  "confidence_note": "Note about image quality",
   "summary_en": "One sentence summary of findings in English",
   "summary_hi": "Same summary in Hindi script",
   "diagnosis": {{
@@ -441,72 +566,157 @@ Output ONLY this exact JSON structure:
       "severity": "normal|abnormal|critical"
     }}
   ],
-  "abnormalities": [
-    {{
-      "description": "Description of abnormality",
-      "location": "Where observed",
-      "severity": "mild|moderate|severe"
-    }}
-  ],
+  "abnormalities": [],
   "watch_for": {{
     "original": "Clinical observations requiring attention",
     "simple": "Plain English warning signs"
   }},
-  "recommendations": [
-    "Follow-up imaging if needed",
-    "Consult specialist",
-    "Further tests recommended"
-  ],
-  "emergency": "Urgent findings requiring immediate medical attention (if any)",
-  "checklist": [
-    {{"category": "Follow-up", "text": "Action item", "done": false}}
-  ],
-  "report_type": "{image_type}"
-}}
+  "emergency": "",
+  "medications": [],
+  "checklist": []
+}}"""
 
-IMPORTANT:
-- Only report what you can actually see in the image
-- If image is unclear, set confidence lower and note limitations
-- Use "Not visible" or "Cannot determine" for unclear areas
-- Do not make up findings - be honest about limitations
-- {lang_instruction}"""
-
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
-        
-        payload = {
-            "contents": [{
-                "parts": [
-                    {"text": prompt},
-                    {"inline_data": {"mime_type": media_type, "data": base64_image}}
-                ]
-            }],
-            "generationConfig": {
-                "temperature": 0.1,
-                "maxOutputTokens": 3500
-            }
+    # Try the updated API format
+    # Use the correct model name - gemini-2.0-flash is available
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
+    
+    # Updated payload format
+    payload = {
+        "contents": [{
+            "role": "user",
+            "parts": [
+                {"text": prompt},
+                {
+                    "inline_data": {
+                        "mime_type": media_type,
+                        "data": base64_image
+                    }
+                }
+            ]
+        }],
+        "generationConfig": {
+            "temperature": 0.1,
+            "maxOutputTokens": 3500,
+            "topP": 0.95,
+            "topK": 40
         }
+    }
+    
+    try:
+        print(f"[Aushadh AI] Calling Gemini API...")
+        response = requests.post(url, json=payload, timeout=120)
         
-        response = requests.post(url, json=payload, timeout=90)
+        print(f"[Aushadh AI] Response status: {response.status_code}")
         
-        if not response.ok:
-            raise Exception(f"Gemini API error: {response.status_code} - {response.text}")
+        # Handle rate limits with multiple retries
+        if response.status_code == 429:
+            for wait_time in [15, 30, 60]:  # Wait 15s, 30s, 60s
+                print(f"[Aushadh AI] Rate limit hit, waiting {wait_time}s...")
+                time.sleep(wait_time)
+                response = requests.post(url, json=payload, timeout=120)
+                if response.status_code != 429:
+                    break
+        
+        if response.status_code == 404:
+            # Try alternative model
+            url2 = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent?key={GEMINI_API_KEY}"
+            print(f"[Aushadh AI] Trying alternative model...")
+            response = requests.post(url2, json=payload, timeout=120)
+        
+        if response.status_code == 503:
+            raise Exception("Gemini service temporarily unavailable (503)")
+        
+        if response.status_code != 200:
+            raise Exception(f"Gemini API error: {response.status_code} - {response.text[:200]}")
         
         result = response.json()
+        
+        if "candidates" not in result or not result["candidates"]:
+            raise Exception("No response from Gemini model")
+        
         raw = result["candidates"][0]["content"]["parts"][0]["text"]
         
         result_data = parse_json(raw)
         result_data["pipeline"] = "Gemini Vision"
         
-        print(f"[Aushadh AI] Medical image analysis complete. Confidence: {result_data.get('confidence', 0)}%")
+        print(f"[Aushadh AI] Success! Confidence: {result_data.get('confidence', 0)}%")
         return result_data
         
     except Exception as e:
-        print(f"[Aushadh AI] Medical image analysis error: {str(e)}")
-        raise Exception(str(e))
+        print(f"[Aushadh AI] Gemini error: {str(e)}")
+        raise Exception(f"Gemini failed: {str(e)}")
+
+
+async def _analyse_with_groq_vision(data: bytes, media_type: str, age: str, language: str, image_type: str) -> dict:
+    """Fallback: Use Groq with vision analysis via text description"""
+    try:
+        print(f"[Aushadh AI] Using Groq fallback for {image_type}...")
+        
+        # First extract text from image using OCR
+        extracted_text = await extract_text_from_image(data, media_type)
+        
+        # Then use Groq to analyze the extracted text
+        lang_suffix = "" if language == "English" else "_hi"
+        
+        prompt = f"""You are a medical expert. Analyze this medical image report/prescription.
+
+Image type: {image_type}
+Patient age: {age or 'Not specified'}
+
+Extracted text from image:
+{extracted_text[:2000]}
+
+Provide a medical analysis in JSON format:
+{{
+  "confidence": 80,
+  "confidence_note": "Analysis based on extracted text",
+  "summary_en": "Brief summary in English",
+  "summary_hi": "Summary in Hindi",
+  "diagnosis": {{
+    "original_jargon": "Original medical terms found",
+    "simple_english": "Simple explanation in English",
+    "simple_hindi": "Simple explanation in Hindi"
+  }},
+  "findings": [],
+  "abnormalities": [],
+  "watch_for": {{"original": "", "simple": ""}},
+  "emergency": "",
+  "medications": [],
+  "checklist": []
+}}"""
+
+        response = requests.post(
+            GROQ_URL,
+            headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
+            json={"model": GROQ_MODEL, "messages": [{"role": "user", "content": prompt}], "temperature": 0.3, "max_tokens": 2000},
+            timeout=60
+        )
+        
+        if not response.ok:
+            raise Exception(f"Groq API error: {response.status_code}")
+        
+        raw = response.json()["choices"][0]["message"]["content"]
+        result_data = parse_json(raw)
+        result_data["pipeline"] = "Groq Text Analysis (Fallback)"
+        
+        print(f"[Aushadh AI] Groq fallback analysis complete")
+        return result_data
+        
+    except Exception as e:
+        raise Exception(f"Groq fallback failed: {str(e)}")
 
 
 async def chat_reply(message: str, history: list, context: dict, language: str) -> tuple[str, list]:
-    if not context:
+    # Handle context - it might be a string or already a dict
+    if isinstance(context, str):
+        try:
+            context = json.loads(context)
+        except:
+            context = {}
+    
+    if not context or not isinstance(context, dict):
+        if language.lower() == "hindi":
+            return "अभी तक कोई prescription upload नहीं किया गया है। सवाल पूछने से पहले कृपया prescription upload करें।", []
         return "No prescription has been uploaded yet. Please upload a prescription first to ask questions.", []
     
     # Build comprehensive context from prescription data
@@ -519,15 +729,25 @@ async def chat_reply(message: str, history: list, context: dict, language: str) 
     if context.get('medications'):
         ctx_parts.append("\nMEDICATIONS:")
         for med in context['medications']:
-            ctx_parts.append(f"- {med.get('name')}: {med.get('dosage')} - {med.get('timing')} for {med.get('duration')}")
-            if med.get('simple_instruction'):
-                ctx_parts.append(f"  Instructions: {med.get('simple_instruction')}")
+            if isinstance(med, dict):
+                name = med.get('name', 'Unknown')
+                dosage = med.get('dosage', '')
+                timing = med.get('timing', '')
+                duration = med.get('duration', '')
+                ctx_parts.append(f"- {name}: {dosage} - {timing} for {duration}")
+                if med.get('simple_instruction'):
+                    ctx_parts.append(f"  Instructions: {med.get('simple_instruction')}")
+            else:
+                ctx_parts.append(f"- {str(med)}")
     
     if context.get('side_effects'):
         ctx_parts.append("\nSIDE EFFECTS TO WATCH:")
         for se in context['side_effects']:
-            severity = se.get('severity', '').upper()
-            ctx_parts.append(f"- [{severity}] {se.get('text', '')}")
+            if isinstance(se, dict):
+                severity = se.get('severity', '').upper()
+                ctx_parts.append(f"- [{severity}] {se.get('text', '')}")
+            else:
+                ctx_parts.append(f"- {str(se)}")
     
     if context.get('emergency'):
         ctx_parts.append(f"\nEMERGENCY WARNINGS: {context.get('emergency')}")
@@ -535,31 +755,38 @@ async def chat_reply(message: str, history: list, context: dict, language: str) 
     if context.get('checklist'):
         ctx_parts.append("\nFOLLOW-UP CHECKLIST:")
         for item in context['checklist'][:10]:
-            ctx_parts.append(f"- [{item.get('category')}] {item.get('text')}")
+            if isinstance(item, dict):
+                ctx_parts.append(f"- [{item.get('category', 'General')}] {item.get('text', str(item))}")
+            else:
+                ctx_parts.append(f"- {str(item)}")
     
     if context.get('recovery_note'):
         ctx_parts.append(f"\nRECOVERY: {context.get('recovery_note')}")
     
     ctx = "\n".join(ctx_parts)
     
-    system = f"""You are Aushadh AI, a helpful medical assistant answering patient questions about their prescription.
+    # Set messages based on language
+    if language.lower() == "hindi":
+        not_found_msg = "यह जानकारी आपकी prescription में नहीं है, कृपया अपने डॉक्टर से पूछें।"
+        medical_refuse = "मैं Aushadh AI हूँ, मैं सिर्फ आपकी prescription के बारे में जानकारी दे सकता हूँ। कृपया अपनी prescription से जुड़े सवाल पूछें।"
+    else:
+        not_found_msg = "This information is not in your prescription, please ask your doctor."
+        medical_refuse = "I'm Aushadh AI. I can only answer questions about your prescription. Please ask medical questions related to your prescription."
+    
+    system = f"""You are Aushadh AI, a medical assistant for patients.
 
 PRESCRIPTION DATA:
 {ctx}
 
-You have access to the full prescription data above. Answer the user's question based ONLY on this information.
+CRITICAL RULES:
+1. Answer ONLY from PRESCRIPTION DATA above. NOTHING ELSE.
+2. If the question is NOT answered in the prescription data above, ONLY reply: "{not_found_msg}"
+3. Do NOT add any additional information when using rule 2.
+4. If question is not medical/prescription related, ONLY reply: "{medical_refuse}"
+5. Keep answers simple and concise.
+6. If answering about medications, include: name, dosage, timing.
 
-IMPORTANT RULES:
-1. Answer using the prescription data provided above. Search through ALL fields (diagnosis, medications, side effects, checklist, emergency warnings, recovery notes).
-2. If the answer is NOT in the prescription data, say "This information is not in your prescription — please ask your doctor."
-3. When answering about medications, provide: exact medicine name, dosage, timing, duration, and whether to take with food.
-4. Use bullet points (•) for lists.
-5. Use simple, plain language that a patient can understand.
-6. Provide detailed, comprehensive answers.
-7. Include relevant details from ALL prescription fields if applicable.
-
-Reply in {language}. Return ONLY JSON in this exact format:
-{{"reply": "Your detailed answer here with proper formatting", "suggestions": ["follow-up question 1", "follow-up question 2", "follow-up question 3"]}}"""
+Reply in {language}. JUST reply with your answer text only. DO NOT use JSON format."""
 
     try:
         msgs = [{"role": "system", "content": system}]
@@ -576,15 +803,20 @@ Reply in {language}. Return ONLY JSON in this exact format:
             raise Exception(f"Chat error: {res.text}")
         raw = res.json()["choices"][0]["message"]["content"]
     except Exception as e:
-        return f"Sorry, couldn't process that. ({str(e)[:50]})", []
+        print(f"[Chat Error] {str(e)}")
+        return "Sorry, I'm having trouble responding right now. Please try again in a moment.", []
 
     raw = raw.strip()
-    if "```json" in raw:
-        raw = raw.split("```json")[1].split("```")[0]
-    elif "```" in raw:
-        raw = raw.split("```")[1].split("```")[0]
-    try:
-        d = json.loads(raw.strip())
-        return d.get("reply", raw), d.get("suggestions", [])
-    except Exception:
-        return raw, []
+    # Clean up JSON artifacts
+    if raw.startswith("{"):
+        try:
+            d = json.loads(raw)
+            if isinstance(d, dict) and "reply" in d:
+                return d.get("reply", ""), []
+        except:
+            pass
+    # Remove common formatting
+    for art in ['{"reply": "', '{"reply": "', '```json', '```', '"}', '"}]}']:
+        if raw.startswith(art) or raw.endswith(art):
+            raw = raw.replace(art, "")
+    return raw.strip(), []

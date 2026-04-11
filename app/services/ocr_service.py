@@ -332,3 +332,71 @@ def extract_text_from_pdf(data: bytes) -> str:
     except Exception as e:
         logger.error(f"[OCR] PDF extraction error: {e}")
         raise Exception(str(e))
+
+
+def detect_if_medical_image(image_bytes: bytes) -> bool:
+    """Detect if image is a medical scan (X-ray, MRI, CT, Ultrasound)
+    
+    Medical scans typically have:
+    - Dark/black background (radiography) or specific grayscale patterns
+    - High contrast bone/tissue structures
+    - Specific brightness distribution
+    
+    Returns True if image appears to be a medical scan
+    """
+    try:
+        from PIL import Image
+        import numpy as np
+        
+        img = Image.open(io.BytesIO(image_bytes))
+        
+        # Convert to grayscale for analysis
+        gray = img.convert('L')
+        img_array = np.array(gray)
+        
+        height, width = img_array.shape
+        total_pixels = height * width
+        
+        # Calculate histogram
+        hist, _ = np.histogram(img_array.flatten(), bins=256, range=[0, 256])
+        hist = hist / total_pixels  # Normalize
+        
+        # Medical scan indicators:
+        
+        # 1. High proportion of very dark pixels (black background in X-ray/MRI)
+        dark_pixels = np.sum(hist[:30])  # pixels with brightness 0-29
+        very_dark_pixels = np.sum(hist[:15])  # pixels with brightness 0-14
+        
+        # 2. Check for bimodal distribution (common in X-rays - black bg + white bones/organs)
+        bright_pixels = np.sum(hist[200:])  # very bright pixels
+        mid_pixels = np.sum(hist[50:150])   # mid-range pixels
+        
+        # 3. Check standard deviation (medical images often have specific contrast patterns)
+        std_dev = np.std(img_array)
+        
+        # 4. Check for typical medical scan characteristics
+        # X-rays typically have: high dark %, some bright areas (bones), low mid-range
+        is_likely_medical = False
+        
+        # Criterion 1: Very dark background (>40% pixels very dark)
+        if very_dark_pixels > 0.40:
+            is_likely_medical = True
+            logger.info(f"[Medical Detect] High dark pixels: {very_dark_pixels:.2%}")
+        
+        # Criterion 2: Bimodal distribution (dark + bright, low mid)
+        elif dark_pixels > 0.30 and bright_pixels > 0.10 and mid_pixels < 0.30:
+            is_likely_medical = True
+            logger.info(f"[Medical Detect] Bimodal: dark={dark_pixels:.2%}, bright={bright_pixels:.2%}, mid={mid_pixels:.2%}")
+        
+        # Criterion 3: Low standard deviation with specific pattern (typical of scans)
+        elif std_dev < 60 and dark_pixels > 0.25:
+            is_likely_medical = True
+            logger.info(f"[Medical Detect] Low std dev: {std_dev:.1f}, dark: {dark_pixels:.2%}")
+        
+        logger.info(f"[Medical Detect] Result: {is_likely_medical} (dark={dark_pixels:.2%}, bright={bright_pixels:.2%}, std={std_dev:.1f})")
+        
+        return is_likely_medical
+        
+    except Exception as e:
+        logger.warning(f"[Medical Detect] Error: {e}")
+        return False  # Default to False - don't block on detection error

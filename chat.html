@@ -11,6 +11,8 @@
 <style>
   .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
   .primary-gradient{background:linear-gradient(135deg,#006068 0%,#007b85 100%)}
+  .header-gradient{background:linear-gradient(135deg,#002f34 0%,#004f56 30%,#006068 60%,#007b85 100%);position:relative}
+  .header-gradient::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle at 20% 80%,rgba(0,96,104,0.4) 0%,transparent 50%),radial-gradient(circle at 80% 20%,rgba(150,241,252,0.2) 0%,transparent 40%);pointer-events:none}
   body{font-family:'Public Sans',sans-serif;overflow-x:hidden}
   h1,h2,h3,h4{font-family:'Manrope',sans-serif}
   .nav-link:hover{transform:translateX(4px)}
@@ -20,10 +22,16 @@
   .typing-dot:nth-child(2){animation-delay:0.2s}
   .typing-dot:nth-child(3){animation-delay:0.4s}
   @keyframes typingPulse{0%,60%,100%{opacity:0.2;transform:scale(1)}30%{opacity:1;transform:scale(1.2)}}
+  @keyframes fadeIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+  .animate-fade-in{animation:fadeIn 0.2s ease-out}
   #messages{scroll-behavior:smooth}
   .chip{transition:all .2s;cursor:pointer}
-  .chip:hover{background:#006068;color:white;border-color:#006068}
-  /* Dark Mode Styles */
+   .chip:hover{background:#006068;color:white;border-color:#006068}
+   /* Animated border for input */
+   .input-wrapper{position:relative}
+   .input-wrapper::before{content:'';position:absolute;inset:0;border-radius:16px;padding:2px;background:linear-gradient(135deg,#006068,#007b85,#00a0aa,#006068);background-size:300% 100%;animation:borderFlow 3s linear infinite;-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+   @keyframes borderFlow{0%{background-position:0% 0%}100%{background-position:300% 0%}}
+   /* Dark Mode Styles */
   html.dark body { background-color: #121212; color: #e0e0e0; }
   html.dark .bg-surface { background-color: #1e1e1e !important; }
   html.dark .bg-surface-container-low { background-color: #2c2c2c !important; }
@@ -37,124 +45,280 @@
   html.dark .bg-white { background-color: #252525 !important; }
   html.dark aside, html.dark nav { background-color: #1e1e1e !important; }
   html.dark main { background-color: #121212 !important; }
-  html.dark .primary-gradient { background: linear-gradient(135deg, #003840 0%, #004f56 100%) !important; }
+   html.dark .primary-gradient { background: linear-gradient(135deg, #003840 0%, #004f56 100%) !important; }
+   /* Sidebar - Clean Minimal Design */
+   .sidebar-clean {
+     background: linear-gradient(180deg, #f8fafc 0%, #f1f4fa 100%);
+     border-right: 1px solid #e2e8f0;
+   }
+   .sidebar-logo {
+     animation: logoFloat 3s ease-in-out infinite;
+   }
+   @keyframes logoFloat {
+     0%, 100% { transform: translateY(0); }
+     50% { transform: translateY(-3px); }
+   }
+   .nav-item {
+     position: relative;
+     transition: all 0.2s ease;
+   }
+   .nav-item:hover {
+     background: rgba(0, 96, 104, 0.05);
+   }
+   .nav-item::after {
+     content: '';
+     position: absolute;
+     left: 0;
+     top: 50%;
+     transform: translateY(-50%);
+     width: 3px;
+     height: 0;
+     background: linear-gradient(180deg, #006068, #3b6934);
+     border-radius: 0 2px 2px 0;
+     transition: height 0.2s ease;
+   }
+   .nav-item:hover::after {
+     height: 24px;
+   }
+   .nav-item.active-nav {
+     background: linear-gradient(90deg, rgba(0, 96, 104, 0.1) 0%, transparent 100%);
+   }
+   .nav-item.active-nav::after {
+     height: 32px;
+   }
+   .nav-item .icon {
+     transition: transform 0.2s ease;
+   }
+   .nav-item:hover .icon {
+     transform: scale(1.1);
+   }
+   .nav-item.active-nav .icon {
+     color: #006068;
+   }
+   .upload-btn {
+     transition: all 0.3s ease;
+     border: 1px solid transparent;
+   }
+   .upload-btn:hover {
+     transform: translateY(-1px);
+     box-shadow: 0 4px 12px rgba(0, 96, 104, 0.2);
+     border-color: rgba(0, 96, 104, 0.3);
+   }
+   /* Mind-blowing Logout Button */
+   .logout-section {
+     padding: 8px 16px;
+     margin: 0 8px;
+   }
+   .logout-btn {
+     display: flex;
+     align-items: center;
+     gap: 10px;
+     padding: 10px 14px;
+     border-radius: 10px;
+     color: #6b7280;
+     font-weight: 500;
+     font-size: 14px;
+     cursor: pointer;
+     transition: all 0.3s ease;
+   }
+   .logout-btn:hover {
+     background: rgba(220, 38, 38, 0.1);
+     transform: translateX(4px);
+   }
+   .logout-btn:hover .logout-text {
+     color: #dc2626;
+   }
+   .logout-btn .icon-wrapper {
+     width: 32px;
+     height: 32px;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     background: rgba(220, 38, 38, 0.1);
+     border-radius: 8px;
+     transition: all 0.3s ease;
+   }
+   .logout-btn:hover .icon-wrapper {
+     transform: scale(1.1) rotate(-5deg);
+   }
+   .logout-btn:hover .material-symbols-outlined {
+     color: #dc2626;
+     animation: logoutIcon 0.5s ease infinite;
+   }
+   @keyframes logoutIcon {
+     0%, 100% { transform: translateX(0); }
+     25% { transform: translateX(-2px); }
+     75% { transform: translateX(2px); }
+   }
+   .logout-text {
+     transition: all 0.3s ease;
+   }
+   html.dark .sidebar-clean {
+     background: linear-gradient(180deg, #1a1a1a 0%, #151515 100%);
+     border-right: 1px solid #2a2a2a;
+   }
+   html.dark .nav-item:hover {
+     background: rgba(59, 105, 52, 0.1);
+   }
+   html.dark .nav-item::after {
+     background: linear-gradient(180deg, #4ade80, #22c55e);
+   }
+   html.dark .nav-item.active-nav {
+     background: linear-gradient(90deg, rgba(59, 105, 52, 0.15) 0%, transparent 100%);
+   }
+   /* Animated Sidebar Separator */
+   .sidebar-separator {
+     width: 3px;
+     height: 100%;
+     background: linear-gradient(180deg, transparent, #006068 20%, #3b6934 50%, #006068 80%, transparent);
+     background-size: 100% 200%;
+     animation: separatorFlow 3s ease-in-out infinite;
+     box-shadow: 0 0 12px rgba(0, 96, 104, 0.5), 0 0 24px rgba(59, 105, 52, 0.3);
+   }
+   @keyframes separatorFlow {
+     0%, 100% { background-position: 0% 0%; }
+     50% { background-position: 0% 200%; }
+   }
+html.dark .sidebar-separator {
+     background: linear-gradient(180deg, transparent, #3b6934 20%, #4ade80 50%, #3b6934 80%, transparent);
+     box-shadow: 0 0 15px rgba(59, 105, 52, 0.6), 0 0 30px rgba(74, 222, 128, 0.3);
+    }
+   #lang-en, #lang-hi { color: #6e797a; background: transparent; }
+   #lang-en.active, #lang-hi.active { background: #006068; color: white; box-shadow: 0 2px 8px rgba(0,96,104,0.3); }
+   html.dark #lang-en, html.dark #lang-hi { color: #909090; }
+   html.dark #lang-en.active, html.dark #lang-hi.active { background: #3b6934; box-shadow: 0 2px 8px rgba(59,105,52,0.3); }
 </style>
 </head>
 <body class="bg-surface text-on-surface">
 
 <!-- Sidebar -->
-<aside class="hidden md:flex flex-col h-screen w-56 fixed left-0 top-0 bg-surface-container-low py-8 z-40">
-  <div class="px-5 mb-8 flex items-center gap-2">
-    <img src="logo_green.png" alt="Aushadh AI" class="w-8 h-8 object-contain">
+<aside class="hidden md:flex flex-col h-screen w-56 fixed left-0 top-0 sidebar-clean py-8 z-40">
+  <div class="px-5 mb-6 flex items-center gap-2">
+    <img src="logo_green.png" alt="Aushadh AI" class="w-8 h-8 object-contain sidebar-logo">
     <div>
       <h1 class="text-lg font-bold text-primary">Aushadh AI</h1>
       <p class="text-[10px] uppercase tracking-widest text-outline">Clinical Serenity</p>
     </div>
   </div>
+  <div class="mx-4 mb-6 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
   <nav class="flex-1 space-y-1 px-3">
-    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="dashboard.html"><span class="material-symbols-outlined text-sm">dashboard</span>Dashboard</a>
-    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="documents.html"><span class="material-symbols-outlined text-sm">description</span>Documents</a>
-    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="diagnosis.html"><span class="material-symbols-outlined text-sm">summarize</span>Summary</a>
-    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="medications.html"><span class="material-symbols-outlined text-sm">medical_services</span>Medications</a>
-    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="checklist.html"><span class="material-symbols-outlined text-sm">fact_check</span>Checklist</a>
-    <a class="nav-link flex items-center gap-2 px-4 py-3 bg-surface-container-lowest text-primary rounded-r-full shadow-sm font-semibold text-sm" href="chat.html"><span class="material-symbols-outlined text-sm">chat</span>Ask AI</a>
-  </nav>
-  <div class="px-5 space-y-3 mt-auto">
-    <a href="documents.html" class="w-full primary-gradient text-white rounded-full py-2.5 text-sm font-bold shadow-lg flex items-center justify-center gap-1 active:scale-95">
-      <span class="material-symbols-outlined text-sm">upload</span>Upload Document
+    <a class="nav-item flex items-center gap-2 px-4 py-3 text-slate-600 font-semibold text-sm" href="dashboard.html"><span class="material-symbols-outlined text-sm icon">dashboard</span><span data-i18n="nav_dashboard">Dashboard</span></a>
+    <a class="nav-item flex items-center gap-2 px-4 py-3 text-slate-600 font-semibold text-sm" href="documents.html"><span class="material-symbols-outlined text-sm icon">description</span><span data-i18n="nav_documents">Documents</span></a>
+    <a class="nav-item flex items-center gap-2 px-4 py-3 text-slate-600 font-semibold text-sm" href="diagnosis.html"><span class="material-symbols-outlined text-sm icon">summarize</span><span data-i18n="nav_summary">Summary</span></a>
+    <a class="nav-item flex items-center gap-2 px-4 py-3 text-slate-600 font-semibold text-sm relative" href="medications.html">
+      <span class="material-symbols-outlined text-sm icon">medical_services</span><span data-i18n="nav_medications">Medications</span>
+      <span id="nav-reminder-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center">0</span>
     </a>
-    <a class="flex items-center gap-2 py-1.5 text-slate-500 text-sm hover:text-error transition-colors cursor-pointer" onclick="logout()">
-      <span class="material-symbols-outlined text-sm">logout</span>Logout
+    <a class="nav-item flex items-center gap-2 px-4 py-3 text-slate-600 font-semibold text-sm" href="checklist.html"><span class="material-symbols-outlined text-sm icon">fact_check</span><span data-i18n="nav_checklist">Checklist</span></a>
+    <a class="nav-item active-nav flex items-center gap-2 px-4 py-3 bg-surface-container-lowest text-primary rounded-r-lg font-semibold text-sm" href="chat.html"><span class="material-symbols-outlined text-sm icon">smart_toy</span><span data-i18n="nav_askai">Ask AI</span></a>
+    <a class="nav-item flex items-center gap-2 px-4 py-3 text-slate-600 font-semibold text-sm" href="profile.html"><span class="material-symbols-outlined text-sm icon">account_circle</span><span data-i18n="nav_profile">Profile</span></a>
+</nav>
+<div class="mx-4 mt-6 mb-4 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
+    
+  <!-- Language Toggle -->
+  <div class="mx-4 mb-4">
+    <div class="flex items-center justify-between bg-surface-container-low rounded-full p-1 border border-outline-variant/20">
+      <button onclick="setLanguage('en')" id="lang-en" class="flex-1 py-2 rounded-full text-xs font-bold transition-all duration-200">
+        English
+      </button>
+      <button onclick="setLanguage('hi')" id="lang-hi" class="flex-1 py-2 rounded-full text-xs font-bold transition-all duration-200">
+        हिंदी
+      </button>
+    </div>
+  </div>
+
+  <div class="logout-section mt-auto">
+    <a class="logout-btn" onclick="logout()">
+      <div class="icon-wrapper">
+        <span class="material-symbols-outlined text-sm">logout</span>
+      </div>
+      <span class="logout-text" data-i18n="sign_out">Sign Out</span>
     </a>
   </div>
 </aside>
 
-<main class="md:ml-56 flex flex-col h-screen">
-  <!-- Header -->
-  <header class="sticky top-0 z-30 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/10">
-    <div class="flex justify-between items-center px-6 md:px-10 py-4">
+<!-- Animated Sidebar Separator -->
+<div class="hidden md:block fixed left-56 top-0 h-screen z-50">
+  <div class="sidebar-separator"></div>
+</div>
+
+<main class="md:ml-56 min-h-screen pb-24 md:pb-12">
+  <!-- Animated Green Header -->
+  <header class="sticky top-0 z-30 relative overflow-hidden">
+    <div class="absolute inset-0 header-gradient"></div>
+    <div class="relative px-4 md:px-10 py-5 flex justify-between items-center">
       <div>
-        <div class="flex items-center gap-2 text-sm text-outline mb-1">
-          <a href="dashboard.html" class="hover:text-primary transition-colors flex items-center gap-1">
-            <span class="material-symbols-outlined text-sm">arrow_back</span>Dashboard
+        <div class="flex items-center gap-2 text-white/80 text-sm mb-1">
+          <a href="dashboard.html" class="hover:text-white transition-colors flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">arrow_back</span><span data-i18n="nav_dashboard">Dashboard</span>
           </a>
-          <span>/</span><span class="text-primary font-semibold">Ask AI</span>
+          <span>/</span><span class="text-white font-semibold" data-i18n="nav_askai">Ask AI</span>
         </div>
-        <h2 class="font-headline font-extrabold text-2xl text-on-surface flex items-center gap-2">
-          <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1">psychology</span>
-          Ask About Your Prescription
+        <h2 class="font-headline font-extrabold text-2xl text-white flex items-center gap-2">
+          <span class="material-symbols-outlined text-white" style="font-variation-settings:'FILL' 1">smart_toy</span>
+          <span data-i18n="nav_askai">Ask AI</span>
         </h2>
       </div>
-      <div class="flex items-center gap-3">
-        <!-- Language toggle -->
-        <div class="flex bg-surface-container-low border border-outline-variant/20 rounded-full p-1 gap-1">
-          <button onclick="setLang('English',this)" id="btn-en" class="lang-btn px-3 py-1 rounded-full text-xs font-bold bg-white text-primary shadow-sm transition-all">EN</button>
-          <button onclick="setLang('Hindi',this)" id="btn-hi" class="lang-btn px-3 py-1 rounded-full text-xs font-bold text-outline transition-all">हि</button>
-        </div>
-        <div class="w-9 h-9 rounded-full bg-primary/10 border-2 border-primary-fixed flex items-center justify-center">
-          <span class="material-symbols-outlined text-primary text-sm">person</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Prescription context banner -->
-    <div id="ctx-banner" class="hidden mx-6 md:mx-10 mb-3 bg-primary/5 border border-primary/15 rounded-xl px-4 py-3 flex items-center gap-3">
-      <span class="material-symbols-outlined text-primary text-sm flex-shrink-0" style="font-variation-settings:'FILL' 1">description</span>
-      <div class="flex-1 min-w-0">
-        <p class="text-[10px] font-black uppercase tracking-widest text-primary mb-0.5">Active Prescription Context</p>
-        <p class="text-xs text-on-surface-variant truncate" id="ctx-text">Your prescription is loaded.</p>
-      </div>
-      <span class="flex-shrink-0 text-[10px] font-bold bg-secondary-container text-on-secondary-container px-2 py-1 rounded-full">LOADED</span>
-    </div>
-
-    <!-- No prescription warning -->
-    <div id="no-ctx-banner" class="hidden mx-6 md:mx-10 mb-3 bg-error-container/30 border border-error/20 rounded-xl px-4 py-3 flex items-center gap-3">
-      <span class="material-symbols-outlined text-error text-sm flex-shrink-0">warning</span>
-      <p class="text-xs text-error flex-1">No prescription uploaded yet. <a href="documents.html" class="font-bold underline">Upload one</a> for accurate answers.</p>
     </div>
   </header>
+
+  <!-- Prescription context banner -->
+  <div id="ctx-banner" class="hidden mx-6 md:mx-10 mt-4 bg-primary/5 border border-primary/15 rounded-xl px-4 py-3 flex items-center gap-3">
+    <span class="material-symbols-outlined text-primary text-sm flex-shrink-0" style="font-variation-settings:'FILL' 1">description</span>
+    <div class="flex-1 min-w-0">
+      <p class="text-[10px] font-black uppercase tracking-widest text-primary mb-0.5" data-i18n="active_rx_context">Active Prescription Context</p>
+      <p class="text-xs text-on-surface-variant truncate" id="ctx-text" data-i18n="rx_loaded">Your prescription is loaded.</p>
+    </div>
+    <span class="flex-shrink-0 text-[10px] font-bold bg-secondary-container text-on-secondary-container px-2 py-1 rounded-full" data-i18n="loaded">LOADED</span>
+  </div>
+
+  <!-- No prescription warning -->
+  <div id="no-ctx-banner" class="hidden mx-6 md:mx-10 mt-4 bg-error-container/30 border border-error/20 rounded-xl px-4 py-3 flex items-center gap-3">
+    <span class="material-symbols-outlined text-error text-sm flex-shrink-0">warning</span>
+    <p class="text-xs text-error flex-1"><span data-i18n="no_rx">No prescription uploaded yet.</span> <a href="documents.html" class="font-bold underline"><span data-i18n="upload_one">Upload one</span></a> <span data-i18n="upload_for_accurate">for accurate answers.</span></p>
+  </div>
 
   <!-- Messages area -->
   <div class="flex-1 overflow-y-auto px-6 md:px-10 py-6" id="messages">
     <!-- Welcome message -->
     <div class="flex gap-3 mb-6" id="welcome-msg">
       <div class="w-9 h-9 rounded-full primary-gradient flex items-center justify-center flex-shrink-0 mt-1">
-        <span class="material-symbols-outlined text-white text-sm" style="font-variation-settings:'FILL' 1">psychology</span>
+        <span class="material-symbols-outlined text-white text-sm" style="font-variation-settings:'FILL' 1">smart_toy</span>
       </div>
       <div class="msg-bubble">
         <div class="bg-surface-container-lowest rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm border border-outline-variant/10">
-          <p class="text-sm text-on-surface mb-2">Hi! I'm Aushadh AI. I can answer questions about <strong>your uploaded prescription</strong> — dosages, timing, side effects, and what your diagnosis means.</p>
-          <p class="text-xs text-on-surface-variant">I only answer from what your doctor wrote. For anything not in your prescription, I'll tell you to ask your doctor.</p>
+          <p id="welcome-msg-1" class="text-sm text-on-surface mb-2" data-i18n="welcome_msg1">Hi! I'm Aushadh AI. I can answer questions about your uploaded prescription — dosages, timing, side effects, and what your diagnosis means.</p>
+          <p id="welcome-msg-2" class="text-xs text-on-surface-variant" data-i18n="welcome_msg2">I only answer from what your doctor wrote. For anything not in your prescription, I'll tell you to ask your doctor.</p>
         </div>
-        <p class="text-[10px] text-outline mt-1 ml-1">Aushadh AI</p>
+        <p class="text-[10px] text-outline mt-1 ml-1" data-i18n="aushadh_ai">Aushadh AI</p>
       </div>
     </div>
 
-    <!-- Suggested questions (shown initially) -->
-    <div id="suggestions-initial" class="ml-12 mb-6">
-      <p class="text-[10px] font-black uppercase tracking-widest text-outline mb-3">Suggested questions</p>
-      <div class="flex flex-wrap gap-2" id="chips-initial"></div>
-    </div>
+
+  </div>
+
+  <!-- Suggested questions (shown initially) -->
+  <div id="suggestions-initial" class="ml-12 mb-4">
+    <p class="text-[10px] font-black uppercase tracking-widest text-outline mb-3" data-i18n="suggested">Suggested questions</p>
+    <div class="flex flex-wrap gap-2" id="chips-initial"></div>
   </div>
 
   <!-- Input area -->
   <div class="border-t border-outline-variant/10 bg-surface/80 backdrop-blur-xl px-6 md:px-10 py-4">
-    <!-- Follow-up chips (shown after first message) -->
-    <div id="followup-chips" class="hidden flex-wrap gap-2 mb-3" ></div>
 
-    <div class="flex gap-3 items-end max-w-4xl mx-auto">
-      <div class="flex-1 bg-surface-container-low border border-outline-variant rounded-2xl flex items-end overflow-hidden focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/20 transition-all">
-        <textarea id="chat-input" rows="1" placeholder="Ask about your prescription..."
-          class="flex-1 bg-transparent px-4 py-3 text-sm text-on-surface resize-none focus:outline-none max-h-32 min-h-[44px]"
+      <div class="flex gap-3 items-end">
+      <div class="input-wrapper flex-1 max-w-3xl bg-[#ebeef4] rounded-2xl flex items-end overflow-hidden" style="position:relative">
+        <textarea id="chat-input" rows="1" placeholder="Ask about your prescription..." data-i18n-placeholder="placeholder"
+          style="background:transparent;border:0;outline:0;box-shadow:none;resize:none;flex:1;padding:12px 16px;font-size:14px;color:#181c20;max-height:128px;min-height:44px;-webkit-appearance:none"
           onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button onclick="sendMessage()" id="send-btn"
+          style="width:44px;height:44px;margin:4px;background:linear-gradient(135deg,#006068,#007b85);border:0;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer"
+          title="Send">
+          <span class="material-symbols-outlined" style="color:white;font-size:20px">send</span>
+        </button>
       </div>
-      <button onclick="sendMessage()" id="send-btn"
-        class="w-12 h-12 primary-gradient rounded-full flex items-center justify-center flex-shrink-0 shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-90 transition-all disabled:opacity-40"
-        title="Send">
-        <span class="material-symbols-outlined text-white text-lg" style="font-variation-settings:'FILL' 1">send</span>
-      </button>
     </div>
-    <p class="text-[10px] text-outline text-center mt-2">Aushadh AI answers only from your prescription. Always consult your doctor for medical decisions.</p>
+    <p class="text-[10px] text-outline mt-2 disclaimer-text" data-i18n="disclaimer">Aushadh AI answers only from your prescription. Always consult your doctor for medical decisions.</p>
   </div>
 </main>
 
@@ -170,22 +334,39 @@
 <script>
 requireAuth();
 
-const STATIC_STARTERS = [
+const STATIC_STARTERS_EN = [
   "When should I take my medicines?",
   "What foods should I avoid?",
   "When should I see the doctor again?",
   "What are the warning signs to watch for?",
 ];
 
+const STATIC_STARTERS_HI = [
+  "मुझे कौन सी दवाइयाँ लेनी है?",
+  "दवाइयों के क्या साइड इफेक्ट्स हो सकते हैं?",
+  "मुझे कितने दिन दवाइयाँ लेनी है?",
+  "दवाइयों को कब लेना है?",
+  "मेरा diagnosis क्या है?",
+  "मुझे कौन से चेतावनी के संकेत देखने चाहिए?"
+];
+
 let chatHistory = [];
-let currentLang = 'English';
+let prescriptionData = null;
 
 (async function initChat() {
-  let prescriptionData = getAnalysis();
+  prescriptionData = getAnalysis();
   
-  if (localStorage.getItem('medbuddy_logged_in')) {
+  // Check if this is a fresh login after logout - don't load from server
+  const freshLoginAfterLogout = sessionStorage.getItem('fresh_login_after_logout');
+  
+  if (localStorage.getItem('medbuddy_logged_in') && !freshLoginAfterLogout) {
     const serverData = await loadAnalysisFromServer();
     if (serverData) prescriptionData = serverData;
+  }
+  
+  // Clear fresh login flag
+  if (freshLoginAfterLogout) {
+    sessionStorage.removeItem('fresh_login_after_logout');
   }
   
   // Show context banner
@@ -196,7 +377,27 @@ let currentLang = 'English';
   } else {
     document.getElementById('no-ctx-banner').classList.remove('hidden');
   }
+  
+  // Load starter questions
+  loadStarterQuestions();
+  
+  // Update medication reminder badge
+  setTimeout(() => {
+    if (typeof updateReminderBadge === 'function') {
+      updateReminderBadge();
+    }
+  }, 100);
 })();
+
+async function loadStarterQuestions() {
+  const starters = [
+    t('starter_when_meds'),
+    t('starter_foods_avoid'),
+    t('starter_doctor_again'),
+    t('starter_watch_signs')
+  ];
+  renderChips(starters);
+}
 
 // Render starter chips
 const chipsEl = document.getElementById('chips-initial');
@@ -220,18 +421,6 @@ function showSkeletonChips(){
     sk.style.width=(80+Math.random()*60)+'px';
     chipsEl.appendChild(sk);
   }
-}
-
-// Load dynamic or static starters
-showSkeletonChips();
-apiChatStarters(prescriptionData, currentLang).then(questions => {
-  renderChips(questions.length >= 2 ? questions : STATIC_STARTERS);
-}).catch(() => renderChips(STATIC_STARTERS));
-
-function setLang(l, btn) {
-  currentLang = l;
-  document.querySelectorAll('.lang-btn').forEach(b => b.className = 'lang-btn px-3 py-1 rounded-full text-xs font-bold text-outline transition-all');
-  btn.className = 'lang-btn px-3 py-1 rounded-full text-xs font-bold bg-white text-primary shadow-sm transition-all';
 }
 
 function handleKey(e) {
@@ -297,32 +486,17 @@ function hideTyping() {
   if (el) el.remove();
 }
 
-function renderFollowupChips(suggestions) {
-  const el = document.getElementById('followup-chips');
-  if (!suggestions || !suggestions.length) { el.classList.add('hidden'); return; }
-  el.innerHTML = '';
-  el.classList.remove('hidden');
-  el.classList.add('flex');
-  suggestions.slice(0, 3).forEach(q => {
-    const chip = document.createElement('button');
-    chip.className = 'chip text-xs font-semibold px-3 py-1.5 rounded-full border border-primary/30 text-primary bg-primary/5';
-    chip.textContent = q;
-    chip.onclick = () => { document.getElementById('chat-input').value = q; autoResize(document.getElementById('chat-input')); sendMessage(); };
-    el.appendChild(chip);
-  });
-}
-
 async function sendMessage() {
   const input = document.getElementById('chat-input');
   const msg = input.value.trim();
   if (!msg) return;
 
   // Hide initial suggestions
-  document.getElementById('suggestions-initial').style.display = 'none';
+  const suggestionsDiv = document.getElementById('suggestions-initial');
+  if (suggestionsDiv) suggestionsDiv.style.display = 'none';
 
   input.value = '';
   autoResize(input);
-  document.getElementById('followup-chips').classList.add('hidden');
 
   appendMessage('user', msg);
   chatHistory.push({ role: 'user', content: msg });
@@ -331,19 +505,40 @@ async function sendMessage() {
   document.getElementById('send-btn').disabled = true;
 
   try {
-    const res = await apiChat(msg, chatHistory, prescriptionData, currentLang);
+    console.log('Sending message:', msg, 'with language:', getCurrentLanguage());
+    const res = await apiChat(msg, chatHistory, prescriptionData, getCurrentLanguage());
+    console.log('API response:', res);
     hideTyping();
     appendMessage('assistant', res.reply);
     chatHistory.push({ role: 'assistant', content: res.reply });
-    if (res.suggestions && res.suggestions.length) renderFollowupChips(res.suggestions);
+    
+    // Show suggested questions again after response
+    loadStarterQuestions();
+
   } catch (e) {
     hideTyping();
-    appendMessage('assistant', 'Sorry, I couldn\'t process that. Please make sure the backend is running and try again.');
+    console.error('Chat error:', e);
+    let errorMsg = 'Sorry, I couldn\'t process that. Please try again.';
+    if (e.message && e.message.includes('Failed to fetch')) {
+      errorMsg = 'Cannot connect to server. Please make sure the backend is running.';
+    } else if (e.message && e.message.includes('Chat error')) {
+      errorMsg = 'AI service error. Please try again in a moment.';
+    }
+    appendMessage('assistant', errorMsg);
   } finally {
     document.getElementById('send-btn').disabled = false;
     input.focus();
   }
 }
+
+if (typeof applyTranslations === 'function') {
+  applyTranslations();
+}
+setTimeout(() => {
+  const lang = getCurrentLanguage();
+  document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+  document.getElementById('lang-hi').classList.toggle('active', lang === 'hi');
+}, 100);
 </script>
 </body>
 </html>

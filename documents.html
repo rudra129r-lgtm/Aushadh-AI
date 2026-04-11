@@ -45,7 +45,39 @@
   .dropdown-menu{box-shadow:0 4px 20px rgba(0,96,104,0.15)}
   .dropdown-option.selected{background:#006068;color:#fff}
   .dropdown-option.selected .bg-primary{opacity:1!important}
-  /* Dark Mode Styles */
+  .sidebar-clean {
+    background: linear-gradient(180deg, #f8fafc 0%, #f1f4fa 100%);
+    border-right: 1px solid #e2e8f0;
+  }
+  .nav-item {
+    position: relative;
+    transition: all 0.2s ease;
+  }
+  .nav-item:hover {
+    background: rgba(0, 96, 104, 0.05);
+  }
+  .nav-item::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 0;
+    background: linear-gradient(180deg, #006068, #3b6934);
+    border-radius: 0 2px 2px 0;
+    transition: height 0.2s ease;
+  }
+  .nav-item:hover::after {
+    height: 24px;
+  }
+  .sidebar-logo {
+    animation: logoFloat 3s ease-in-out infinite;
+  }
+  @keyframes logoFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+  }
   html.dark body { background-color: #121212; color: #e0e0e0; }
   html.dark .bg-surface { background-color: #1e1e1e !important; }
   html.dark .bg-surface-container-low { background-color: #2c2c2c !important; }
@@ -53,39 +85,75 @@
   html.dark .bg-surface-container-high { background-color: #383838 !important; }
   html.dark .text-on-surface { color: #e0e0e0 !important; }
   html.dark .text-slate-600 { color: #a0a0a0 !important; }
-  html.dark .text-slate-500 { color: #909090 !important; }
   html.dark .text-outline { color: #808080 !important; }
   html.dark .border-outline-variant { border-color: #404040 !important; }
   html.dark .bg-white { background-color: #252525 !important; }
   html.dark aside, html.dark nav { background-color: #1e1e1e !important; }
   html.dark main { background-color: #121212 !important; }
   html.dark .primary-gradient { background: linear-gradient(135deg, #003840 0%, #004f56 100%) !important; }
+  html.dark .nav-item:hover { background: rgba(59, 105, 52, 0.1); }
+  html.dark .nav-item::after { background: linear-gradient(180deg, #4ade80, #22c55e); }
+  html.dark .sidebar-clean { background: linear-gradient(180deg, #1a1a1a 0%, #151515 100%); border-right: 1px solid #2a2a2a; }
+  /* Language Toggle */
+  #lang-en, #lang-hi { color: #6e797a; background: transparent; }
+  #lang-en.active, #lang-hi.active { background: #006068; color: white !important; box-shadow: 0 2px 8px rgba(0,96,104,0.3); }
+  html.dark #lang-en, html.dark #lang-hi { color: #909090; }
+  html.dark #lang-en.active, html.dark #lang-hi.active { background: #3b6934; box-shadow: 0 2px 8px rgba(59,105,52,0.3); }
 </style>
 </head>
 <body class="bg-surface text-on-surface">
+
 <!-- Sidebar -->
-<aside class="hidden md:flex flex-col h-screen w-56 fixed left-0 top-0 bg-surface-container-low py-8 z-40">
+<aside class="hidden md:flex flex-col h-screen w-56 fixed left-0 top-0 sidebar-clean py-8 z-40">
   <div class="px-5 mb-8 flex items-center gap-2">
-    <img src="logo_green.png" alt="Aushadh AI" class="w-8 h-8 object-contain">
+    <img src="logo_green.png" alt="Aushadh AI" class="w-8 h-8 object-contain sidebar-logo">
     <div>
       <h1 class="text-lg font-bold text-primary">Aushadh AI</h1>
       <p class="text-[10px] uppercase tracking-widest text-outline">Clinical Serenity</p>
     </div>
   </div>
   <nav class="flex-1 space-y-1 px-3">
-    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="dashboard.html"><span class="material-symbols-outlined text-sm">dashboard</span>Dashboard</a>
-    <a class="nav-link flex items-center gap-2 px-4 py-3 bg-surface-container-lowest text-primary rounded-r-full shadow-sm font-semibold text-sm" href="documents.html"><span class="material-symbols-outlined text-sm">description</span>Documents</a>
-    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="diagnosis.html"><span class="material-symbols-outlined text-sm">summarize</span>Summary</a>
-    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="medications.html"><span class="material-symbols-outlined text-sm">medical_services</span>Medications</a>
-    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="checklist.html"><span class="material-symbols-outlined text-sm">fact_check</span>Checklist</a>
-    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="profile.html"><span class="material-symbols-outlined text-sm">account_circle</span>Profile</a>
+    <a class="nav-item flex items-center gap-2 px-4 py-3 text-slate-600 font-semibold text-sm" href="dashboard.html">
+      <span class="material-symbols-outlined text-sm">dashboard</span><span data-i18n="nav_dashboard">Dashboard</span>
+    </a>
+    <a class="nav-item flex items-center gap-2 px-4 py-3 bg-surface-container-lowest text-primary rounded-r-lg font-semibold text-sm" href="documents.html">
+      <span class="material-symbols-outlined text-sm">description</span><span data-i18n="nav_documents">Documents</span>
+    </a>
+    <a class="nav-item flex items-center gap-2 px-4 py-3 text-slate-600 font-semibold text-sm" href="diagnosis.html">
+      <span class="material-symbols-outlined text-sm">summarize</span><span data-i18n="nav_summary">Summary</span>
+    </a>
+    <a class="nav-item flex items-center gap-2 px-4 py-3 text-slate-600 font-semibold text-sm" href="medications.html">
+      <span class="material-symbols-outlined text-sm">medical_services</span><span data-i18n="nav_medications">Medications</span>
+      <span id="nav-reminder-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center">0</span>
+    </a>
+    <a class="nav-item flex items-center gap-2 px-4 py-3 text-slate-600 font-semibold text-sm" href="checklist.html">
+      <span class="material-symbols-outlined text-sm">fact_check</span><span data-i18n="nav_checklist">Checklist</span>
+    </a>
+    <a class="nav-item flex items-center gap-2 px-4 py-3 text-slate-600 font-semibold text-sm" href="chat.html">
+      <span class="material-symbols-outlined text-sm">smart_toy</span><span data-i18n="nav_askai">Ask AI</span>
+    </a>
+    <a class="nav-item flex items-center gap-2 px-4 py-3 text-slate-600 font-semibold text-sm" href="profile.html">
+      <span class="material-symbols-outlined text-sm">account_circle</span><span data-i18n="nav_profile">Profile</span>
+    </a>
   </nav>
-  <div class="px-5 space-y-3 mt-auto">
-    <a href="documents.html" class="w-full primary-gradient text-white rounded-full py-2.5 text-sm font-bold shadow-lg flex items-center justify-center gap-1 active:scale-95"><span class="material-symbols-outlined text-sm">upload</span>Upload Document</a>
-    <a class="flex items-center gap-2 py-1.5 text-slate-500 text-sm hover:text-error transition-colors cursor-pointer" onclick="logout()"><span class="material-symbols-outlined text-sm">logout</span>Logout</a>
+  <div class="mx-4 mb-6 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
+  <!-- Language Toggle -->
+  <div class="mx-4 mb-4">
+    <div class="flex items-center justify-between bg-surface-container-low rounded-full p-1 border border-outline-variant/20">
+      <button onclick="setLanguage('en')" id="lang-en" class="flex-1 py-2 rounded-full text-xs font-bold transition-all duration-200">
+        English
+      </button>
+      <button onclick="setLanguage('hi')" id="lang-hi" class="flex-1 py-2 rounded-full text-xs font-bold transition-all duration-200">
+        हिंदी
+      </button>
+    </div>
+  </div>
+  <div class="logout-section mt-auto px-4">
+    <a class="logout-btn flex items-center gap-2 py-2 text-slate-500 text-sm hover:text-error transition-colors cursor-pointer" onclick="logout()">
+      <span class="material-symbols-outlined text-sm">logout</span><span data-i18n="sign_out">Sign Out</span>
+    </a>
   </div>
 </aside>
-
 
 <main class="md:ml-56 min-h-screen pb-24 md:pb-12">
   <!-- Animated Green Header -->
@@ -95,226 +163,198 @@
       <div>
         <div class="flex items-center gap-2 text-white/80 text-sm mb-1">
           <a href="dashboard.html" class="hover:text-white transition-colors flex items-center gap-1">
-            <span class="material-symbols-outlined text-sm">arrow_back</span>Dashboard
+            <span class="material-symbols-outlined text-sm">arrow_back</span><span data-i18n="nav_dashboard">Dashboard</span>
           </a>
           <span>/</span>
-          <span class="text-white font-semibold">Documents</span>
+          <span class="text-white font-semibold" data-i18n="nav_documents">Documents</span>
         </div>
-        <h2 class="font-headline font-extrabold text-2xl text-white">Upload Your Document</h2>
+        <h2 class="font-headline font-extrabold text-2xl text-white" data-i18n="upload_title">Upload Your Document</h2>
       </div>
     </div>
   </header>
 
   <section class="max-w-7xl mx-auto px-6 md:px-10 mt-4">
-  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-    <!-- LEFT -->
-    <div class="lg:col-span-7 space-y-5">
-      <!-- Document Type Toggle -->
-      <div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/20 p-4">
-        <div class="flex gap-2">
-           <button id="btn-prescription" onclick="setUploadMode('prescription')" class="flex-1 py-3.5 px-5 rounded-xl font-bold text-base transition-all bg-primary text-white">
-            📝 Prescription / Report
-          </button>
-          <button id="btn-medical" onclick="setUploadMode('medical')" class="flex-1 py-3.5 px-5 rounded-xl font-bold text-base transition-all bg-surface-container text-on-surface-variant border border-outline-variant">
-            🏥 Medical Image (X-ray, MRI, CT)
-          </button>
-        </div>
-      </div>
-
-      <div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/20 overflow-hidden">
-        <!-- File mode -->
-        <div id="mode-file" class="p-4 sm:p-8">
-          <div id="drop-zone" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)" onclick="document.getElementById('file-input').click()"
-            class="border-2 border-dashed border-outline-variant rounded-2xl p-6 sm:p-12 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-all">
-            <div class="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-              <span class="material-symbols-outlined text-primary text-4xl" id="upload-icon">upload_file</span>
-            </div>
-            <p class="font-bold text-on-surface text-lg mb-1" id="upload-title">Drop your file here</p>
-            <p class="text-outline text-base mb-4" id="upload-subtitle">or click to browse from your device</p>
-            <div class="flex gap-2" id="upload-formats">
-              <span class="text-[10px] font-bold uppercase px-3 py-1 border border-outline-variant rounded-full text-outline">PDF</span>
-              <span class="text-[10px] font-bold uppercase px-3 py-1 border border-outline-variant rounded-full text-outline">JPG</span>
-              <span class="text-[10px] font-bold uppercase px-3 py-1 border border-outline-variant rounded-full text-outline">PNG</span>
-            </div>
-            <input type="file" id="file-input" class="hidden" accept=".pdf,.jpg,.jpeg,.png" onchange="onFileSelect(event)"/>
-          </div>
-          <div id="file-preview" class="hidden mt-4 bg-secondary-container/20 border border-secondary/20 rounded-xl p-4 flex items-center gap-3">
-            <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-              <span class="material-symbols-outlined text-primary" id="file-type-icon">description</span>
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="font-bold text-base truncate" id="file-name-display"></p>
-              <p class="text-xs text-outline" id="file-size-display"></p>
-            </div>
-            <button onclick="removeFile()" class="text-outline hover:text-error transition-colors ml-auto">
-              <span class="material-symbols-outlined">close</span>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- LEFT -->
+      <div class="lg:col-span-7 space-y-5">
+        <!-- Document Type Toggle -->
+        <div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/20 p-4">
+          <div class="flex gap-2">
+            <button id="btn-prescription" onclick="setUploadMode('prescription')" class="flex-1 py-3.5 px-5 rounded-xl font-bold text-base transition-all bg-primary text-white">
+              📝 <span data-i18n="prescription_btn">Prescription / Report</span>
+            </button>
+            <button id="btn-medical" onclick="setUploadMode('medical')" class="flex-1 py-3.5 px-5 rounded-xl font-bold text-base transition-all bg-surface-container text-on-surface-variant border border-outline-variant">
+              🏥 <span data-i18n="medical_btn">Medical Image (X-ray, MRI, CT)</span>
             </button>
           </div>
         </div>
-      </div>
 
-      <!-- Options -->
-      <div class="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/20 shadow-sm">
-        <h4 class="font-headline font-bold text-on-surface mb-4 text-base flex items-center gap-2">
-          <span class="material-symbols-outlined text-primary">tune</span> Analysis Options
-        </h4>
-        <div class="grid grid-cols-2 gap-8">
+        <div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/20 overflow-hidden">
+          <!-- File mode -->
+          <div id="mode-file" class="p-4 sm:p-8">
+            <div id="drop-zone" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)" onclick="document.getElementById('file-input').click()"
+              class="border-2 border-dashed border-outline-variant rounded-2xl p-6 sm:p-12 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-all">
+              <div class="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                <span class="material-symbols-outlined text-primary text-4xl animate-bounce-gentle" id="upload-icon" style="font-variation-settings:'FILL' 1">upload_file</span>
+              </div>
+              <p class="font-bold text-on-surface text-lg mb-1" id="upload-title" data-i18n="drop_file_here">Drop your file here</p>
+              <p class="text-outline text-base mb-4" id="upload-subtitle" data-i18n="click_to_browse">or click to browse from your device</p>
+              <div class="flex gap-2" id="upload-formats">
+                <span class="text-[10px] font-bold uppercase px-3 py-1.5 border border-outline-variant/50 rounded-full text-outline bg-surface-container-low">PDF</span>
+                <span class="text-[10px] font-bold uppercase px-3 py-1.5 border border-outline-variant/50 rounded-full text-outline bg-surface-container-low">JPG</span>
+                <span class="text-[10px] font-bold uppercase px-3 py-1.5 border border-outline-variant/50 rounded-full text-outline bg-surface-container-low">PNG</span>
+              </div>
+              <input type="file" id="file-input" class="hidden" accept=".pdf,.jpg,.jpeg,.png" onchange="onFileSelect(event)"/>
+            </div>
+            <div id="file-preview" class="hidden mt-4 bg-secondary-container/20 border border-secondary/20 rounded-xl p-4 flex items-center gap-3">
+              <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-primary" id="file-type-icon">description</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="font-bold text-base truncate" id="file-name-display"></p>
+                <p class="text-xs text-outline" id="file-size-display"></p>
+              </div>
+              <button onclick="removeFile()" class="text-outline hover:text-error transition-colors ml-auto">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Options -->
+        <div class="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/20 shadow-sm">
+          <h4 class="font-headline font-bold text-on-surface mb-4 text-base flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">tune</span> <span data-i18n="analysis_options">Analysis Options</span>
+          </h4>
           <div class="space-y-2.5">
             <label class="flex items-center gap-2 text-sm font-semibold text-on-surface">
               <span class="material-symbols-outlined text-primary text-lg">calendar_today</span>
-              Patient Age
-              <span class="text-xs text-outline font-normal">(Optional)</span>
+              <span data-i18n="patient_age">Patient Age</span>
+              <span class="text-xs text-outline font-normal" data-i18n="optional">(Optional)</span>
             </label>
             <input id="patient-age" type="number" min="1" max="120" placeholder="e.g. 45"
               class="w-full border border-outline-variant rounded-xl px-4 py-3.5 text-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-surface-container-low transition-all placeholder:text-outline/50"/>
           </div>
-          <div class="space-y-2.5">
-            <label class="flex items-center gap-2 text-sm font-semibold text-on-surface">
-              <span class="material-symbols-outlined text-primary text-lg">translate</span>
-              Output Language
-            </label>
-            <div class="custom-dropdown" data-selected="English">
-              <button type="button" class="dropdown-trigger w-full border border-outline-variant rounded-xl pl-4 pr-10 py-3.5 text-base text-left bg-surface-container-low hover:border-primary/50 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all flex items-center justify-between">
-                <span class="dropdown-selected-text">English</span>
-                <span class="material-symbols-outlined text-outline">expand_more</span>
-              </button>
-              <div class="dropdown-menu absolute z-50 mt-1 w-full bg-white rounded-xl shadow-xl border border-outline-variant/30 overflow-hidden hidden">
-                <div class="py-1">
-                  <button type="button" class="dropdown-option w-full px-4 py-3 text-base text-left hover:bg-primary/10 hover:text-primary transition-colors flex items-center gap-2" data-value="English">
-                    <span class="w-2 h-2 rounded-full bg-primary opacity-0"></span>English
-                  </button>
-                  <button type="button" class="dropdown-option w-full px-4 py-3 text-base text-left hover:bg-primary/10 hover:text-primary transition-colors flex items-center gap-2" data-value="Hindi">
-                    <span class="w-2 h-2 rounded-full bg-primary opacity-0"></span>Hindi
-                  </button>
-                </div>
-              </div>
-            </div>
-            <select id="output-lang" class="hidden">
-              <option value="English">English</option>
-              <option value="Hindi">Hindi</option>
-            </select>
-          </div>
-        </div>
-        <!-- Image Type Selector (for medical images) -->
+<!-- Image Type Selector (for medical images) -->
         <div id="image-type-section" class="hidden mt-4 pt-4 border-t border-outline-variant/20">
-          <label class="flex items-center gap-2 text-sm font-semibold text-on-surface mb-2">
-            <span class="material-symbols-outlined text-primary text-lg">image</span>
+          <label class="flex items-center gap-2 text-sm font-semibold text-on-surface mb-2" data-i18n="image_type">
             Image Type
           </label>
           <div class="custom-dropdown" data-selected="X-ray">
             <button type="button" class="dropdown-trigger w-full border border-outline-variant rounded-xl pl-4 pr-10 py-3.5 text-base text-left bg-surface-container-low hover:border-primary/50 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all flex items-center justify-between">
-              <span class="dropdown-selected-text">X-ray</span>
+              <span class="dropdown-selected-text" data-i18n="img_xray">X-ray</span>
               <span class="material-symbols-outlined text-outline">expand_more</span>
             </button>
             <div class="dropdown-menu absolute z-50 mt-1 w-full bg-white rounded-xl shadow-xl border border-outline-variant/30 overflow-hidden hidden">
               <div class="py-1">
-                <button type="button" class="dropdown-option w-full px-4 py-3 text-base text-left hover:bg-primary/10 hover:text-primary transition-colors flex items-center gap-2" data-value="xray">
+                <button type="button" class="dropdown-option w-full px-4 py-3 text-base text-left hover:bg-primary/10 hover:text-primary transition-colors flex items-center gap-2" data-value="xray" data-i18n="img_xray">
                   <span class="w-2 h-2 rounded-full bg-primary opacity-0"></span>X-ray
                 </button>
-                <button type="button" class="dropdown-option w-full px-4 py-3 text-base text-left hover:bg-primary/10 hover:text-primary transition-colors flex items-center gap-2" data-value="mri">
+                <button type="button" class="dropdown-option w-full px-4 py-3 text-base text-left hover:bg-primary/10 hover:text-primary transition-colors flex items-center gap-2" data-value="mri" data-i18n="img_mri">
                   <span class="w-2 h-2 rounded-full bg-primary opacity-0"></span>MRI Scan
                 </button>
-                <button type="button" class="dropdown-option w-full px-4 py-3 text-base text-left hover:bg-primary/10 hover:text-primary transition-colors flex items-center gap-2" data-value="ct">
+                <button type="button" class="dropdown-option w-full px-4 py-3 text-base text-left hover:bg-primary/10 hover:text-primary transition-colors flex items-center gap-2" data-value="ct" data-i18n="img_ct">
                   <span class="w-2 h-2 rounded-full bg-primary opacity-0"></span>CT Scan
                 </button>
-                <button type="button" class="dropdown-option w-full px-4 py-3 text-base text-left hover:bg-primary/10 hover:text-primary transition-colors flex items-center gap-2" data-value="ultrasound">
+                <button type="button" class="dropdown-option w-full px-4 py-3 text-base text-left hover:bg-primary/10 hover:text-primary transition-colors flex items-center gap-2" data-value="ultrasound" data-i18n="img_ultrasound">
                   <span class="w-2 h-2 rounded-full bg-primary opacity-0"></span>Ultrasound
                 </button>
               </div>
             </div>
           </div>
           <select id="image-type" class="hidden">
-            <option value="xray">X-ray</option>
-            <option value="mri">MRI Scan</option>
-            <option value="ct">CT Scan</option>
-            <option value="ultrasound">Ultrasound</option>
+            <option value="xray" data-i18n="img_xray">X-ray</option>
+            <option value="mri" data-i18n="img_mri">MRI Scan</option>
+            <option value="ct" data-i18n="img_ct">CT Scan</option>
+            <option value="ultrasound" data-i18n="img_ultrasound">Ultrasound</option>
           </select>
         </div>
       </div>
 
-      <button id="analyse-btn" onclick="startAnalysis()" disabled
-        class="w-full primary-gradient text-white font-headline font-black py-4 rounded-2xl text-base shadow-lg disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-xl hover:-translate-y-0.5 active:scale-95 transition-all flex items-center justify-center gap-2">
-        <span class="material-symbols-outlined">auto_awesome</span> Analyse with AI
-      </button>
-    </div>
-
-    <!-- RIGHT -->
-    <div class="lg:col-span-5 space-y-5">
-      <!-- Idle -->
-      <div id="panel-idle" class="bg-surface-container-lowest rounded-xl p-8 shadow-sm border border-outline-variant/20 text-center">
-        <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-5">
-          <span class="material-symbols-outlined text-primary text-4xl" style="font-variation-settings:'FILL' 1">psychology</span>
-        </div>
-        <h3 class="font-headline font-bold text-xl text-on-surface mb-2">AI Ready to Analyse</h3>
-        <p class="text-on-surface-variant text-base mb-6">Upload your document or paste your prescription, then click Analyse.</p>
-        <div class="space-y-2 text-left mb-6">
-          <div class="flex items-center gap-3 text-base text-on-surface-variant bg-surface-container-low rounded-lg px-4 py-3.5">
-            <span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings:'FILL' 1">check_circle</span> Plain-language diagnosis
-          </div>
-          <div class="flex items-center gap-3 text-base text-on-surface-variant bg-surface-container-low rounded-lg px-4 py-3.5">
-            <span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings:'FILL' 1">check_circle</span> Exact medication schedule
-          </div>
-          <div class="flex items-center gap-3 text-base text-on-surface-variant bg-surface-container-low rounded-lg px-4 py-3.5">
-            <span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings:'FILL' 1">check_circle</span> Side effect alerts
-          </div>
-          <div class="flex items-center gap-3 text-base text-on-surface-variant bg-surface-container-low rounded-lg px-4 py-3.5">
-            <span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings:'FILL' 1">check_circle</span> Follow-up checklist
-          </div>
-        </div>
-        <!-- Sample Demo Button -->
-        <div class="border-t border-outline-variant/20 pt-5">
-          <p class="text-xs text-outline mb-3 font-semibold uppercase tracking-widest">No document? Try this:</p>
-          <button onclick="loadSamplePrescription()" id="sample-btn"
-            class="w-full flex items-center justify-center gap-2 bg-secondary-container/30 text-secondary border border-secondary/20 font-bold py-3.5 rounded-xl text-base hover:bg-secondary hover:text-white transition-all active:scale-95">
-            <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">description</span>
-            Load Sample Prescription
-          </button>
-          <p class="text-[10px] text-outline mt-2">Apollo Hospitals — Bacterial Pneumonia discharge</p>
-        </div>
-      </div>
-
-      <!-- Processing -->
-      <div id="panel-processing" class="hidden bg-surface-container-lowest rounded-xl p-8 shadow-sm border border-outline-variant/20">
-        <h2 class="font-headline font-bold text-xl text-on-surface mb-6 flex items-center gap-2">
-          <span class="material-symbols-outlined text-primary">clinical_notes</span> AI Processing
-        </h2>
-        <div class="mb-7">
-          <div class="flex justify-between mb-2">
-            <span class="text-base font-semibold text-primary">Progress</span>
-            <span class="text-xl font-black text-primary" id="pct">0%</span>
-          </div>
-          <div class="h-3 bg-surface-container rounded-full overflow-hidden">
-            <div id="prog-bar" class="h-full primary-gradient rounded-full transition-all duration-700" style="width:0%"></div>
-          </div>
-        </div>
-        <div class="space-y-4">
-          <div class="step flex gap-3 items-start" id="s0"><div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center flex-shrink-0 mt-0.5" id="s0i"><div class="w-3 h-3 rounded-full bg-outline-variant"></div></div><div><p class="font-bold text-base">Extracting Text</p><p class="text-sm text-outline" id="s0d">Waiting...</p></div></div>
-          <div class="step flex gap-3 items-start" id="s1"><div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center flex-shrink-0 mt-0.5" id="s1i"><div class="w-3 h-3 rounded-full bg-outline-variant"></div></div><div><p class="font-bold text-base">AI Analyzing</p><p class="text-sm text-outline" id="s1d">Waiting...</p></div></div>
-          <div class="step flex gap-3 items-start" id="s2"><div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center flex-shrink-0 mt-0.5" id="s2i"><div class="w-3 h-3 rounded-full bg-outline-variant"></div></div><div><p class="font-bold text-base">Getting Drug Info</p><p class="text-sm text-outline" id="s2d">Waiting...</p></div></div>
-          <div class="step flex gap-3 items-start" id="s3"><div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center flex-shrink-0 mt-0.5" id="s3i"><div class="w-3 h-3 rounded-full bg-outline-variant"></div></div><div><p class="font-bold text-base">Checking Interactions</p><p class="text-sm text-outline" id="s3d">Waiting...</p></div></div>
-          <div class="step flex gap-3 items-start" id="s4"><div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center flex-shrink-0 mt-0.5" id="s4i"><div class="w-3 h-3 rounded-full bg-outline-variant"></div></div><div><p class="font-bold text-base">Finalizing Summary</p><p class="text-sm text-outline" id="s4d">Waiting...</p></div></div>
-        </div>
-        <div id="err-box" class="hidden mt-5 bg-error-container/30 border border-error/20 rounded-xl p-4 text-base text-error flex gap-3">
-          <span class="material-symbols-outlined">error</span>
-          <span id="err-msg">Something went wrong.</span>
-        </div>
-        <button onclick="cancelAnalysis()" class="mt-5 w-full border border-outline-variant text-on-surface-variant py-3.5 rounded-full font-bold text-base hover:border-error hover:text-error transition-all">
-          Cancel
+        <button id="analyse-btn" onclick="startAnalysis()" disabled
+          class="w-full primary-gradient text-white font-headline font-black py-4 rounded-2xl text-base shadow-lg disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-xl hover:-translate-y-0.5 active:scale-95 transition-all flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined">auto_awesome</span> <span data-i18n="analyse_with_ai">Analyse with AI</span>
         </button>
       </div>
 
-      <!-- Info -->
-      <div class="bg-primary/5 rounded-xl p-5 border border-primary/10">
-        <div class="flex gap-3">
-          <span class="material-symbols-outlined text-primary text-sm flex-shrink-0 mt-0.5">shield</span>
-          <p class="text-sm text-on-primary-fixed-variant leading-relaxed">Aushadh AI only simplifies what your doctor wrote. It never adds advice, changes dosages, or uses outside information.</p>
+      <!-- RIGHT -->
+      <div class="lg:col-span-5 space-y-5">
+        <!-- Idle -->
+        <div id="panel-idle" class="bg-surface-container-lowest rounded-xl p-8 shadow-sm border border-outline-variant/20 text-center">
+          <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-5">
+            <span class="material-symbols-outlined text-primary text-4xl" style="font-variation-settings:'FILL' 1">psychology</span>
+          </div>
+          <h3 class="font-headline font-bold text-xl text-on-surface mb-2" data-i18n="ai_ready">AI Ready to Analyse</h3>
+          <p class="text-on-surface-variant text-base mb-6" data-i18n="upload_instruction">Upload your document or paste your prescription, then click Analyse.</p>
+          <div class="space-y-2 text-left mb-6">
+            <div class="flex items-center gap-3 text-base text-on-surface-variant bg-surface-container-low rounded-lg px-4 py-3.5">
+              <span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings:'FILL' 1">check_circle</span> <span data-i18n="plain_diagnosis">Plain-language diagnosis</span>
+            </div>
+            <div class="flex items-center gap-3 text-base text-on-surface-variant bg-surface-container-low rounded-lg px-4 py-3.5">
+              <span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings:'FILL' 1">check_circle</span> <span data-i18n="exact_schedule">Exact medication schedule</span>
+            </div>
+            <div class="flex items-center gap-3 text-base text-on-surface-variant bg-surface-container-low rounded-lg px-4 py-3.5">
+              <span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings:'FILL' 1">check_circle</span> <span data-i18n="side_effect_alerts">Side effect alerts</span>
+            </div>
+            <div class="flex items-center gap-3 text-base text-on-surface-variant bg-surface-container-low rounded-lg px-4 py-3.5">
+              <span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings:'FILL' 1">check_circle</span> <span data-i18n="followup_check">Follow-up checklist</span>
+            </div>
+          </div>
+          <!-- Sample Demo Button -->
+          <div class="border-t border-outline-variant/20 pt-5">
+            <p class="text-xs text-outline mb-3 font-semibold uppercase tracking-widest" data-i18n="no_document">No document? Try this:</p>
+            <button onclick="loadSamplePrescription()" id="sample-btn"
+              class="w-full flex items-center justify-center gap-2 bg-secondary-container/30 text-secondary border border-secondary/20 font-bold py-3.5 rounded-xl text-base hover:bg-secondary hover:text-white transition-all active:scale-95">
+              <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">description</span>
+              <span data-i18n="load_sample">Load Sample Prescription</span>
+            </button>
+            <p class="text-[10px] text-outline mt-2" data-i18n="sample_prescription_title">Apollo Hospitals — Bacterial Pneumonia discharge</p>
+          </div>
+        </div>
+
+        <!-- Processing -->
+        <div id="panel-processing" class="hidden bg-surface-container-lowest rounded-xl p-8 shadow-sm border border-outline-variant/20">
+          <h2 class="font-headline font-bold text-xl text-on-surface mb-6 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">clinical_notes</span> AI Processing
+          </h2>
+          <div class="mb-7">
+            <div class="flex justify-between mb-2">
+              <span class="text-base font-semibold text-primary">Progress</span>
+              <span class="text-xl font-black text-primary" id="pct">0%</span>
+            </div>
+            <div class="h-3 bg-surface-container rounded-full overflow-hidden">
+              <div id="prog-bar" class="h-full primary-gradient rounded-full transition-all duration-700" style="width:0%"></div>
+            </div>
+          </div>
+          <div class="space-y-4">
+            <div class="step flex gap-3 items-start" id="s0"><div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center flex-shrink-0 mt-0.5" id="s0i"><div class="w-3 h-3 rounded-full bg-outline-variant"></div></div><div><p class="font-bold text-base">Extracting Text</p><p class="text-sm text-outline" id="s0d">Waiting...</p></div></div>
+            <div class="step flex gap-3 items-start" id="s1"><div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center flex-shrink-0 mt-0.5" id="s1i"><div class="w-3 h-3 rounded-full bg-outline-variant"></div></div><div><p class="font-bold text-base">AI Analyzing</p><p class="text-sm text-outline" id="s1d">Waiting...</p></div></div>
+            <div class="step flex gap-3 items-start" id="s2"><div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center flex-shrink-0 mt-0.5" id="s2i"><div class="w-3 h-3 rounded-full bg-outline-variant"></div></div><div><p class="font-bold text-base">Getting Drug Info</p><p class="text-sm text-outline" id="s2d">Waiting...</p></div></div>
+            <div class="step flex gap-3 items-start" id="s3"><div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center flex-shrink-0 mt-0.5" id="s3i"><div class="w-3 h-3 rounded-full bg-outline-variant"></div></div><div><p class="font-bold text-base">Checking Interactions</p><p class="text-sm text-outline" id="s3d">Waiting...</p></div></div>
+            <div class="step flex gap-3 items-start" id="s4"><div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center flex-shrink-0 mt-0.5" id="s4i"><div class="w-3 h-3 rounded-full bg-outline-variant"></div></div><div><p class="font-bold text-base">Finalizing Summary</p><p class="text-sm text-outline" id="s4d">Waiting...</p></div></div>
+          </div>
+          <div id="err-box" class="hidden mt-5 bg-error-container/30 border border-error/20 rounded-xl p-4 text-base text-error flex gap-3">
+            <span class="material-symbols-outlined">error</span>
+            <span id="err-msg">Something went wrong.</span>
+          </div>
+          <button onclick="cancelAnalysis()" class="mt-5 w-full border border-outline-variant text-on-surface-variant py-3.5 rounded-full font-bold text-base hover:border-error hover:text-error transition-all">
+            Cancel
+          </button>
+        </div>
+
+        <!-- Info -->
+        <div class="bg-primary/5 rounded-xl p-5 border border-primary/10">
+          <div class="flex gap-3">
+            <span class="material-symbols-outlined text-primary text-sm flex-shrink-0 mt-0.5">shield</span>
+            <p class="text-sm text-on-primary-fixed-variant leading-relaxed" data-i18n="disclaimer">Aushadh AI only simplifies what your doctor wrote. It never adds advice, changes dosages, or uses outside information.</p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
   </section>
 </main>
 
+<!-- Mobile Nav -->
 <nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-white/80 backdrop-blur-xl border-t border-slate-100/10 shadow-[0_-4px_24px_rgba(24,28,32,0.06)]">
   <a class="flex flex-col items-center text-slate-400" href="dashboard.html"><span class="material-symbols-outlined">home</span><span class="text-[10px] uppercase mt-1">Home</span></a>
   <a class="flex flex-col items-center text-[#006068] bg-[#007B85]/10 rounded-2xl px-4 py-1" href="documents.html"><span class="material-symbols-outlined">add_circle</span><span class="text-[10px] uppercase mt-1">Upload</span></a>
@@ -324,7 +364,7 @@
 
 <script src="medbuddy.js"></script>
 <script>
-let inputMode='file', selectedFile=null, stepTimer=null, uploadMode='prescription';
+let inputMode='file', selectedFile=null, stepTimer=null, uploadMode='prescription', outputLang='English', imageType='xray';
 
 const STEPS_TEXT=['Extracting text...','AI analyzing...','Getting drug info...','Checking interactions...','Generating summary...'];
 const MEDICAL_STEPS=['Uploading image...','AI analyzing...','Generating report...','Finalizing...'];
@@ -358,7 +398,7 @@ document.addEventListener('DOMContentLoaded',()=>{
         opt.classList.add('selected','bg-primary/10','text-primary');
         menu.classList.add('hidden');
         
-        if(hiddenSelect.id==='output-lang')outputLang=val;
+        // Language now controlled by sidebar toggle
         if(hiddenSelect.id==='image-type')imageType=val;
       });
     });
@@ -367,7 +407,18 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.addEventListener('click',()=>{
     document.querySelectorAll('.dropdown-menu').forEach(m=>m.classList.add('hidden'));
   });
+  
+  if (typeof applyTranslations === 'function') {
+    applyTranslations();
+  }
+  updateLanguageToggle();
 });
+
+function updateLanguageToggle() {
+  const lang = getCurrentLanguage();
+  document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+  document.getElementById('lang-hi').classList.toggle('active', lang === 'hi');
+}
 
 function switchMode(m){
   inputMode=m;
@@ -396,24 +447,28 @@ function setUploadMode(mode) {
     document.getElementById('upload-title').textContent = 'Drop your file here';
     document.getElementById('upload-subtitle').textContent = 'or click to browse from your device';
     document.getElementById('upload-formats').innerHTML = `
-      <span class="text-[10px] font-bold uppercase px-3 py-1 border border-outline-variant rounded-full text-outline">PDF</span>
-      <span class="text-[10px] font-bold uppercase px-3 py-1 border border-outline-variant rounded-full text-outline">JPG</span>
-      <span class="text-[10px] font-bold uppercase px-3 py-1 border border-outline-variant rounded-full text-outline">PNG</span>
+      <span class="text-[10px] font-bold uppercase px-3 py-1.5 border border-outline-variant/50 rounded-full text-outline bg-surface-container-low">PDF</span>
+      <span class="text-[10px] font-bold uppercase px-3 py-1.5 border border-outline-variant/50 rounded-full text-outline bg-surface-container-low">JPG</span>
+      <span class="text-[10px] font-bold uppercase px-3 py-1.5 border border-outline-variant/50 rounded-full text-outline bg-surface-container-low">PNG</span>
     `;
     document.getElementById('file-input').accept = '.pdf,.jpg,.jpeg,.png';
     document.getElementById('image-type-section').classList.add('hidden');
-    document.getElementById('analyse-btn').innerHTML = '<span class="material-symbols-outlined">auto_awesome</span> Analyse with AI';
+    const analyseText = getCurrentLanguage() === 'hi' ? 'AI से विश्लेषण करें' : 'Analyse with AI';
+    document.getElementById('analyse-btn').innerHTML = '<span class="material-symbols-outlined">auto_awesome</span> ' + analyseText;
   } else {
     medBtn.className = 'flex-1 py-3.5 px-5 rounded-xl font-bold text-base transition-all bg-primary text-white';
     prescBtn.className = 'flex-1 py-3.5 px-5 rounded-xl font-bold text-base transition-all bg-surface-container text-on-surface-variant border border-outline-variant';
     
     // Update upload zone for medical images
+    const lang = getCurrentLanguage();
+    const dropImageText = lang === 'hi' ? 'अपनी मेडिकल इमेज छोड़ें' : 'Drop your medical image';
+    const scanTypesText = lang === 'hi' ? 'एक्स-रे, MRI, CT स्कैन, अल्ट्रासाउंड' : 'X-ray, MRI, CT Scan, Ultrasound';
     document.getElementById('upload-icon').textContent = 'image';
-    document.getElementById('upload-title').textContent = 'Drop your medical image';
-    document.getElementById('upload-subtitle').textContent = 'X-ray, MRI, CT Scan, Ultrasound';
+    document.getElementById('upload-title').textContent = dropImageText;
+    document.getElementById('upload-subtitle').textContent = scanTypesText;
     document.getElementById('upload-formats').innerHTML = `
-      <span class="text-[10px] font-bold uppercase px-3 py-1 border border-outline-variant rounded-full text-outline">JPG</span>
-      <span class="text-[10px] font-bold uppercase px-3 py-1 border border-outline-variant rounded-full text-outline">PNG</span>
+      <span class="text-[10px] font-bold uppercase px-3 py-1.5 border border-outline-variant/50 rounded-full text-outline bg-surface-container-low">JPG</span>
+      <span class="text-[10px] font-bold uppercase px-3 py-1.5 border border-outline-variant/50 rounded-full text-outline bg-surface-container-low">PNG</span>
     `;
     document.getElementById('file-input').accept = '.jpg,.jpeg,.png';
     document.getElementById('image-type-section').classList.remove('hidden');
@@ -464,7 +519,7 @@ function setStep(i,status,isMedical=false){
 
 async function startAnalysis(){
   const age=document.getElementById('patient-age').value;
-  const lang=document.getElementById('output-lang').value;
+  const lang = getCurrentLanguage() === 'hi' ? 'Hindi' : 'English';
   const isMedical = uploadMode === 'medical';
   
   document.getElementById('panel-idle').classList.add('hidden');
@@ -482,8 +537,8 @@ async function startAnalysis(){
     let result;
     
     if (isMedical) {
-      const imageType = document.getElementById('image-type').value;
-      result = await apiAnalyseMedicalImage(selectedFile, age, lang, imageType);
+      const imgType = document.getElementById('image-type').value;
+      result = await apiAnalyseMedicalImage(selectedFile, age, lang, imgType);
     } else {
       result = await apiAnalyseFile(selectedFile, age, lang);
     }
@@ -495,7 +550,6 @@ async function startAnalysis(){
     // Check for emergency after analysis
     const emergency = checkForEmergency(result);
     if (emergency && emergency.isSevere) {
-      // Save flag to show alert on diagnosis page
       sessionStorage.setItem('showEmergencyAlert', 'true');
     }
     
@@ -532,7 +586,7 @@ async function loadSamplePrescription(){
   },900);
 
   try{
-    const lang=document.getElementById('output-lang').value||'English';
+    const lang = getCurrentLanguage() === 'hi' ? 'Hindi' : 'English';
     console.log('[Aushadh AI] Starting sample load, lang:', lang);
     let result;
     let apiFailed = false;
@@ -595,7 +649,6 @@ function readFile(f){
 }
 
 async function callAPI(content,age,lang){
-  // Use FastAPI backend
   if(inputMode==='text'){
     return await apiAnalyseText(content, age, lang);
   } else {

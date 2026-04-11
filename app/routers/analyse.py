@@ -1,6 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from typing import Optional
 from app.services import claude_service
+from app.services.ocr_service import detect_if_medical_image
 import logging
 
 logger = logging.getLogger(__name__)
@@ -75,23 +76,26 @@ async def analyse_file(
                     doc_type = img_type
                     break
             
+            # Also analyze image content for medical scan patterns
+            if not is_medical:
+                try:
+                    is_medical = detect_if_medical_image(data)
+                    if is_medical:
+                        logger.info("[Analyse] Content-based detection identified medical image")
+                except Exception as e:
+                    logger.warning(f"[Analyse] Medical image detection error: {e}")
+            
+            # BLOCK medical images - reject with helpful message
             if is_medical:
-                image_type_map = {
-                    "xray": "X-ray",
-                    "mri": "MRI Scan",
-                    "ct": "CT Scan",
-                    "ultrasound": "Ultrasound",
-                    "medical": "Medical Image"
-                }
-                image_type = image_type_map.get(doc_type or "medical", "Medical Image")
-                logger.info(f"Processing as medical image ({image_type})...")
-                result = await claude_service.analyse_medical_image(
-                    data, file.content_type, age or "", language or "English", image_type
+                logger.warning(f"[Analyse] Blocked medical image upload: {file.filename}")
+                raise HTTPException(
+                    status_code=400,
+                    detail="This appears to be a medical scan (X-ray, MRI, CT, or Ultrasound). Prescription upload is only for text-based prescriptions. Please use the Medical Image Analysis feature instead."
                 )
-            else:
-                # Regular prescription/image analysis
-                logger.info("Processing as prescription image...")
-                result = await claude_service.analyse_image(data, file.content_type, age or "", language or "English")
+            
+            # Regular prescription/image analysis
+            logger.info(f"Processing as prescription image... language: {language}")
+            result = await claude_service.analyse_image(data, file.content_type, age or "", language or "English")
 
         else:  # text/plain
             text = data.decode("utf-8", errors="replace")
@@ -100,6 +104,8 @@ async def analyse_file(
         logger.info("Analysis completed successfully")
         return result
 
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions as-is
     except Exception as e:
         logger.error(f"Analysis failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")

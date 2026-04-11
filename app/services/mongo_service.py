@@ -270,7 +270,7 @@ def get_adherence(user_id: str, start_date: str = None, end_date: str = None):
 
 
 def get_adherence_stats(user_id: str, days: int = 30):
-    """Calculate adherence statistics"""
+    """Calculate adherence statistics - counts individual doses, not medications"""
     try:
         db = get_db()
         from datetime import datetime, timedelta
@@ -280,39 +280,47 @@ def get_adherence_stats(user_id: str, days: int = 30):
         records = list(db.adherence.find({
             "user_id": user_id,
             "date": {"$gte": start_date, "$lte": end_date}
-        }).sort("date", -1))
+        }).sort("date", 1))  # Sort ascending for streak calculation
         
         if not records:
-            return {"total_days": 0, "adherence_rate": 0, "streak": 0}
+            return {"total_days": 0, "adherence_rate": 0, "streak": 0, "total_doses": 0, "taken_doses": 0}
         
-        total_meds = 0
-        taken_meds = 0
-        days_with_data = len(records)
+        total_doses = 0
+        taken_doses = 0
         
+        # Count each dose slot individually
         for record in records:
             for med in record.get("medications", []):
-                total_meds += 1
+                total_doses += 1
                 if med.get("taken"):
-                    taken_meds += 1
+                    taken_doses += 1
         
-        adherence_rate = round((taken_meds / total_meds * 100), 1) if total_meds > 0 else 0
+        adherence_rate = round((taken_doses / total_doses * 100), 1) if total_doses > 0 else 0
         
-        # Calculate current streak
+        # Calculate current streak (consecutive days with 100% adherence)
         streak = 0
-        for record in records:
-            day_taken = sum(1 for m in record.get("medications", []) if m.get("taken"))
-            if day_taken > 0:
+        records_reversed = sorted(records, key=lambda x: x.get("date", ""), reverse=True)
+        
+        for record in records_reversed:
+            meds = record.get("medications", [])
+            day_total = len(meds)
+            day_taken = sum(1 for m in meds if m.get("taken"))
+            
+            # Perfect adherence for the day
+            if day_taken == day_total and day_total > 0:
                 streak += 1
             else:
                 break
         
         return {
-            "total_days": days_with_data,
-            "total_meds": total_meds,
-            "taken_meds": taken_meds,
+            "total_days": len(records),
+            "total_doses": total_doses,
+            "taken_doses": taken_doses,
             "adherence_rate": adherence_rate,
             "streak": streak
         }
     except Exception as e:
         print(f"Get adherence stats error: {e}")
-        return {"total_days": 0, "adherence_rate": 0, "streak": 0}
+        import traceback
+        traceback.print_exc()
+        return {"total_days": 0, "adherence_rate": 0, "streak": 0, "total_doses": 0, "taken_doses": 0}

@@ -52,48 +52,216 @@
     #pdf-content .pdf-emergency { background: #ffdad6; padding: 10px 14px; border-radius: 8px; font-size: 12px; border-left: 4px solid #ba1a1a; }
     #pdf-content .pdf-footer { margin-top: 20px; font-size: 10px; color: #6e797a; text-align: center; border-top: 1px solid #e5e8ee; padding-top: 10px; }
   }
+  /* Sidebar - Clean Minimal Design */
+  .sidebar-clean {
+    background: linear-gradient(180deg, #f8fafc 0%, #f1f4fa 100%);
+    border-right: 1px solid #e2e8f0;
+  }
+  .sidebar-logo {
+    animation: logoFloat 3s ease-in-out infinite;
+  }
+  @keyframes logoFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+  }
+  .nav-item {
+    position: relative;
+    transition: all 0.2s ease;
+  }
+  .nav-item:hover {
+    background: rgba(0, 96, 104, 0.05);
+  }
+  .nav-item::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 0;
+    background: linear-gradient(180deg, #006068, #3b6934);
+    border-radius: 0 2px 2px 0;
+    transition: height 0.2s ease;
+  }
+  .nav-item:hover::after {
+    height: 24px;
+  }
+  .nav-item.active-nav {
+    background: linear-gradient(90deg, rgba(0, 96, 104, 0.1) 0%, transparent 100%);
+  }
+  .nav-item.active-nav::after {
+    height: 32px;
+  }
+  .nav-item .icon {
+    transition: transform 0.2s ease;
+  }
+  .nav-item:hover .icon {
+    transform: scale(1.1);
+  }
+  .nav-item.active-nav .icon {
+    color: #006068;
+  }
+  .upload-btn {
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+  }
+  .upload-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 96, 104, 0.2);
+    border-color: rgba(0, 96, 104, 0.3);
+  }
+  /* Mind-blowing Logout Button */
+  .logout-section {
+    padding: 8px 16px;
+    margin: 0 8px;
+  }
+  .logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    color: #6b7280;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .logout-btn:hover {
+    background: rgba(220, 38, 38, 0.1);
+    transform: translateX(4px);
+  }
+  .logout-btn:hover .logout-text {
+    color: #dc2626;
+  }
+  .logout-btn .icon-wrapper {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(220, 38, 38, 0.1);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+  .logout-btn:hover .icon-wrapper {
+    transform: scale(1.1) rotate(-5deg);
+  }
+  .logout-btn:hover .material-symbols-outlined {
+    color: #dc2626;
+    animation: logoutIcon 0.5s ease infinite;
+  }
+  @keyframes logoutIcon {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    75% { transform: translateX(2px); }
+  }
+  .logout-text {
+    transition: all 0.3s ease;
+  }
+  html.dark .sidebar-clean {
+    background: linear-gradient(180deg, #1a1a1a 0%, #151515 100%);
+    border-right: 1px solid #2a2a2a;
+  }
+  html.dark .nav-item:hover {
+    background: rgba(59, 105, 52, 0.1);
+  }
+  html.dark .nav-item::after {
+    background: linear-gradient(180deg, #4ade80, #22c55e);
+  }
+  html.dark .nav-item.active-nav {
+    background: linear-gradient(90deg, rgba(59, 105, 52, 0.15) 0%, transparent 100%);
+  }
+  /* Animated Sidebar Separator */
+  .sidebar-separator {
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(180deg, transparent, #006068 20%, #3b6934 50%, #006068 80%, transparent);
+    background-size: 100% 200%;
+    animation: separatorFlow 3s ease-in-out infinite;
+    box-shadow: 0 0 12px rgba(0, 96, 104, 0.5), 0 0 24px rgba(59, 105, 52, 0.3);
+  }
+  @keyframes separatorFlow {
+    0%, 100% { background-position: 0% 0%; }
+    50% { background-position: 0% 200%; }
+  }
+  html.dark .sidebar-separator {
+    background: linear-gradient(180deg, transparent, #3b6934 20%, #4ade80 50%, #3b6934 80%, transparent);
+    box-shadow: 0 0 15px rgba(59, 105, 52, 0.6), 0 0 30px rgba(74, 222, 128, 0.3);
+  }
+  /* Language Toggle */
+  #lang-en, #lang-hi { color: #6e797a; background: transparent; }
+  #lang-en.active, #lang-hi.active { background: #006068; color: white; box-shadow: 0 2px 8px rgba(0,96,104,0.3); }
+  html.dark #lang-en, html.dark #lang-hi { color: #909090; }
+  html.dark #lang-en.active, html.dark #lang-hi.active { background: #3b6934; box-shadow: 0 2px 8px rgba(59,105,52,0.3); }
 </style>
 </head>
 <body class="bg-surface text-on-surface">
 
 <!-- Sidebar -->
-<aside class="hidden md:flex flex-col h-screen w-56 fixed left-0 top-0 bg-surface-container-low py-8 z-40">
-  <div class="px-5 mb-8 flex items-center gap-2">
-    <img src="logo_green.png" alt="Aushadh AI" class="w-8 h-8 object-contain">
+<aside class="hidden md:flex flex-col h-screen w-56 fixed left-0 top-0 sidebar-clean py-8 z-40">
+  <div class="px-5 mb-6 flex items-center gap-2">
+    <img src="logo_green.png" alt="Aushadh AI" class="w-8 h-8 object-contain sidebar-logo">
     <div>
       <h1 class="text-lg font-bold text-primary">Aushadh AI</h1>
       <p class="text-[10px] uppercase tracking-widest text-outline">Clinical Serenity</p>
     </div>
   </div>
+  <div class="mx-4 mb-6 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
   <nav class="flex-1 space-y-1 px-3">
-    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="dashboard.html">
-      <span class="material-symbols-outlined text-sm">dashboard</span>Dashboard
+    <a class="nav-item flex items-center gap-2 px-4 py-3 text-slate-600 font-semibold text-sm" href="dashboard.html">
+      <span class="material-symbols-outlined text-sm icon">dashboard</span><span data-i18n="nav_dashboard">Dashboard</span>
     </a>
-    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="documents.html">
-      <span class="material-symbols-outlined text-sm">description</span>Documents
+    <a class="nav-item flex items-center gap-2 px-4 py-3 text-slate-600 font-semibold text-sm" href="documents.html">
+      <span class="material-symbols-outlined text-sm icon">description</span><span data-i18n="nav_documents">Documents</span>
     </a>
-    <a class="nav-link flex items-center gap-2 px-4 py-3 bg-surface-container-lowest text-primary rounded-r-full shadow-sm font-semibold text-sm" href="diagnosis.html">
-      <span class="material-symbols-outlined text-sm">summarize</span>Summary
+    <a class="nav-item active-nav flex items-center gap-2 px-4 py-3 bg-surface-container-lowest text-primary rounded-r-lg font-semibold text-sm" href="diagnosis.html">
+      <span class="material-symbols-outlined text-sm icon">summarize</span><span data-i18n="nav_summary">Summary</span>
     </a>
-    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="medications.html">
-      <span class="material-symbols-outlined text-sm">medical_services</span>Medications
+    <a class="nav-item flex items-center gap-2 px-4 py-3 text-slate-600 font-semibold text-sm relative" href="medications.html">
+      <span class="material-symbols-outlined text-sm icon">medical_services</span><span data-i18n="nav_medications">Medications</span>
+      <span id="nav-reminder-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center">0</span>
     </a>
-    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="checklist.html">
-      <span class="material-symbols-outlined text-sm">fact_check</span>Checklist
+    <a class="nav-item flex items-center gap-2 px-4 py-3 text-slate-600 font-semibold text-sm" href="checklist.html">
+      <span class="material-symbols-outlined text-sm icon">fact_check</span><span data-i18n="nav_checklist">Checklist</span>
     </a>
-    <a class="nav-link flex items-center gap-2 px-4 py-3 text-slate-600 hover:bg-surface-container-high/50 font-semibold text-sm rounded-lg" href="profile.html">
-      <span class="material-symbols-outlined text-sm">account_circle</span>Profile
+    <a class="nav-item flex items-center gap-2 px-4 py-3 text-slate-600 font-semibold text-sm" href="chat.html">
+      <span class="material-symbols-outlined text-sm icon">smart_toy</span><span data-i18n="nav_askai">Ask AI</span>
+    </a>
+    <a class="nav-item flex items-center gap-2 px-4 py-3 text-slate-600 font-semibold text-sm" href="profile.html">
+      <span class="material-symbols-outlined text-sm icon">account_circle</span><span data-i18n="nav_profile">Profile</span>
     </a>
   </nav>
-  <div class="px-5 space-y-3 mt-auto">
-    <a href="documents.html" class="w-full primary-gradient text-white rounded-full py-2.5 text-sm font-bold shadow-lg flex items-center justify-center gap-1 active:scale-95">
-      <span class="material-symbols-outlined text-sm">upload</span>Upload Document
-    </a>
-    <a class="flex items-center gap-2 py-1.5 text-slate-500 text-sm hover:text-error transition-colors cursor-pointer" onclick="logout()">
-      <span class="material-symbols-outlined text-sm">logout</span>Logout
+<div class="mx-4 mt-6 mb-4 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"></div>
+   
+  <!-- Language Toggle -->
+  <div class="mx-4 mb-4">
+    <div class="flex items-center justify-between bg-surface-container-low rounded-full p-1 border border-outline-variant/20">
+      <button onclick="setLanguage('en')" id="lang-en" class="flex-1 py-2 rounded-full text-xs font-bold transition-all duration-200">
+        English
+      </button>
+      <button onclick="setLanguage('hi')" id="lang-hi" class="flex-1 py-2 rounded-full text-xs font-bold transition-all duration-200">
+        हिंदी
+      </button>
+    </div>
+  </div>
+
+  <div class="logout-section mt-auto">
+    <a class="logout-btn" onclick="logout()">
+      <div class="icon-wrapper">
+        <span class="material-symbols-outlined text-sm">logout</span>
+      </div>
+      <span class="logout-text" data-i18n="sign_out">Sign Out</span>
     </a>
   </div>
 </aside>
+  </div>
+</aside>
+
+<!-- Animated Sidebar Separator -->
+<div class="hidden md:block fixed left-56 top-0 h-screen z-50">
+  <div class="sidebar-separator"></div>
+</div>
 
 <main class="md:ml-56 min-h-screen pb-24 md:pb-12">
   <!-- Animated Green Header -->
@@ -103,25 +271,18 @@
       <div>
         <div class="flex items-center gap-2 text-white/80 text-sm mb-1">
           <a href="dashboard.html" class="hover:text-white transition-colors flex items-center gap-1">
-            <span class="material-symbols-outlined text-sm">arrow_back</span>Dashboard
+            <span class="material-symbols-outlined text-sm">arrow_back</span><span data-i18n="nav_dashboard">Dashboard</span>
           </a>
           <span>/</span>
-          <span class="text-white font-semibold">Summary</span>
+          <span class="text-white font-semibold" data-i18n="nav_summary">Summary</span>
         </div>
-        <h2 class="font-headline font-extrabold text-2xl text-white">Your Health Summary</h2>
+        <h2 class="font-headline font-extrabold text-2xl text-white" data-i18n="your_health_summary">Your Health Summary</h2>
       </div>
-      <div class="flex gap-2 flex-wrap">
-        <div class="flex bg-white/20 border border-white/30 rounded-full p-1 gap-1">
-          <button onclick="setLang('en',this)" class="lang-btn px-4 py-1.5 rounded-full text-xs font-bold bg-white text-primary shadow-sm transition-all">EN</button>
-          <button onclick="setLang('hi',this)" class="lang-btn px-4 py-1.5 rounded-full text-xs font-bold text-white/70 transition-all">हि</button>
-        </div>
+        <div class="flex gap-2 flex-wrap">
         <button id="speak-btn" onclick="toggleSpeak()" class="flex items-center gap-1 bg-white/20 text-white border border-white/30 px-4 py-2 rounded-full font-bold text-sm hover:bg-white/30 transition-all">
           <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">volume_up</span>
-          <span id="speak-label">Listen</span>
+          <span id="speak-label" data-i18n="listen">Listen</span>
         </button>
-        <a href="documents.html" class="flex items-center gap-1 bg-white/20 text-white border border-white/30 px-4 py-2 rounded-full font-bold text-sm hover:bg-white/30 transition-all">
-          <span class="material-symbols-outlined text-sm">refresh</span> New Upload
-        </a>
       </div>
     </div>
   </header>
@@ -145,32 +306,32 @@
 
       <!-- ── PAGE HEADER ── -->
       <div>
-        <h1 class="font-headline text-2xl md:text-3xl font-extrabold text-on-surface mb-1">Your Health Summary</h1>
-        <p class="text-sm text-on-surface-variant" id="header-subtitle">AI-simplified from your prescription by Aushadh AI</p>
+        <h1 class="font-headline text-2xl md:text-3xl font-extrabold text-on-surface mb-1" data-i18n="your_health_summary">Your Health Summary</h1>
+        <p class="text-sm text-on-surface-variant" id="header-subtitle" data-i18n="ai_simplified">AI-simplified from your prescription by Aushadh AI</p>
       </div>
 
       <!-- ── PATIENT + DOCTOR INFO CARD ── -->
       <div id="patient-card" class="hidden bg-surface-container-lowest rounded-2xl border border-outline-variant/20 shadow-sm overflow-hidden">
         <div class="px-5 py-3 bg-surface-container border-b border-outline-variant/10 flex items-center gap-2">
           <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings:'FILL' 1">person_4</span>
-          <span class="text-xs font-black uppercase tracking-widest text-outline">Patient & Doctor Details</span>
+          <span class="text-xs font-black uppercase tracking-widest text-outline" data-i18n="patient_doctor_details">Patient & Doctor Details</span>
         </div>
         <div class="p-5 flex flex-wrap gap-6">
           <div id="patient-age-block" class="hidden">
-            <p class="text-[10px] font-black uppercase tracking-widest text-outline mb-1">Patient Age</p>
+            <p class="text-[10px] font-black uppercase tracking-widest text-outline mb-1" data-i18n="patient_age">Patient Age</p>
             <p class="font-bold text-on-surface" id="patient-age-val">—</p>
           </div>
           <div id="patient-gender-block" class="hidden">
-            <p class="text-[10px] font-black uppercase tracking-widest text-outline mb-1">Gender</p>
+            <p class="text-[10px] font-black uppercase tracking-widest text-outline mb-1" data-i18n="gender">Gender</p>
             <p class="font-bold text-on-surface" id="patient-gender-val">—</p>
           </div>
           <div id="doctor-name-block" class="hidden">
-            <p class="text-[10px] font-black uppercase tracking-widest text-outline mb-1">Doctor</p>
+            <p class="text-[10px] font-black uppercase tracking-widest text-outline mb-1" data-i18n="doctor_label">Doctor</p>
             <p class="font-bold text-on-surface" id="doctor-name">—</p>
             <p class="text-xs text-outline" id="doctor-specialty"></p>
           </div>
           <div id="hospital-block" class="hidden">
-            <p class="text-[10px] font-black uppercase tracking-widest text-outline mb-1">Hospital</p>
+            <p class="text-[10px] font-black uppercase tracking-widest text-outline mb-1" data-i18n="hospital">Hospital</p>
             <p class="font-bold text-on-surface" id="hospital-val">—</p>
           </div>
         </div>
@@ -180,13 +341,13 @@
       <div class="bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/20 shadow-sm">
         <div class="flex items-center gap-3 flex-wrap">
           <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings:'FILL' 1">verified</span>
-          <div class="text-[10px] font-black uppercase tracking-widest text-outline flex-shrink-0">AI Confidence Score</div>
+          <div class="text-[10px] font-black uppercase tracking-widest text-outline flex-shrink-0" data-i18n="confidence_score">AI Confidence Score</div>
           <div class="flex-1 min-w-[80px] h-2.5 bg-surface-container rounded-full overflow-hidden">
             <div id="conf-bar" class="h-full primary-gradient rounded-full transition-all duration-1000" style="width:0%"></div>
           </div>
           <div class="font-headline font-black text-2xl text-primary flex-shrink-0" id="conf-pct">—</div>
         </div>
-        <p class="text-xs text-outline mt-1 pl-7" id="conf-note"></p>
+        <p class="text-xs text-outline mt-1 pl-7" id="conf-note" data-i18n="high_confidence"></p>
       </div>
 
       <!-- ── PLAIN-LANGUAGE SUMMARY ── -->
@@ -196,20 +357,20 @@
             <span class="material-symbols-outlined text-primary text-base" style="font-variation-settings:'FILL' 1">summarize</span>
           </div>
           <div>
-            <h2 class="font-headline font-bold text-lg text-on-surface">What Happened — In Simple Words</h2>
-            <p class="text-xs text-outline">Easy-to-read summary for you and your family</p>
+            <h2 class="font-headline font-bold text-lg text-on-surface" data-i18n="what_happened">What Happened — In Simple Words</h2>
+            <p class="text-xs text-outline" data-i18n="easy_read_summary">Easy-to-read summary for you and your family</p>
           </div>
         </div>
         <p class="text-base text-on-surface leading-relaxed" id="summary-text">—</p>
         <div class="flex gap-2 flex-wrap mt-4 pt-4 border-t border-outline-variant/10">
           <button onclick="copySummary()" class="flex items-center gap-1 text-primary font-bold text-xs hover:underline">
-            <span class="material-symbols-outlined text-sm">copy_all</span>Copy
+            <span class="material-symbols-outlined text-sm">copy_all</span><span data-i18n="copy">Copy</span>
           </button>
           <button onclick="shareAnalysisOnWhatsApp()" class="flex items-center gap-1 bg-[#25D366]/10 text-[#128C51] font-bold text-xs px-3 py-1.5 rounded-full hover:bg-[#25D366]/20 transition-all">
-            <span class="material-symbols-outlined text-sm">share</span>Share on WhatsApp
+            <span class="material-symbols-outlined text-sm">share</span><span data-i18n="share_whatsapp">Share on WhatsApp</span>
           </button>
           <button id="speak-btn2" onclick="toggleSpeak()" class="flex items-center gap-1 text-secondary font-bold text-xs hover:underline">
-            <span class="material-symbols-outlined text-sm">volume_up</span>Read Aloud
+            <span class="material-symbols-outlined text-sm">volume_up</span><span data-i18n="read_aloud">Read Aloud</span>
           </button>
         </div>
       </div>
@@ -217,14 +378,14 @@
       <!-- ── DIAGNOSIS COMPARISON ── -->
       <div>
         <div class="flex items-center gap-3 mb-3">
-          <h2 class="font-headline text-lg font-bold text-on-surface">Diagnosis Explained</h2>
-          <span class="text-[10px] font-black uppercase tracking-widest bg-primary/10 text-primary px-3 py-1 rounded-full">Doctor's Words → Plain Language</span>
+          <h2 class="font-headline text-lg font-bold text-on-surface" data-i18n="diagnosis_explained">Diagnosis Explained</h2>
+          <span class="text-[10px] font-black uppercase tracking-widest bg-primary/10 text-primary px-3 py-1 rounded-full" data-i18n="doctors_words">Doctor's Words → Plain Language</span>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <!-- Original -->
           <div class="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/20 shadow-sm">
             <div class="flex items-center gap-2 mb-3">
-              <span class="text-[10px] font-black uppercase tracking-widest bg-surface-container text-outline px-2 py-1 rounded-full">Doctor's Original</span>
+              <span class="text-[10px] font-black uppercase tracking-widest bg-surface-container text-outline px-2 py-1 rounded-full" data-i18n="doctors_original">Doctor's Original</span>
             </div>
             <p class="text-sm text-on-surface-variant font-mono leading-relaxed bg-surface-container-low rounded-lg p-4 border-l-4 border-outline-variant/40" id="dx-original">—</p>
           </div>
@@ -232,7 +393,7 @@
           <div class="bg-primary/5 rounded-xl p-5 border-2 border-primary/20 shadow-sm">
             <div class="flex items-center gap-2 mb-3">
               <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings:'FILL' 1">auto_awesome</span>
-              <span class="text-[10px] font-black uppercase tracking-widest bg-primary/10 text-primary px-2 py-1 rounded-full">Simplified by AI</span>
+              <span class="text-[10px] font-black uppercase tracking-widest bg-primary/10 text-primary px-2 py-1 rounded-full" data-i18n="simplified_ai">Simplified by AI</span>
             </div>
             <p class="text-sm text-on-surface leading-relaxed border-l-4 border-primary/50 pl-4" id="dx-simple">—</p>
           </div>
@@ -242,9 +403,9 @@
       <!-- ── MEDICATIONS ── -->
       <div>
         <div class="flex items-center justify-between mb-3">
-          <h2 class="font-headline text-lg font-bold text-on-surface">Your Medicines</h2>
-          <a href="medications.html" class="text-primary font-bold text-xs hover:underline flex items-center gap-1">
-            Full schedule <span class="material-symbols-outlined text-sm">arrow_forward</span>
+          <h2 class="font-headline text-lg font-bold text-on-surface" id="heading-meds">Your Medicines</h2>
+          <a href="medications.html" class="text-primary font-bold text-xs hover:underline flex items-center gap-1" id="heading-fullschedule">
+            <span data-i18n="full_list">Full schedule</span> <span class="material-symbols-outlined text-sm">arrow_forward</span>
           </a>
         </div>
         <div id="med-cards" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
@@ -258,15 +419,15 @@
       <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/20 shadow-sm overflow-hidden">
         <div class="px-5 py-4 border-b border-outline-variant/10 flex items-center gap-2">
           <span class="material-symbols-outlined text-amber-600 text-base" style="font-variation-settings:'FILL' 1">visibility</span>
-          <h3 class="font-headline font-bold text-base text-on-surface">What to Watch For</h3>
+          <h3 class="font-headline font-bold text-base text-on-surface" id="heading-watch">What to Watch For</h3>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-outline-variant/10">
           <div class="p-5">
-            <p class="text-[10px] font-black uppercase tracking-widest text-outline mb-2">Doctor's Clinical Notes</p>
+            <p class="text-[10px] font-black uppercase tracking-widest text-outline mb-2" id="heading-clinical">Doctor's Clinical Notes</p>
             <p class="text-sm text-on-surface-variant font-mono leading-relaxed" id="watch-original">—</p>
           </div>
           <div class="p-5 bg-amber-50/50">
-            <p class="text-[10px] font-black uppercase tracking-widest text-amber-700 mb-2">In Plain Words</p>
+            <p class="text-[10px] font-black uppercase tracking-widest text-amber-700 mb-2" id="heading-plain">In Plain Words</p>
             <p class="text-sm text-on-surface leading-relaxed" id="watch-simple">—</p>
           </div>
         </div>
@@ -278,7 +439,7 @@
         <div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/10 shadow-sm overflow-hidden">
           <div class="px-5 py-4 border-b border-outline-variant/10 flex items-center gap-2">
             <span class="material-symbols-outlined text-error text-base" style="font-variation-settings:'FILL' 1">warning</span>
-            <h3 class="font-headline font-bold text-base text-on-surface">Possible Side Effects</h3>
+            <h3 class="font-headline font-bold text-base text-on-surface" id="heading-sideeffects">Possible Side Effects</h3>
           </div>
           <div class="p-5 space-y-2" id="se-mini"></div>
         </div>
@@ -286,7 +447,7 @@
         <div class="bg-error-container/20 rounded-2xl p-5 border-2 border-error/30">
           <div class="flex items-center gap-2 mb-3">
             <span class="material-symbols-outlined text-error" style="font-variation-settings:'FILL' 1">emergency</span>
-            <h3 class="font-headline font-bold text-base text-error">Call Doctor Immediately If:</h3>
+            <h3 class="font-headline font-bold text-base text-error" id="heading-emergency">Call Doctor Immediately If:</h3>
           </div>
           <p class="text-sm text-on-surface leading-relaxed font-medium" id="emergency-mini"></p>
         </div>
@@ -306,16 +467,16 @@
       <!-- ── BOTTOM CTAs ── -->
       <div class="flex justify-center gap-3 flex-wrap mt-8 pt-8 border-t border-surface-container-high">
         <a href="checklist.html" class="flex items-center gap-2 primary-gradient text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:shadow-primary/50 hover:-translate-y-0.5 active:scale-95 transition-all">
-          <span class="material-symbols-outlined text-sm">fact_check</span> Follow-up Checklist
+          <span class="material-symbols-outlined text-sm">fact_check</span><span data-i18n="followup_checklist">Follow-up Checklist</span>
         </a>
         <a href="medications.html" class="flex items-center gap-2 primary-gradient text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:shadow-primary/50 hover:-translate-y-0.5 active:scale-95 transition-all">
-          <span class="material-symbols-outlined text-sm">medication</span> Full Medication Schedule
+          <span class="material-symbols-outlined text-sm">medication</span><span data-i18n="full_schedule">Full Medication Schedule</span>
         </a>
         <a href="chat.html" class="flex items-center gap-2 primary-gradient text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:shadow-primary/50 hover:-translate-y-0.5 active:scale-95 transition-all">
-          <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">smart_toy</span> Ask AI a Question
+          <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">smart_toy</span><span data-i18n="ask_ai_question">Ask AI a Question</span>
         </a>
         <button onclick="exportPdf()" class="flex items-center gap-2 primary-gradient text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:shadow-primary/50 hover:-translate-y-0.5 active:scale-95 transition-all">
-          <span class="material-symbols-outlined text-sm">picture_as_pdf</span> Export PDF
+          <span class="material-symbols-outlined text-sm">picture_as_pdf</span><span data-i18n="export_pdf">Export PDF</span>
         </button>
       </div>
     </section>
@@ -334,14 +495,41 @@
 <script src="medbuddy.js"></script>
 <script>
 requireAuth();
-let currentLang='en';
 let speaking=false;
+let currentData = null;
+let initialLang = 'en';  // Store the initial language from sessionStorage
 
 (async function initData() {
   let data = getAnalysis();
+  console.log('=== initData START ===');
+  console.log('getAnalysis() returned:', data ? 'data found' : 'null');
+  
+  // Check saved language preference from upload page
+  const savedLang = sessionStorage.getItem('medbuddy_lang');
+  if (savedLang === 'hi') {
+    setLanguage('hi');
+    initialLang = 'hi';
+    // Update toggle buttons to show Hindi as selected
+    const langBtns = document.querySelectorAll('.lang-btn');
+    if (langBtns[1]) {
+      langBtns[0].className = 'lang-btn px-4 py-1.5 rounded-full text-xs font-bold text-outline transition-all';
+      langBtns[1].className = 'lang-btn px-4 py-1.5 rounded-full text-xs font-bold bg-white text-primary shadow-sm transition-all';
+    }
+  }
+  
+  // Apply translations early
+  if (typeof applyTranslations === 'function') {
+    applyTranslations();
+  }
+  updateLanguageToggle();
+  
+  // Store the initial language before data loads
+  initialLang = getCurrentLanguage();
   
   if (localStorage.getItem('medbuddy_logged_in')) {
+    console.log('Loading from server...');
     const serverData = await loadAnalysisFromServer();
+    console.log('Server data:', serverData ? 'found' : 'null');
     if (serverData) data = serverData;
   }
   
@@ -350,7 +538,14 @@ let speaking=false;
 
   if(!data){
     document.getElementById('no-data').classList.remove('hidden');
+    console.log('No data found - showing upload prompt');
   } else {
+    // Check if data exists but has no summary
+    const hasSummary = data.summary_en || data.summary_hi || data.diagnosis?.original_jargon;
+    if (!hasSummary) {
+      console.log('Data exists but no analysis - showing upload prompt');
+      document.getElementById('no-data').classList.remove('hidden');
+    } else {
     if (showAlert === 'true') {
       const emergency = checkForEmergency(data);
       if (emergency && emergency.isSevere) {
@@ -358,63 +553,230 @@ let speaking=false;
       }
     }
     
-    document.getElementById('has-data').classList.remove('hidden');
+document.getElementById('has-data').classList.remove('hidden');
+    currentData = data;
     renderData(data);
+    }
   }
+  
+  // Update medication reminder badge
+  setTimeout(() => {
+    if (typeof updateReminderBadge === 'function') {
+      updateReminderBadge();
+    }
+  }, 100);
 })();
 
 function renderData(d){
+  console.log('=== renderData called ===');
+  console.log('Data keys:', Object.keys(d || {}));
+  console.log('summary_en:', d?.summary_en?.substring(0, 50));
+  console.log('summary_hi:', d?.summary_hi?.substring(0, 50));
+  console.log('diagnosis:', d?.diagnosis);
+  
+  // Use current language from toggle (allows dynamic switching)
+  const lang = getCurrentLanguage();
+  
   // Confidence
   setTimeout(()=>{
-    document.getElementById('conf-bar').style.width=(d.confidence||80)+'%';
-    document.getElementById('conf-pct').textContent=(d.confidence||80)+'%';
-    const confNote=document.getElementById('conf-note');
-    if(confNote) confNote.textContent=(d.confidence>=90?'High confidence - detailed analysis available':d.confidence>=70?'Good confidence level':'Moderate confidence - verify with doctor');
+    const confBar = document.getElementById('conf-bar');
+    const confPct = document.getElementById('conf-pct');
+    const confNote = document.getElementById('conf-note');
+    const conf = d.confidence || 80;
+    if(confBar) confBar.style.width=conf+'%';
+    if(confPct) confPct.textContent=conf+'%';
+    if(confNote) {
+      if (lang === 'hi') {
+        confNote.textContent = conf >= 90 ? 'उच्च विश्वास - विस्तृत विश्लेषण उपलब्ध' : conf >= 70 ? 'अच्छा विश्वास स्तर' : 'मध्यम विश्वास - डॉक्टर से पुष्टि करें';
+      } else {
+        confNote.textContent = conf >= 90 ? 'High confidence - detailed analysis available' : conf >= 70 ? 'Good confidence level' : 'Moderate confidence - verify with doctor';
+      }
+    }
   },300);
 
+  // Update headings based on language
+  updateHeadings(lang);
+   
   // Summary
   const summaryEl = document.getElementById('summary-text');
   if (summaryEl) {
-    summaryEl.textContent = currentLang === 'hi' ? (d.summary_hi || d.summary_en || '—') : (d.summary_en || '—');
+    if (lang === 'hi') {
+      if (d.summary_hi) {
+        summaryEl.textContent = d.summary_hi;
+      } else if (d.summary_en) {
+        translateToHindi(d.summary_en).then(translated => {
+          d.summary_hi = translated;
+          summaryEl.textContent = translated || d.summary_en || '—';
+        });
+        summaryEl.textContent = 'Translating...';
+      } else {
+        summaryEl.textContent = '—';
+      }
+    } else {
+      summaryEl.textContent = d.summary_en || '—';
+    }
   }
 
   // Diagnosis
-  document.getElementById('dx-original').textContent=d.diagnosis?.original_jargon||'Not found in document';
-  document.getElementById('dx-simple').textContent=currentLang==='hi'?(d.diagnosis?.simple_hindi||d.diagnosis?.simple_english||'—'):(d.diagnosis?.simple_english||'—');
+  const dxOriginalEl = document.getElementById('dx-original');
+  const dxSimple = document.getElementById('dx-simple');
+  if (dxOriginalEl) dxOriginalEl.textContent = d.diagnosis?.original_jargon || 'Not found in document';
+  if (dxSimple) {
+    if (lang === 'hi') {
+      if (d.diagnosis?.simple_hindi) {
+        dxSimple.textContent = d.diagnosis.simple_hindi;
+      } else if (d.diagnosis?.simple_english) {
+        translateToHindi(d.diagnosis.simple_english).then(translated => {
+          if (!d.diagnosis) d.diagnosis = {};
+          d.diagnosis.simple_hindi = translated;
+          dxSimple.textContent = translated || d.diagnosis.simple_english || '—';
+        });
+        dxSimple.textContent = 'Translating...';
+      } else {
+        dxSimple.textContent = '—';
+      }
+    } else {
+      dxSimple.textContent = d.diagnosis?.simple_english || '—';
+    }
+  }
 
   // Watch for
-  // Watch for
-  const watchSimple = currentLang === 'hi' ? (d.watch_for?.simple_hindi || d.watch_for?.simple) : (d.watch_for?.simple || '—');
-  document.getElementById('watch-original').textContent=d.watch_for?.original||'—';
-  document.getElementById('watch-simple').textContent=watchSimple;
-
+  const watchSimpleEl = document.getElementById('watch-simple');
+  const watchOriginalEl = document.getElementById('watch-original');
+  if (watchSimpleEl) {
+    if (lang === 'hi') {
+      if (d.watch_for?.simple_hindi) {
+        watchSimpleEl.textContent = d.watch_for.simple_hindi;
+      } else if (d.watch_for?.simple) {
+        watchSimpleEl.textContent = 'Translating...';
+        translateToHindi(d.watch_for.simple).then(translated => {
+          if (!d.watch_for) d.watch_for = {};
+          d.watch_for.simple_hindi = translated;
+          watchSimpleEl.textContent = translated || d.watch_for.simple || '—';
+        }).catch(() => {
+          watchSimpleEl.textContent = d.watch_for?.simple || '—';
+        });
+      } else {
+        watchSimpleEl.textContent = '—';
+      }
+    } else {
+      watchSimpleEl.textContent = d.watch_for?.simple || '—';
+    }
+  }
+if (watchOriginalEl) watchOriginalEl.textContent = d.watch_for?.original || '—';
+   
+  // Store original English data BEFORE any translation
+  // This ensures we always have English values to fall back to
+  if (!d.medications_en) {
+    d.medications_en = d.medications ? d.medications.map(m => ({...m})) : [];
+    // Also store English simple_instruction separately
+    d.medications_en.forEach((m, i) => {
+      if (d.medications[i]) {
+        m.simple_instruction_en = d.medications[i].simple_instruction_en || d.medications[i].simple_instruction;
+      }
+    });
+  }
+  d.side_effects_original = d.side_effects ? d.side_effects.map(se => ({...se})) : [];
+  d.emergency_original = d.emergency;
+  
   // Side effects + emergency mini
   if((d.side_effects&&d.side_effects.length)||d.emergency){
     document.getElementById('side-effects-block').classList.remove('hidden');
     if(d.side_effects&&d.side_effects.length){
       const sevCls={high:'text-error bg-error-container/20',medium:'text-amber-700 bg-amber-50',low:'text-on-surface-variant bg-surface-container-low'};
-      document.getElementById('se-mini').innerHTML=d.side_effects.map(se=>`
-        <div class="flex items-start gap-2 p-3 rounded-lg ${sevCls[se.severity]||sevCls.low}">
-          <span class="text-base flex-shrink-0">${se.icon||'⚠️'}</span>
-          <p class="text-xs font-semibold leading-relaxed">${esc(se.text)}</p>
-        </div>`).join('');
+      
+      // If Hindi and no translations exist, translate on the fly
+      if (lang === 'hi') {
+        document.getElementById('se-mini').innerHTML = '<div class="col-span-full text-center py-2 text-outline text-sm">Translating...</div>';
+        Promise.all(d.side_effects.map(async se => {
+          if (!se.text_hindi) {
+            se.text_hindi = await translateToHindi(se.text);
+          }
+          return se;
+        })).then(translatedSEs => {
+          document.getElementById('se-mini').innerHTML = translatedSEs.map(se => `
+            <div class="flex items-start gap-2 p-3 rounded-lg ${sevCls[se.severity]||sevCls.low}">
+              <span class="text-base flex-shrink-0">${se.icon||'⚠️'}</span>
+              <p class="text-xs font-semibold leading-relaxed">${esc(se.text_hindi || se.text)}</p>
+            </div>`).join('');
+        });
+      } else {
+        document.getElementById('se-mini').innerHTML=d.side_effects.map(se=>`
+          <div class="flex items-start gap-2 p-3 rounded-lg ${sevCls[se.severity]||sevCls.low}">
+            <span class="text-base flex-shrink-0">${se.icon||'⚠️'}</span>
+            <p class="text-xs font-semibold leading-relaxed">${esc(se.text)}</p>
+          </div>`).join('');
+      }
     }
-    if(d.emergency) document.getElementById('emergency-mini').textContent=d.emergency;
+    if(d.emergency) {
+      if (lang === 'hi' && !d.emergency_hindi) {
+        document.getElementById('emergency-mini').textContent = 'Translating...';
+        translateToHindi(d.emergency).then(translated => {
+          d.emergency_hindi = translated;
+          document.getElementById('emergency-mini').textContent = translated || d.emergency;
+        });
+      } else {
+        document.getElementById('emergency-mini').textContent=lang === 'hi' ? (d.emergency_hindi || d.emergency) : d.emergency;
+      }
+    }
   }
 
   // Medications - use card layout
   const cards = document.getElementById('med-cards');
   if (d.medications && d.medications.length > 0) {
-    cards.innerHTML = d.medications.map((m, i) => `
-      <div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/10 shadow-sm">
-        <div class="flex items-center gap-2 mb-2">
-          <span class="font-bold text-sm">${esc(m.name)}</span>
-        </div>
-        <div class="text-xs text-outline">${esc(m.dosage)} - ${esc(m.timing)}</div>
-        <div class="text-xs text-on-surface-variant mt-1">${esc(m.simple_instruction || '')}</div>
-      </div>`).join('');
+    if (lang === 'hi' && !d.medications_hindi) {
+      cards.innerHTML = '<div class="col-span-full text-center py-4 text-outline text-sm">Translating...</div>';
+      Promise.all(d.medications.map(m => 
+        translateToHindi(m.simple_instruction).then(translated => ({...m, simple_instruction_hindi: translated}))
+      )).then(translatedMeds => {
+        d.medications_hindi = translatedMeds;
+        if (lang === 'hi') renderMedCards(translatedMeds, 'hi');
+      });
+    } else if (lang === 'hi') {
+      renderMedCards(d.medications_hindi, 'hi');
+    } else {
+      // Use medications_en which has original English values
+      renderMedCards(d.medications_en || d.medications, 'en');
+    }
   } else {
-    cards.innerHTML = '<div class="col-span-full text-center py-4 text-outline text-sm">No medications found in your document</div>';
+    cards.innerHTML = '<div class="col-span-full text-center py-4 text-outline text-sm" data-i18n="no_medications_found">No medications found in your document</div>';
+  }
+}
+
+function renderMedCards(meds, lang = 'en') {
+  const cards = document.getElementById('med-cards');
+  if (!cards) return;
+  cards.innerHTML = (meds || []).map((m) => `
+    <div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/10 shadow-sm">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="font-bold text-sm">${esc(m.name)}</span>
+      </div>
+      <div class="text-xs text-outline">${esc(m.dosage)} - ${esc(m.timing)}</div>
+      <div class="text-xs text-on-surface-variant mt-1">${esc(lang === 'hi' ? (m.simple_instruction_hindi || m.simple_instruction_hi || m.simple_instruction) : (m.simple_instruction_en || m.simple_instruction))}</div>
+    </div>`).join('');
+}
+
+function updateHeadings(lang) {
+  const headings = {
+    'heading-meds': lang === 'hi' ? 'आपकी दवाइयां' : 'Your Medicines',
+    'heading-fullschedule': lang === 'hi' ? 'पूरी सूची' : 'Full schedule',
+    'heading-watch': lang === 'hi' ? 'क्या ध्यान दें' : 'What to Watch For',
+    'heading-clinical': lang === 'hi' ? 'डॉक्टर के नोट्स' : 'Doctor\'s Clinical Notes',
+    'heading-plain': lang === 'hi' ? 'सादे शब्दों में' : 'In Plain Words',
+    'heading-sideeffects': lang === 'hi' ? 'संभावित साइड इफेक्ट्स' : 'Possible Side Effects',
+    'heading-emergency': lang === 'hi' ? 'तुरंत डॉक्टर को बुलाएं अगर:' : 'Call Doctor Immediately If:'
+  };
+  Object.keys(headings).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = headings[id];
+  });
+  
+  // Update confidence note translation
+  const confNote = document.getElementById('conf-note');
+  if (confNote) {
+    confNote.textContent = lang === 'hi' 
+      ? (window.currentData?.confidence >= 90 ? 'उच्च विश्वास - विस्तृत विश्लेषण उपलब्ध' : window.currentData?.confidence >= 70 ? 'अच्छा विश्वास स्तर' : 'मध्यम विश्वास - डॉक्टर से पुष्टि करें')
+      : (window.currentData?.confidence >= 90 ? 'High confidence - detailed analysis available' : window.currentData?.confidence >= 70 ? 'Good confidence level' : 'Moderate confidence - verify with doctor');
   }
 }
 
@@ -428,62 +790,110 @@ async function translateToHindi(text) {
 }
 
 async function setLang(l,btn){
-  currentLang=l;
-  document.querySelectorAll('.lang-btn').forEach(b=>b.className='lang-btn px-4 py-1.5 rounded-full text-xs font-bold text-outline transition-all');
-  btn.className='lang-btn px-4 py-1.5 rounded-full text-xs font-bold bg-white text-primary shadow-sm transition-all';
-  if(!data)return;
+  setLanguage(l);
+  document.querySelectorAll('.lang-btn').forEach(b => b.className = 'lang-btn px-4 py-1.5 rounded-full text-xs font-bold text-outline transition-all');
+  btn.className = 'lang-btn px-4 py-1.5 rounded-full text-xs font-bold bg-white text-primary shadow-sm transition-all';
   
-  if(l==='hi'){
-    // Use existing Hindi data or translate
-    document.getElementById('summary-text').textContent=data.summary_hi || await translateToHindi(data.summary_en) || '—';
-    document.getElementById('dx-simple').textContent=data.diagnosis?.simple_hindi || await translateToHindi(data.diagnosis?.simple_english) || '—';
-    document.getElementById('watch-simple').textContent=data.watch_for?.simple_hindi || await translateToHindi(data.watch_for?.simple) || '—';
+  // Update headings
+  updateHeadings(l);
+  
+  if (!currentData) return;
+  
+  const summaryEl = document.getElementById('summary-text');
+  const dxSimple = document.getElementById('dx-simple');
+  const watchSimple = document.getElementById('watch-simple');
+  const medCards = document.getElementById('med-cards');
+  
+  // Use consistent language variable
+  const currentLangForContent = l;
+  
+  if (currentLangForContent === 'hi') {
+    const translatedSummary = currentData.summary_hi || await translateToHindi(currentData.summary_en);
+    const translatedDx = currentData.diagnosis?.simple_hindi || await translateToHindi(currentData.diagnosis?.simple_english);
+    const translatedWatch = currentData.watch_for?.simple_hindi || await translateToHindi(currentData.watch_for?.simple);
     
-    // Medications - translate instructions
-    const medCards = document.getElementById('med-cards');
-    if (medCards && data.medications) {
-      for (let m of data.medications) {
+    if (summaryEl) summaryEl.textContent = translatedSummary || '—';
+    if (dxSimple) dxSimple.textContent = translatedDx || '—';
+    if (watchSimple) watchSimple.textContent = translatedWatch || '—';
+    
+    // Translate and render side effects
+    if (currentData.side_effects && currentData.side_effects.length) {
+      const translatedSEs = await Promise.all(currentData.side_effects.map(async se => {
+        if (!se.text_hindi) {
+          se.text_hindi = await translateToHindi(se.text);
+        }
+        return se;
+      }));
+      const sevCls={high:'text-error bg-error-container/20',medium:'text-amber-700 bg-amber-50',low:'text-on-surface-variant bg-surface-container-low'};
+      document.getElementById('se-mini').innerHTML=translatedSEs.map(se=>`
+        <div class="flex items-start gap-2 p-3 rounded-lg ${sevCls[se.severity]||sevCls.low}">
+          <span class="text-base flex-shrink-0">${se.icon||'⚠️'}</span>
+          <p class="text-xs font-semibold leading-relaxed">${esc(se.text_hindi || se.text)}</p>
+        </div>`).join('');
+    }
+    
+    // Translate emergency if needed
+    if (currentData.emergency && !currentData.emergency_hindi) {
+      currentData.emergency_hindi = await translateToHindi(currentData.emergency);
+    }
+    document.getElementById('emergency-mini').textContent = currentData.emergency_hindi || currentData.emergency || '—';
+    
+    // Render medications in Hindi
+    if (medCards && currentData.medications) {
+      for (let m of currentData.medications) {
         if (!m.simple_instruction_hindi) {
           m.simple_instruction_hindi = await translateToHindi(m.simple_instruction || '');
         }
       }
-      medCards.innerHTML = data.medications.map((m, i) => `
-        <div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/10 shadow-sm">
-          <div class="flex items-center gap-2 mb-2">
-            <span class="font-bold text-sm">${esc(m.name)}</span>
-          </div>
-          <div class="text-xs text-outline">${esc(m.dosage)} - ${esc(m.timing)}</div>
-          <div class="text-xs text-on-surface-variant mt-1">${esc(m.simple_instruction_hindi || m.simple_instruction || '')}</div>
-        </div>`).join('');
+      renderMedCards(currentData.medications, 'hi');
     }
   } else {
-    document.getElementById('summary-text').textContent=data.summary_en||'—';
-    document.getElementById('dx-simple').textContent=data.diagnosis?.simple_english||'—';
-    document.getElementById('watch-simple').textContent=data.watch_for?.simple||'—';
+    // Switching to English - use stored original English data
+    if (summaryEl) summaryEl.textContent = currentData.summary_en || '—';
+    if (dxSimple) dxSimple.textContent = currentData.diagnosis?.simple_english || '—';
+    if (watchSimple) watchSimple.textContent = currentData.watch_for?.simple || '—';
     
-    const medCards = document.getElementById('med-cards');
-    if (medCards && data.medications) {
-      medCards.innerHTML = data.medications.map((m, i) => `
-        <div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/10 shadow-sm">
+    // Render side effects in English - use stored original
+    if (currentData.side_effects_original && currentData.side_effects_original.length) {
+      const sevCls={high:'text-error bg-error-container/20',medium:'text-amber-700 bg-amber-50',low:'text-on-surface-variant bg-surface-container-low'};
+      const seHTML = currentData.side_effects_original.map(se => {
+        return `<div class="flex items-start gap-2 p-3 rounded-lg ${sevCls[se.severity]||sevCls.low}">
+          <span class="text-base flex-shrink-0">${se.icon||'⚠️'}</span>
+          <p class="text-xs font-semibold leading-relaxed">${esc(se.text)}</p>
+        </div>`;
+      }).join('');
+      document.getElementById('se-mini').innerHTML = seHTML;
+    }
+    
+    // Render emergency in English - use stored original
+    document.getElementById('emergency-mini').textContent = currentData.emergency_original || '—';
+    
+    // Render medications in English - use stored original
+    if (medCards && currentData.medications_en) {
+      console.log('[setLang] Using medications_en:', currentData.medications_en[0]);
+      const medsHTML = currentData.medications_en.map(m => {
+        return `<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/10 shadow-sm">
           <div class="flex items-center gap-2 mb-2">
             <span class="font-bold text-sm">${esc(m.name)}</span>
           </div>
           <div class="text-xs text-outline">${esc(m.dosage)} - ${esc(m.timing)}</div>
-          <div class="text-xs text-on-surface-variant mt-1">${esc(m.simple_instruction || '')}</div>
-        </div>`).join('');
+          <div class="text-xs text-on-surface-variant mt-1">${esc(m.simple_instruction_en || m.simple_instruction)}</div>
+        </div>`;
+      }).join('');
+      medCards.innerHTML = medsHTML;
     }
   }
 }
 
 function copySummary(){
-  if(!data)return;
-  navigator.clipboard.writeText(data.summary_en||'').then(()=>showToast('✅ Copied!'));
+  if(!currentData)return;
+  navigator.clipboard.writeText(currentData.summary_en||'').then(()=>showToast('✅ Copied!'));
 }
 
 function exportPdf(){
-  if(!data)return;
+  if(!currentData)return;
   const e=s=>String(s||'—').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const meds=(data.medications||[]).map(m=>`
+  const meds=(currentData.medications||[]).map(m=>`
     <tr>
       <td><strong>${e(m.name)}</strong></td>
       <td><span class="pdf-badge">${e(m.dosage)}</span></td>
@@ -491,21 +901,21 @@ function exportPdf(){
       <td>${e(m.duration)}</td>
       <td>${e(m.with_food)}</td>
     </tr>`).join('');
-  const checklist=(data.checklist||[]).map(c=>`<li>☐ [${e(c.category)}] ${e(c.text)}</li>`).join('');
-  const se=(data.side_effects||[]).map(s=>`<li>${s.icon||'⚠️'} ${e(s.text)}</li>`).join('');
+  const checklist=(currentData.checklist||[]).map(c=>`<li>☐ [${e(c.category)}] ${e(c.text)}</li>`).join('');
+  const se=(currentData.side_effects||[]).map(s=>`<li>${s.icon||'⚠️'} ${e(s.text)}</li>`).join('');
 
   let html=`
     <h1>Aushadh AI Health Summary</h1>
-    <p style="color:#6e797a;font-size:12px">Generated ${new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}${data.doctor_name?' &nbsp;|&nbsp; '+e(data.doctor_name):''}</p>
+    <p style="color:#6e797a;font-size:12px">Generated ${new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}${currentData.doctor_name?' &nbsp;|&nbsp; '+e(currentData.doctor_name):''}</p>
     <h2>Summary</h2>
-    <p style="font-size:13px">${e(data.summary_en)}</p>
+    <p style="font-size:13px">${e(currentData.summary_en)}</p>
     <h2>Diagnosis</h2>
-    <p style="font-size:11px;color:#6e797a;margin-bottom:4px">${e(data.diagnosis?.original_jargon)}</p>
-    <p style="font-size:13px">${e(data.diagnosis?.simple_english)}</p>
+    <p style="font-size:11px;color:#6e797a;margin-bottom:4px">${e(currentData.diagnosis?.original_jargon)}</p>
+    <p style="font-size:13px">${e(currentData.diagnosis?.simple_english)}</p>
     <h2>Medications</h2>
     <table><thead><tr><th>Medicine</th><th>Dose</th><th>Timing</th><th>Duration</th><th>With Food</th></tr></thead><tbody>${meds}</tbody></table>
     ${se?`<h2>Side Effects to Watch</h2><ul style="font-size:12px;line-height:1.8">${se}</ul>`:''}
-    ${data.emergency?`<h2>Emergency — Call Doctor If</h2><div class="pdf-emergency">${e(data.emergency)}</div>`:''}
+    ${currentData.emergency?`<h2>Emergency — Call Doctor If</h2><div class="pdf-emergency">${e(currentData.emergency)}</div>`:''}
     ${checklist?`<h2>Action Checklist</h2><ul style="font-size:12px;line-height:2;list-style:none;padding:0">${checklist}</ul>`:''}
     <div class="pdf-footer">Generated by Aushadh AI &bull; Always consult your doctor &bull; medbuddy.app</div>`;
 
@@ -527,10 +937,10 @@ function showToast(msg){
 
 // ── Voice Readout ─────────────────────────────────────
 function toggleSpeak(){
-  if(!data)return;
+  if(!currentData)return;
   if(speaking){ stopSpeak(); return; }
-  const d=data;
-  const lang=currentLang;
+  const d=currentData;
+  const lang=getCurrentLanguage();
   let text=`Aushadh AI Health Summary. `;
   if(lang==='hi'){
     text+=(d.summary_hi||d.summary_en||'')+'. ';
@@ -561,17 +971,32 @@ function stopSpeak(){
 function updateSpeakBtn(on){
   const btn=document.getElementById('speak-btn');
   const lbl=document.getElementById('speak-label');
+  const lang = getCurrentLanguage();
   if(on){
     btn.className='flex items-center gap-1 bg-secondary text-white px-4 py-2 rounded-full font-bold text-sm transition-all animate-pulse';
-    lbl.textContent='Stop';
+    lbl.textContent=lang === 'hi' ? 'रुकें' : 'Stop';
     btn.querySelector('.material-symbols-outlined').textContent='stop_circle';
   } else {
     btn.className='flex items-center gap-1 bg-secondary-container/30 text-secondary border border-secondary/20 px-4 py-2 rounded-full font-bold text-sm hover:bg-secondary hover:text-white transition-all';
-    lbl.textContent='Listen';
+    lbl.textContent=lang === 'hi' ? 'सुनें' : 'Listen';
     btn.querySelector('.material-symbols-outlined').textContent='volume_up';
   }
 }
 
+
+// Translations already applied earlier
+
+function updateLanguageToggle() {
+  const lang = getCurrentLanguage();
+  document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+  document.getElementById('lang-hi').classList.toggle('active', lang === 'hi');
+}
+
+const originalSetLanguage = setLanguage;
+setLanguage = function(lang) {
+  originalSetLanguage(lang);
+  window.location.reload();
+};
 
 </script>
 </body>
