@@ -97,7 +97,9 @@ const DEMO_DATA = {
 };
 
 function loadDemoData() {
-  saveAnalysis(DEMO_DATA);
+  // Only load demo data for display - don't save to any storage
+  window.DEMO_DATA = DEMO_DATA;
+  return DEMO_DATA;
 }
 
 // ── Language System ───────────────────────────────────
@@ -496,7 +498,6 @@ function translateMedTerm(type, value) {
         }
       }
     }
-    return value;
   }
   
   // Handle timing and duration
@@ -510,6 +511,26 @@ function translateMedTerm(type, value) {
     }
   }
   return result;
+}
+
+// ── API: Validate medical image (check if it's a real scan vs document) ─────
+async function apiValidateMedicalImage(file) {
+  const form = new FormData();
+  form.append('file', file);
+  
+  try {
+    const res = await fetch(`${API}/validate-medical-image`, { method: 'POST', body: form });
+    
+    if (!res.ok) {
+      const e = await res.json();
+      throw new Error(e.detail || 'Medical image validation failed');
+    }
+    
+    const result = await res.json();
+    return result;
+  } catch (err) {
+    throw err;
+  }
 }
 
 function translateNotSpecified() {
@@ -603,6 +624,7 @@ function requireAuth() {
       } else {
         console.log('Auth OK');
         authValidated = true;
+        initSessionTimeout();
       }
     })
     .catch(err => {
@@ -666,8 +688,122 @@ function logout() {
       headers: { 'Authorization': `Bearer ${token}` }
     }).catch(() => {});
   }
-  clearAllStorage();
+  localStorage.removeItem('medbuddy_logged_in');
+  localStorage.removeItem('medbuddy_token');
+  localStorage.removeItem('medbuddy_user');
   window.location.replace('/login.html');
+}
+
+// ── Session Timeout ─────────────────────────────────────────
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
+const SESSION_WARNING_MS = 27 * 60 * 1000;
+let sessionTimer = null;
+let sessionWarningTimer = null;
+let sessionWarningModal = null;
+
+function resetSessionTimer() {
+  clearTimeout(sessionTimer);
+  clearTimeout(sessionWarningTimer);
+  
+  if (!localStorage.getItem('medbuddy_logged_in') || !localStorage.getItem('medbuddy_token')) {
+    return;
+  }
+  
+  sessionWarningTimer = setTimeout(showSessionWarning, SESSION_WARNING_MS);
+  sessionTimer = setTimeout(autoLogout, SESSION_TIMEOUT_MS);
+}
+
+function showSessionWarning() {
+  if (sessionWarningModal) return;
+  
+  let timeLeft = 180;
+  
+  sessionWarningModal = document.createElement('div');
+  sessionWarningModal.id = 'session-warning-modal';
+  sessionWarningModal.className = 'fixed inset-0 bg-black/60 flex items-center justify-center z-50';
+  sessionWarningModal.innerHTML = `
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-sm mx-4 shadow-2xl">
+      <div class="text-center">
+        <span class="material-symbols-outlined text-4xl text-amber-500 mb-2">timer</span>
+        <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">Session Expiring Soon</h3>
+        <p class="text-gray-600 dark:text-gray-300 mb-4">You will be logged out in <span id="session-countdown" class="font-bold text-amber-600">3:00</span> due to inactivity.</p>
+        <div class="flex gap-3 justify-center">
+          <button id="session-stay-logged" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors">Stay Logged In</button>
+          <button id="session-logout-now" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors">Logout Now</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(sessionWarningModal);
+  
+  const countdownEl = document.getElementById('session-countdown');
+  const countdownInterval = setInterval(() => {
+    timeLeft--;
+    const mins = Math.floor(timeLeft / 60);
+    const secs = timeLeft % 60;
+    countdownEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+    
+    if (timeLeft <= 0) {
+      clearInterval(countdownInterval);
+    }
+  }, 1000);
+  
+  document.getElementById('session-stay-logged').addEventListener('click', () => {
+    clearInterval(countdownInterval);
+    closeSessionWarning();
+    refreshSession();
+  });
+  
+  document.getElementById('session-logout-now').addEventListener('click', () => {
+    clearInterval(countdownInterval);
+    closeSessionWarning();
+    doAutoLogout();
+  });
+}
+
+function closeSessionWarning() {
+  if (sessionWarningModal) {
+    sessionWarningModal.remove();
+    sessionWarningModal = null;
+  }
+  resetSessionTimer();
+}
+
+function refreshSession() {
+  const token = localStorage.getItem('medbuddy_token');
+  if (!token) return;
+  
+  fetch(`${API}/auth/refresh-session`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}` }
+  }).catch(() => {});
+}
+
+function autoLogout() {
+  closeSessionWarning();
+  doAutoLogout();
+}
+
+function doAutoLogout() {
+  const token = localStorage.getItem('medbuddy_token');
+  if (token) {
+    fetch(`${API}/auth/logout`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    }).catch(() => {});
+  }
+  localStorage.removeItem('medbuddy_logged_in');
+  localStorage.removeItem('medbuddy_token');
+  localStorage.removeItem('medbuddy_user');
+  window.location.replace('/login.html');
+}
+
+function initSessionTimeout() {
+  const events = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+  events.forEach(event => {
+    document.addEventListener(event, resetSessionTimer, { passive: true });
+  });
+  resetSessionTimer();
 }
 
 // ── Dark Mode ───────────────────────────────────────────
@@ -806,9 +942,7 @@ async function saveAnalysisToServer(data) {
       },
       body: JSON.stringify({ analysis: data })
     });
-    console.log('[Aushadh AI] Analysis synced to MongoDB');
   } catch(e) {
-    console.error('[Aushadh AI] Failed to sync analysis:', e);
   }
 }
 
@@ -825,9 +959,7 @@ async function saveAnalysisHistoryToServer(history) {
       },
       body: JSON.stringify({ history })
     });
-    console.log('[Aushadh AI] Analysis history synced to MongoDB');
   } catch(e) {
-    console.error('[Aushadh AI] Failed to sync analysis history:', e);
   }
 }
 
@@ -844,11 +976,7 @@ async function saveMedicationsToServer(medications) {
       },
       body: JSON.stringify({ medications })
     });
-    if (response.ok) {
-      console.log('[Aushadh AI] Medications synced to MongoDB');
-    }
   } catch(e) {
-    console.error('[Aushadh AI] Failed to sync medications:', e);
   }
 }
 function getAnalysis() {
@@ -859,6 +987,8 @@ function getAnalysis() {
     localStorage.setItem('medbuddy_analysis', backup);
     return JSON.parse(backup);
   }
+  // Check for demo data (not saved to any storage)
+  if (window.DEMO_DATA) return window.DEMO_DATA;
   return null;
 }
 
@@ -873,16 +1003,34 @@ async function loadAnalysisFromServer() {
     if (response.ok) {
       const data = await response.json();
       if (data.analysis) {
-        localStorage.setItem('medbuddy_analysis', JSON.stringify(data.analysis));
-        sessionStorage.setItem('medbuddy_analysis_backup', JSON.stringify(data.analysis));
         return data.analysis;
       }
     }
   } catch(e) {
-    console.error('[Aushadh AI] Failed to load analysis from server:', e);
   }
   return null;
 }
+
+async function loadHistoryFromServer() {
+  try {
+    const token = localStorage.getItem('medbuddy_token');
+    if (!token) return null;
+    
+    const response = await fetch(`${API}/auth/analysis/history`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (response.ok) {
+      const data = await response.json();
+      if (data.history && data.history.length > 0) {
+        localStorage.setItem('medbuddy_history', JSON.stringify(data.history));
+        return data.history;
+      }
+    }
+  } catch(e) {
+  }
+  return null;
+}
+
 function clearAnalysis() {
   localStorage.removeItem('medbuddy_analysis');
   sessionStorage.removeItem('medbuddy_analysis_backup');
@@ -910,9 +1058,32 @@ async function loadHistoryFromServer() {
       }
     }
   } catch(e) {
-    console.error('[Aushadh AI] Failed to load history from server:', e);
   }
   return null;
+}
+
+// ── API: Clear all user data ───────────────────────────────
+async function apiClearAllData() {
+  const token = localStorage.getItem('medbuddy_token');
+  if (!token) return false;
+  
+  try {
+    const res = await fetch(`${API}/auth/clear-all-data`, {
+      method: 'POST',
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!res.ok) {
+      return false;
+    }
+    
+    return res.ok;
+  } catch(e) {
+    return false;
+  }
 }
 
 function loadHistoryEntry(id) {
@@ -945,73 +1116,63 @@ async function apiChatStarters(context, language) {
 }
 
 // ── API: Analyse file ─────────────────────────────────
-async function apiAnalyseFile(file, age, language) {
-  console.log(`[Aushadh AI] Uploading file: ${file.name}, size: ${file.size} bytes, type: ${file.type}`);
-  console.log(`[Aushadh AI] Language param: ${language}`);
+async function apiAnalyseFile(file, age, language, signal = null) {
   const form = new FormData();
   form.append('file', file);
   if (age) form.append('age', age);
   form.append('language', language || 'English');
   
   try {
-    const res = await fetch(`${API}/analyse/file`, { method: 'POST', body: form });
-    console.log(`[Aushadh AI] Response status: ${res.status}`);
+    const res = await fetch(`${API}/analyse/file`, { method: 'POST', body: form, signal });
     
     if (!res.ok) {
       let errorMsg = 'Analysis failed';
       try {
         const e = await res.json();
         errorMsg = e.detail || e.message || errorMsg;
-        console.error(`[Aushadh AI] Error response: ${JSON.stringify(e)}`);
       } catch (jsonErr) {
-        // If JSON parsing fails, get text
         const text = await res.text();
         errorMsg = text || errorMsg;
-        console.error(`[Aushadh AI] Error response (text): ${text}`);
       }
       throw new Error(errorMsg);
     }
     
     const result = await res.json();
-    console.log(`[Aushadh AI] Analysis result received`);
     return result;
   } catch (err) {
-    console.error(`[Aushadh AI] Upload error: ${err.message}`);
+    if (err.name === 'AbortError') {
+      throw err;
+    }
     throw err;
   }
 }
-
-// ── API: Analyse medical image (X-ray, MRI, CT) ────────
-async function apiAnalyseMedicalImage(file, age, language, imageType) {
-  console.log(`[Aushadh AI] Uploading medical image: ${file.name}, type: ${imageType}`);
+async function apiAnalyseMedicalImage(file, age, language, imageType = null, signal = null) {
   const form = new FormData();
   form.append('file', file);
   if (age) form.append('age', age);
   form.append('language', language || 'English');
-  form.append('image_type', imageType || 'X-ray');
+  if (imageType) form.append('image_type', imageType);
   
   try {
-    const res = await fetch(`${API}/analyse/medical-image`, { method: 'POST', body: form });
-    console.log(`[Aushadh AI] Response status: ${res.status}`);
+    const res = await fetch(`${API}/analyse/medical-image`, { method: 'POST', body: form, signal });
     
     if (!res.ok) {
       const e = await res.json();
-      console.error(`[Aushadh AI] Error response: ${JSON.stringify(e)}`);
       throw new Error(e.detail || 'Medical image analysis failed');
     }
     
     const result = await res.json();
-    console.log(`[Aushadh AI] Medical image analysis result received`);
     return result;
   } catch (err) {
-    console.error(`[Aushadh AI] Medical image upload error: ${err.message}`);
+    if (err.name === 'AbortError') {
+      throw err;
+    }
     throw err;
   }
 }
 
 // ── API: Analyse text ─────────────────────────────────
 async function apiAnalyseText(text, age, language) {
-  console.log(`[Aushadh AI] Analyzing text, length: ${text.length} chars`);
   const form = new FormData();
   form.append('text', text);
   if (age) form.append('age', age);
@@ -1019,7 +1180,6 @@ async function apiAnalyseText(text, age, language) {
   
   try {
     const res = await fetch(`${API}/analyse/text`, { method: 'POST', body: form });
-    console.log(`[Aushadh AI] Response status: ${res.status}`);
     
     if (!res.ok) {
       const e = await res.json();
@@ -1028,7 +1188,6 @@ async function apiAnalyseText(text, age, language) {
     
     return await res.json();
   } catch (err) {
-    console.error(`[Aushadh AI] Text analysis error: ${err.message}`);
     throw err;
   }
 }
@@ -1056,7 +1215,6 @@ async function apiChat(message, history, context, language) {
     }
     return res.json();
   } catch (e) {
-    console.error('apiChat error:', e);
     throw e;
   }
 }

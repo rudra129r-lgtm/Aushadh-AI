@@ -406,8 +406,13 @@ async def analyse_pdf(data: bytes, age: str, language: str) -> dict:
         raise Exception(str(e))
 
 
-async def analyse_medical_image(data: bytes, media_type: str, age: str, language: str, image_type: str = "X-ray") -> dict:
+async def analyse_medical_image(data: bytes, media_type: str, age: str, language: str, image_type: str = None) -> dict:
     """Analyze X-ray, MRI, CT scan - Azure primary, Gemini fallback, Groq last"""
+    
+    # If no image_type provided, let AI auto-detect
+    if not image_type:
+        image_type = "auto-detect"
+        print(f"[Aushadh AI] No image type specified, will auto-detect from image content")
     
     # First try with Azure (primary)
     if AZURE_VISION_KEY and AZURE_VISION_ENDPOINT:
@@ -544,9 +549,9 @@ async def _analyse_with_gemini(data: bytes, media_type: str, age: str, language:
     prompt = f"""You are an expert radiologist analyzing medical images.
 
 Patient age: {age or 'Not specified'}
-Image type: {image_type}
+Image type: {image_type if image_type != 'auto-detect' else 'Detect the image type from the image (X-ray, MRI, CT, Ultrasound, etc.)'}
 
-TASK: Analyze this medical image and provide a detailed report in JSON format.
+TASK: First identify what type of medical image this is, then analyze it and provide a detailed report in JSON format.
 
 Output ONLY this exact JSON structure:
 {{

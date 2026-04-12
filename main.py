@@ -8,6 +8,8 @@ import logging
 from pathlib import Path
 from dotenv import load_dotenv
 
+from app.routers import auth, analyse, chat, export, profile
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -60,6 +62,7 @@ app.include_router(analyse.router, prefix="/api", tags=["Analysis"])
 app.include_router(chat.router,    prefix="/api", tags=["Chat"])
 app.include_router(export.router,  prefix="/api", tags=["Export"])
 app.include_router(auth.router,    prefix="/api", tags=["Auth"])
+app.include_router(profile.router, prefix="/api", tags=["Profile"])
 
 STATIC_FILES = [
     "index.html", "login.html", "dashboard.html", "documents.html", 

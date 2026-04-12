@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 from app.services import claude_service
 import requests, os, json
@@ -30,10 +30,10 @@ STATIC_STARTERS_HI = [
 
 class ChatMessage(BaseModel):
     role: str
-    content: str
+    content: str = Field(..., max_length=4000)
 
 class ChatRequest(BaseModel):
-    message: str
+    message: str = Field(..., max_length=2000)
     history: list[ChatMessage] = []
     context: Optional[dict] = None
     language: Optional[str] = "English"
@@ -101,9 +101,12 @@ async def starters(req: StarterRequest = StarterRequest()):
             raw = raw.split("```")[1].split("```")[0].strip()
             if raw.startswith("json"):
                 raw = raw[4:].strip()
-        questions = json.loads(raw)
-        if isinstance(questions, list) and len(questions) >= 2:
-            return {"questions": questions[:4]}
+        try:
+            questions = json.loads(raw)
+            if isinstance(questions, list) and len(questions) >= 2:
+                return {"questions": questions[:4]}
+        except json.JSONDecodeError:
+            pass
     except Exception as e:
         print(f"[Aushadh AI] Dynamic starters failed: {e}")
     starters = STATIC_STARTERS_HI if language.lower() == "hindi" else STATIC_STARTERS_EN
@@ -116,7 +119,7 @@ async def starters_get():
 
 
 class TranslateRequest(BaseModel):
-    text: str
+    text: str = Field(..., max_length=5000)
     target_lang: str = "Hindi"
 
 

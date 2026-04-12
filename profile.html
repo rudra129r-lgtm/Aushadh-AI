@@ -154,10 +154,6 @@
             <img id="profile-avatar-img" class="w-full h-full object-cover hidden" alt="Avatar" />
             <span class="text-white font-black text-2xl md:text-4xl" id="profile-initials">?</span>
           </div>
-          <button onclick="document.getElementById('avatar-input').click()" class="absolute bottom-0 right-0 w-8 h-8 md:w-9 md:h-9 bg-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
-            <span class="material-symbols-outlined text-primary text-xs md:text-sm">photo_camera</span>
-          </button>
-          <input type="file" id="avatar-input" accept="image/*" class="hidden" onchange="handleAvatarUpload(event)" />
         </div>
         <div class="text-center md:text-left flex-1">
           <h1 class="font-headline text-2xl md:text-3xl font-black text-white mb-1" id="profile-name">Loading...</h1>
@@ -198,6 +194,47 @@
 
     <!-- Personal Info Form -->
     <div class="lg:col-span-2 bg-surface-container-lowest rounded-2xl p-7 border border-outline-variant/10 shadow-sm">
+      <!-- Profile Photo Section -->
+      <div class="mb-8 p-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl border border-primary/20">
+        <h3 class="font-headline font-bold text-lg text-on-surface mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">photo_camera</span>
+          Profile Photo
+        </h3>
+        <div class="flex items-center gap-6">
+          <!-- Current Photo Preview -->
+          <div class="relative">
+            <div id="profile-photo-container" class="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-primary-container flex items-center justify-center shadow-lg overflow-hidden">
+              <span id="profile-photo-initial" class="text-white text-3xl font-bold">P</span>
+            </div>
+            <div id="profile-photo-preview" class="hidden w-24 h-24 rounded-full overflow-hidden shadow-lg">
+              <img id="profile-preview-img" class="w-full h-full object-cover" alt="Profile">
+            </div>
+          </div>
+          <!-- Upload Controls -->
+          <div class="flex-1">
+            <p class="text-sm text-on-surface-variant mb-3">Upload a profile photo to personalize your account</p>
+            <div class="flex gap-3">
+              <label for="profile-photo-input" class="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl font-bold text-sm hover:bg-primary/90 transition-colors">
+                <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">upload</span>
+                <span data-i18n="upload_now">Upload Photo</span>
+              </label>
+              <input type="file" id="profile-photo-input" class="hidden" accept="image/jpeg,image/jpg,image/png" onchange="handleProfilePhotoUpload(event)">
+              <button id="remove-photo-btn" onclick="removeProfilePhoto()" class="hidden px-4 py-2.5 border-2 border-error/30 text-error rounded-xl font-bold text-sm hover:bg-error/10 transition-colors">
+                <span class="material-symbols-outlined text-sm">delete</span>
+              </button>
+            </div>
+            <p class="text-xs text-outline mt-2">JPG or PNG. Max 5MB. Image will be resized to 200x200.</p>
+          </div>
+        </div>
+        <!-- Loading state -->
+        <div id="photo-upload-loading" class="hidden mt-4 flex items-center gap-2 text-primary">
+          <span class="material-symbols-outlined animate-spin">sync</span>
+          <span class="text-sm font-medium">Uploading...</span>
+        </div>
+        <!-- Status message -->
+        <div id="photo-status-msg" class="hidden mt-4 p-3 rounded-lg text-sm font-medium"></div>
+      </div>
+
       <div class="flex items-center justify-between mb-6">
         <h2 class="font-headline font-bold text-xl text-on-surface flex items-center gap-2">
           <span class="material-symbols-outlined text-primary text-sm">badge</span>
@@ -422,17 +459,38 @@
   <a class="flex flex-col items-center text-[#006068] bg-[#007B85]/10 rounded-2xl px-4 py-1" href="profile.html"><span class="material-symbols-outlined">person</span><span class="text-[10px] uppercase mt-1" data-i18n="nav_profile">Profile</span></a>
 </nav>
 
-<script src="medbuddy.js"></script>
+<script src="medbuddy.js?v=12345"></script>
 <script>
 let isEditing = false;
 
+// Check if data exists when page loads - show fresh if no data
+document.addEventListener('DOMContentLoaded', function() {
+  const hasAnalysis = localStorage.getItem('medbuddy_analysis');
+  const hasHistory = localStorage.getItem('medbuddy_history');
+  const hasMeds = localStorage.getItem('medbuddy_notifications');
+  
+  // If no data at all, show fresh profile
+  if (!hasAnalysis && !hasHistory && !hasMeds) {
+    console.log('[Profile] No data found, showing fresh profile...');
+    loadProfileForceFresh();
+    return;
+  }
+  
+  // Normal load
+  loadProfile();
+});
+
 // ── Load profile ───────────────────────────────────────
 async function loadProfile() {
+  // First try to get fresh profile data from server
+  await fetchProfileDataFromServer();
+  
   const user = getUser();
   const profile = JSON.parse(localStorage.getItem('medbuddy_profile') || '{}');
   
   let analysis = getAnalysis();
-  if (localStorage.getItem('medbuddy_logged_in')) {
+  // Skip loading from server if no local data
+  if (localStorage.getItem('medbuddy_analysis') && localStorage.getItem('medbuddy_logged_in')) {
     const serverData = await loadAnalysisFromServer();
     if (serverData) analysis = serverData;
   }
@@ -444,11 +502,11 @@ async function loadProfile() {
   document.getElementById('profile-name').textContent = name;
   document.getElementById('profile-email').textContent = user.email || '—';
 
-  // Avatar
+  // Avatar - use profile_photo instead of avatar
   const avatarImg = document.getElementById('profile-avatar-img');
   const initialsEl = document.getElementById('profile-initials');
-  if (user.avatar) {
-    avatarImg.src = user.avatar;
+  if (user.profile_photo) {
+    avatarImg.src = user.profile_photo;
     avatarImg.classList.remove('hidden');
     initialsEl.classList.add('hidden');
   } else {
@@ -523,32 +581,85 @@ function cancelEdit() {
 }
 
 // ── Save profile ───────────────────────────────────────
-function saveProfile() {
+async function saveProfile() {
   const fname = document.getElementById('f-fname').value.trim();
   const lname = document.getElementById('f-lname').value.trim();
   const fullName = fname + (lname ? ' ' + lname : '');
 
-  // Update user object
-  const user = getUser();
-  user.name = fullName;
-  user.email = document.getElementById('f-email').value.trim();
-  user.age = document.getElementById('f-age').value;
-  user.lang = document.getElementById('f-lang').value;
-  localStorage.setItem('medbuddy_user', JSON.stringify(user));
-
-  // Save extended profile
-  const profile = {
+  // Get form values
+  const profileData = {
+    name: fullName,
+    age: document.getElementById('f-age').value,
     phone: document.getElementById('f-phone').value,
     city: document.getElementById('f-city').value,
-    blood: document.getElementById('f-blood').value,
+    blood_group: document.getElementById('f-blood').value,
+    language: document.getElementById('f-lang').value,
     allergies: document.getElementById('f-allergies').value,
-    conditions: document.getElementById('f-conditions').value,
-    ec_name: document.getElementById('f-ec-name').value,
-    ec_phone: document.getElementById('f-ec-phone').value,
-    ec_rel: document.getElementById('f-ec-rel').value,
-    doc_name: document.getElementById('f-doc-name').value,
-    doc_spec: document.getElementById('f-doc-spec').value,
-    doc_hosp: document.getElementById('f-doc-hosp').value,
+    medical_conditions: document.getElementById('f-conditions').value,
+    emergency_name: document.getElementById('f-ec-name').value,
+    emergency_phone: document.getElementById('f-ec-phone').value,
+    emergency_relation: document.getElementById('f-ec-rel').value,
+    doctor_name: document.getElementById('f-doc-name').value,
+    doctor_specialty: document.getElementById('f-doc-spec').value,
+    doctor_hospital: document.getElementById('f-doc-hosp').value
+  };
+
+  const token = localStorage.getItem('medbuddy_token');
+  
+  // Save to MongoDB first
+  try {
+    const res = await fetch(`${API}/profile/data`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(profileData)
+    });
+    
+    if (!res.ok) {
+      throw new Error('Failed to save to server');
+    }
+    
+    console.log('[Profile] Saved to MongoDB successfully');
+  } catch (err) {
+    console.error('[Profile] Error saving to MongoDB:', err);
+    // Continue with localStorage save anyway
+  }
+
+  // Update local user object
+  const user = getUser();
+  user.name = profileData.name;
+  user.email = document.getElementById('f-email').value.trim();
+  user.age = profileData.age;
+  user.lang = profileData.language;
+  // Add other fields
+  user.phone = profileData.phone;
+  user.city = profileData.city;
+  user.blood_group = profileData.blood_group;
+  user.allergies = profileData.allergies;
+  user.medical_conditions = profileData.medical_conditions;
+  user.emergency_name = profileData.emergency_name;
+  user.emergency_phone = profileData.emergency_phone;
+  user.emergency_relation = profileData.emergency_relation;
+  user.doctor_name = profileData.doctor_name;
+  user.doctor_specialty = profileData.doctor_specialty;
+  user.doctor_hospital = profileData.doctor_hospital;
+  localStorage.setItem('medbuddy_user', JSON.stringify(user));
+
+  // Also save to medbuddy_profile for other pages
+  const profile = {
+    phone: profileData.phone,
+    city: profileData.city,
+    blood: profileData.blood_group,
+    allergies: profileData.allergies,
+    conditions: profileData.medical_conditions,
+    ec_name: profileData.emergency_name,
+    ec_phone: profileData.emergency_phone,
+    ec_rel: profileData.emergency_relation,
+    doc_name: profileData.doctor_name,
+    doc_spec: profileData.doctor_specialty,
+    doc_hosp: profileData.doctor_hospital,
     analyses_count: JSON.parse(localStorage.getItem('medbuddy_profile') || '{}').analyses_count || 0,
   };
   localStorage.setItem('medbuddy_profile', JSON.stringify(profile));
@@ -560,12 +671,86 @@ function saveProfile() {
 }
 
 // ── Clear analysis data ────────────────────────────────
-function clearData() {
+async function clearData() {
   if (confirm('Clear all analysis data? Your profile will remain.')) {
-    clearAnalysis();
-    loadProfile();
-    showToast('🗑️ Analysis data cleared');
+    try {
+      await apiClearAllData();
+    } catch(e) {
+      console.error('Failed to clear server data:', e);
+    }
+    
+    // Clear ALL localStorage items
+    localStorage.removeItem('medbuddy_analysis');
+    localStorage.removeItem('medbuddy_history');
+    localStorage.removeItem('medbuddy_notifications');
+    localStorage.removeItem('medbuddy_profile');
+    sessionStorage.removeItem('medbuddy_analysis_backup');
+    
+    // Reload profile with force fresh data
+    await loadProfileForceFresh();
+    showToast('🗑️ All data cleared successfully');
   }
+}
+
+// Force fresh load without server data
+async function loadProfileForceFresh() {
+  const user = getUser();
+  const profile = {};
+  
+  // Clear session storage too
+  sessionStorage.removeItem('medbuddy_analysis_backup');
+  
+  // Name & initials
+  const name = user.name || 'User';
+  const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  document.getElementById('profile-initials').textContent = initials;
+  document.getElementById('profile-name').textContent = name;
+  document.getElementById('profile-email').textContent = user.email || '—';
+
+  // Avatar
+  const avatarImg = document.getElementById('profile-avatar-img');
+  const initialsEl = document.getElementById('profile-initials');
+  if (user.avatar) {
+    avatarImg.src = user.avatar;
+    avatarImg.classList.remove('hidden');
+    initialsEl.classList.add('hidden');
+  } else {
+    avatarImg.src = '';
+    avatarImg.classList.add('hidden');
+    initialsEl.classList.remove('hidden');
+  }
+
+  // Badges - reset to defaults
+  document.getElementById('profile-age-badge').textContent = user.age ? `Age: ${user.age}` : 'Age: Not set';
+  document.getElementById('profile-lang-badge').textContent = user.lang === 'hindi' ? '🌐 Hindi' : '🌐 English';
+  document.getElementById('profile-member-badge').textContent = user.isGuest ? 'Guest' : 'Member';
+
+  // Stats - all zeros now
+  document.getElementById('stat-analyses').textContent = '0';
+  document.getElementById('stat-meds').textContent = '0';
+  document.getElementById('stat-tasks').textContent = '0';
+  document.getElementById('stat-confidence').textContent = '—';
+
+  // Form fields - clear
+  const nameParts = name.split(' ');
+  document.getElementById('f-fname').value = nameParts[0] || '';
+  document.getElementById('f-lname').value = nameParts.slice(1).join(' ') || '';
+  document.getElementById('f-email').value = user.email || '';
+  document.getElementById('f-age').value = user.age || '';
+  document.getElementById('f-lang').value = user.lang || 'english';
+
+  // Extended profile - clear
+  document.getElementById('f-phone').value = '';
+  document.getElementById('f-city').value = '';
+  document.getElementById('f-blood').value = '';
+  document.getElementById('f-allergies').value = '';
+  document.getElementById('f-conditions').value = '';
+  document.getElementById('f-ec-name').value = '';
+  document.getElementById('f-ec-phone').value = '';
+  document.getElementById('f-ec-rel').value = '';
+  document.getElementById('f-doc-name').value = '';
+  document.getElementById('f-doc-spec').value = '';
+  document.getElementById('f-doc-hosp').value = '';
 }
 
 // ── Export data ────────────────────────────────────────
@@ -773,6 +958,291 @@ setTimeout(() => {
   document.getElementById('lang-en').classList.toggle('active', lang === 'en');
   document.getElementById('lang-hi').classList.toggle('active', lang === 'hi');
 }, 100);
+
+// ── Profile Photo Functions ─────────────────────────────────
+// API is already defined in medbuddy.js
+
+async function handleProfilePhotoUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  // Validate file type
+  if (!['image/jpeg', 'image/jpg', 'image/png'].includes(file.type)) {
+    showPhotoStatus('Only JPG and PNG images are allowed', 'error');
+    return;
+  }
+  
+  // Validate file size (5MB max)
+  if (file.size > 5 * 1024 * 1024) {
+    showPhotoStatus('File too large. Maximum size is 5MB.', 'error');
+    return;
+  }
+  
+  // Show loading
+  document.getElementById('photo-upload-loading').classList.remove('hidden');
+  
+  // Create form data
+  const form = new FormData();
+  form.append('file', file);
+  
+  const token = localStorage.getItem('medbuddy_token');
+  
+  try {
+    const res = await fetch(`${API}/profile/photo`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: form
+    });
+    
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Upload failed');
+    }
+    
+    const data = await res.json();
+    
+    // Update local user object
+    const user = getUser();
+    user.profile_photo = data.profile_photo;
+    localStorage.setItem('medbuddy_user', JSON.stringify(user));
+    
+    // Update UI
+    updateProfilePhotoUI(data.profile_photo);
+    showPhotoStatus('Photo uploaded successfully!', 'success');
+    
+  } catch (err) {
+    console.error('Photo upload error:', err);
+    showPhotoStatus('Upload failed: ' + err.message, 'error');
+  } finally {
+    document.getElementById('photo-upload-loading').classList.add('hidden');
+  }
+}
+
+function showPhotoStatus(msg, type) {
+  const statusEl = document.getElementById('photo-status-msg');
+  statusEl.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
+  statusEl.textContent = msg;
+  
+  if (type === 'success') {
+    statusEl.classList.add('bg-green-100', 'text-green-800');
+  } else {
+    statusEl.classList.add('bg-red-100', 'text-red-800');
+  }
+  
+  setTimeout(() => {
+    statusEl.classList.add('hidden');
+  }, 5000);
+}
+
+function updateProfilePhotoUI(photoData) {
+  const container = document.getElementById('profile-photo-container');
+  const preview = document.getElementById('profile-photo-preview');
+  const previewImg = document.getElementById('profile-preview-img');
+  const initial = document.getElementById('profile-photo-initial');
+  const removeBtn = document.getElementById('remove-photo-btn');
+  
+  if (photoData) {
+    // Show image
+    container.classList.add('hidden');
+    preview.classList.remove('hidden');
+    previewImg.src = photoData;
+    removeBtn.classList.remove('hidden');
+    
+    // Also update header avatar in dashboard
+    const headerAvatar = document.querySelector('.profile-btn');
+    if (headerAvatar) {
+      headerAvatar.innerHTML = `<img src="${photoData}" class="w-full h-full object-cover rounded-full" alt="Profile">`;
+    }
+  }
+}
+
+function initProfilePhotoUI() {
+  // First try to fetch fresh from server, then fallback to localStorage
+  fetchProfilePhotoFromServer();
+}
+
+async function fetchProfilePhotoFromServer() {
+  const token = localStorage.getItem('medbuddy_token');
+  if (!token) return;
+  
+  try {
+    const res = await fetch(`${API}/profile/photo`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    if (res.ok) {
+      const data = await res.json();
+      const photoData = data.profile_photo;
+      
+      console.log('[Profile] Fetched from server:', photoData ? 'Photo exists' : 'No photo');
+      
+      // Update localStorage with fresh data from server
+      const user = getUser();
+      user.profile_photo = photoData;
+      localStorage.setItem('medbuddy_user', JSON.stringify(user));
+      
+      if (photoData) {
+        updateProfilePhotoUI(photoData);
+      } else {
+        // Show initial if no photo from server
+        const email = user?.email || '';
+        document.getElementById('profile-photo-initial').textContent = email.split('@')[0].charAt(0).toUpperCase();
+        document.getElementById('remove-photo-btn').classList.add('hidden');
+      }
+      return;
+    }
+  } catch (err) {
+    console.error('[Profile] Error fetching photo from server:', err);
+  }
+  
+  // Fallback to localStorage if server fails
+  const user = getUser();
+  const photoData = user?.profile_photo;
+  
+  if (photoData) {
+    updateProfilePhotoUI(photoData);
+  } else {
+    const email = user?.email || '';
+    document.getElementById('profile-photo-initial').textContent = email.split('@')[0].charAt(0).toUpperCase();
+  }
+}
+
+async function removeProfilePhoto() {
+  if (!confirm('Are you sure you want to remove your profile photo?')) return;
+  
+  document.getElementById('photo-upload-loading').classList.remove('hidden');
+  
+  const token = localStorage.getItem('medbuddy_token');
+  
+  try {
+    const res = await fetch(`${API}/profile/photo`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    if (!res.ok) throw new Error('Delete failed');
+    
+    // Update local user object
+    const user = getUser();
+    user.profile_photo = null;
+    localStorage.setItem('medbuddy_user', JSON.stringify(user));
+    
+    // Reset UI to initial
+    const container = document.getElementById('profile-photo-container');
+    const preview = document.getElementById('profile-photo-preview');
+    const initial = document.getElementById('profile-photo-initial');
+    const removeBtn = document.getElementById('remove-photo-btn');
+    
+    container.classList.remove('hidden');
+    preview.classList.add('hidden');
+    removeBtn.classList.add('hidden');
+    
+    const email = user?.email || '';
+    initial.textContent = email.split('@')[0].charAt(0).toUpperCase();
+    
+    // Also update header avatar in dashboard
+    const headerAvatar = document.querySelector('.profile-btn');
+    if (headerAvatar) {
+      const emailInitial = email.split('@')[0].charAt(0).toUpperCase();
+      headerAvatar.innerHTML = `<span class="profile-initial" id="profile-initial">${emailInitial}</span>`;
+    }
+    
+    showPhotoStatus('Photo removed successfully', 'success');
+    
+  } catch (err) {
+    console.error('Photo delete error:', err);
+    showPhotoStatus('Failed to remove photo', 'error');
+  } finally {
+    document.getElementById('photo-upload-loading').classList.add('hidden');
+  }
+}
+
+// Initialize profile photo on page load
+document.addEventListener('DOMContentLoaded', function() {
+  // Wait for medbuddy.js to load
+  setTimeout(initProfilePhotoUI, 200);
+});
+
+// ── Fetch Profile Data from Server ─────────────────────────────────
+async function fetchProfileDataFromServer() {
+  const token = localStorage.getItem('medbuddy_token');
+  if (!token) return;
+  
+  try {
+    const res = await fetch(`${API}/profile/data`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    if (res.ok) {
+      const profileData = await res.json();
+      console.log('[Profile] Fetched profile data from server:', profileData);
+      
+      // Update localStorage with fresh data from server
+      const user = getUser();
+      user.name = profileData.name || user.name || '';
+      user.age = profileData.age || user.age || '';
+      user.phone = profileData.phone || user.phone || '';
+      user.city = profileData.city || user.city || '';
+      user.blood_group = profileData.blood_group || user.blood_group || '';
+      user.language = profileData.language || user.language || 'en';
+      user.allergies = profileData.allergies || user.allergies || '';
+      user.medical_conditions = profileData.medical_conditions || user.medical_conditions || '';
+      user.emergency_name = profileData.emergency_name || user.emergency_name || '';
+      user.emergency_phone = profileData.emergency_phone || user.emergency_phone || '';
+      user.emergency_relation = profileData.emergency_relation || user.emergency_relation || '';
+      user.doctor_name = profileData.doctor_name || user.doctor_name || '';
+      user.doctor_specialty = profileData.doctor_specialty || user.doctor_specialty || '';
+      user.doctor_hospital = profileData.doctor_hospital || user.doctor_hospital || '';
+      // Keep profile_photo if already set
+      user.profile_photo = user.profile_photo || null;
+      
+      localStorage.setItem('medbuddy_user', JSON.stringify(user));
+      
+      // Also update the form fields with fresh data
+      updateFormFieldsFromUser(user);
+    }
+  } catch (err) {
+    console.error('[Profile] Error fetching profile data:', err);
+  }
+}
+
+function updateFormFieldsFromUser(user) {
+  // Update the form fields if they exist
+  const fnameEl = document.getElementById('f-fname');
+  const lnameEl = document.getElementById('f-lname');
+  const ageEl = document.getElementById('f-age');
+  const phoneEl = document.getElementById('f-phone');
+  const cityEl = document.getElementById('f-city');
+  const bloodEl = document.getElementById('f-blood');
+  const langEl = document.getElementById('f-lang');
+  const allergiesEl = document.getElementById('f-allergies');
+  const conditionsEl = document.getElementById('f-conditions');
+  const ecNameEl = document.getElementById('f-ec-name');
+  const ecPhoneEl = document.getElementById('f-ec-phone');
+  const ecRelEl = document.getElementById('f-ec-rel');
+  const docNameEl = document.getElementById('f-doc-name');
+  const docSpecEl = document.getElementById('f-doc-spec');
+  const docHospEl = document.getElementById('f-doc-hosp');
+  
+  if (fnameEl && user.name) {
+    const parts = user.name.split(' ');
+    fnameEl.value = parts[0] || '';
+    if (lnameEl) lnameEl.value = parts.slice(1).join(' ') || '';
+  }
+  if (ageEl) ageEl.value = user.age || '';
+  if (phoneEl) phoneEl.value = user.phone || '';
+  if (cityEl) cityEl.value = user.city || '';
+  if (bloodEl) bloodEl.value = user.blood_group || '';
+  if (langEl) langEl.value = user.language || 'english';
+  if (allergiesEl) allergiesEl.value = user.allergies || '';
+  if (conditionsEl) conditionsEl.value = user.medical_conditions || '';
+  if (ecNameEl) ecNameEl.value = user.emergency_name || '';
+  if (ecPhoneEl) ecPhoneEl.value = user.emergency_phone || '';
+  if (ecRelEl) ecRelEl.value = user.emergency_relation || '';
+  if (docNameEl) docNameEl.value = user.doctor_name || '';
+  if (docSpecEl) docSpecEl.value = user.doctor_specialty || '';
+  if (docHospEl) docHospEl.value = user.doctor_hospital || '';
+}
 </script>
 </body>
 </html>

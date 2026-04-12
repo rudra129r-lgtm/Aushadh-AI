@@ -489,32 +489,22 @@
 <script>
   // Override medbuddy.js saveUser to also save token
   function saveUser(data, token) {
-    console.log('=== saveUser (login override) START ===');
-    console.log('token:', token ? token.substring(0, 20) + '...' : 'NONE');
-    
     localStorage.setItem('medbuddy_user', JSON.stringify(data));
     if (token) {
       localStorage.setItem('medbuddy_token', token);
     }
-    console.log('=== saveUser END ===');
   }
 
   /* Clear storage on login page - check if just logged in successfully */
   const justLoggedIn = sessionStorage.getItem('just_logged_in');
   
-  // Always load from server after login - preserve user data
-  // This ensures user can access their previous records on dashboard
+  // Only clear auth-related items on fresh login page load (not analysis/history)
+  // This preserves user's previous analysis data
   if (!justLoggedIn) {
-    console.log('Fresh login page - clearing storage');
     localStorage.removeItem('medbuddy_logged_in');
     localStorage.removeItem('medbuddy_token');
     localStorage.removeItem('medbuddy_user');
-    localStorage.removeItem('medbuddy_analysis');
-    localStorage.removeItem('medbuddy_history');
-    localStorage.removeItem('medbuddy_notifications');
     sessionStorage.clear();
-  } else {
-    console.log('Just logged in - preserving storage');
   }
   
   // Always clear the just_logged_in flag after checking
@@ -666,7 +656,6 @@
       body: JSON.stringify({ email, password: pw })
     })
     .then(res => {
-      console.log('Login response status:', res.status);
       if (!res.ok) {
         if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined text-sm">login</span> Sign In'; }
         return res.json().then(data => {
@@ -676,34 +665,48 @@
       return res.json();
     })
     .then(data => {
-      console.log('Login response data:', data);
+      console.log('[LOGIN] Full response:', data);
+      console.log('[LOGIN] User object:', data.user);
+      console.log('[LOGIN] profile_photo:', data.user?.profile_photo);
+      
       if (!data || !data.access_token) {
-        console.log('No access_token in response');
         showError('Login failed. Please try again.');
         if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined text-sm">login</span> Sign In'; }
         return Promise.reject(new Error('No token'));
       }
-      console.log('=== LOGIN SUCCESS ===');
-      console.log('User:', data.user);
-      console.log('Token:', data.access_token.substring(0, 20) + '...');
       
-      // Save ALL auth data BEFORE redirect
-      saveUser({ name: email.split('@')[0], email, isGuest: false }, data.access_token);
+      console.log('[LOGIN] Full response:', data);
+      console.log('[LOGIN] User object:', data.user);
+      
+      // Save ALL auth data from server (including profile data from MongoDB)
+      const userData = { 
+        name: data.user?.name || email.split('@')[0], 
+        email, 
+        isGuest: false,
+        profile_photo: data.user?.profile_photo || null,
+        age: data.user?.age || '',
+        phone: data.user?.phone || '',
+        city: data.user?.city || '',
+        blood_group: data.user?.blood_group || '',
+        language: data.user?.language || 'en',
+        allergies: data.user?.allergies || '',
+        medical_conditions: data.user?.medical_conditions || '',
+        emergency_name: data.user?.emergency_name || '',
+        emergency_phone: data.user?.emergency_phone || '',
+        emergency_relation: data.user?.emergency_relation || '',
+        doctor_name: data.user?.doctor_name || '',
+        doctor_specialty: data.user?.doctor_specialty || '',
+        doctor_hospital: data.user?.doctor_hospital || ''
+      };
+      console.log('[LOGIN] Saving user data with profile:', userData);
+      saveUser(userData, data.access_token);
       localStorage.setItem('medbuddy_logged_in', 'true');
       sessionStorage.setItem('just_logged_in', 'true');
       sessionStorage.setItem('fresh_login_after_logout', 'true'); // Mark as fresh login for clearing
       
-      // Verify storage is set correctly
-      const savedToken = localStorage.getItem('medbuddy_token');
-      const savedLoggedIn = localStorage.getItem('medbuddy_logged_in');
-      console.log('Verification - token:', savedToken ? savedToken.substring(0, 20) + '...' : 'NOT SAVED');
-      console.log('Verification - logged_in:', savedLoggedIn);
-      
-      console.log('Redirecting NOW to /dashboard.html...');
       window.location.replace('/dashboard.html');
     })
     .catch(err => {
-      console.error('Login error:', err);
       if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined text-sm">login</span> Sign In'; }
       showError(err.message || 'Connection error. Please try again.');
     });
@@ -715,8 +718,6 @@
     const lname = document.getElementById('signup-lname').value.trim();
     const email = document.getElementById('signup-email').value.trim();
     const pw    = document.getElementById('signup-password').value;
-    const age   = document.getElementById('signup-age').value;
-    const lang  = document.getElementById('signup-lang').value;
     const terms = document.getElementById('signup-terms').checked;
     let valid   = true;
 
@@ -733,19 +734,63 @@
       body: JSON.stringify({ email, password: pw })
     })
     .then(res => {
-      console.log('Register response:', res.status, res.statusText);
       if (!res.ok) return res.json().then(d => { throw new Error(d.detail || 'Registration failed'); });
       return res.json();
     })
     .then(data => {
-      console.log('Register success:', data);
-      saveUser({ name: fname + (lname ? ' ' + lname : ''), email, age, lang, isGuest: false }, data.access_token);
-      localStorage.setItem('medbuddy_logged_in', 'true');
-      sessionStorage.setItem('just_logged_in', 'true');
-      window.location.replace('/dashboard.html');
+      // After registration, also save profile data to MongoDB
+      const ageInput = document.getElementById('signup-age');
+      const langInput = document.getElementById('signup-lang');
+      const age = ageInput ? ageInput.value : '';
+      const lang = langInput ? langInput.value : 'en';
+      
+      const profileData = {
+        name: fname + (lname ? ' ' + lname : ''),
+        age: age,
+        language: lang
+      };
+      
+      // Save to MongoDB
+      fetch(`${API}/profile/data`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${data.access_token}`
+        },
+        body: JSON.stringify(profileData)
+      }).then(() => {
+        // Continue with login flow
+        saveUser({ 
+          name: fname + (lname ? ' ' + lname : ''), 
+          email, 
+          age, 
+          lang, 
+          isGuest: false,
+          profile_photo: null,
+          phone: '', city: '', blood_group: '',
+          allergies: '', medical_conditions: '',
+          emergency_name: '', emergency_phone: '', emergency_relation: '',
+          doctor_name: '', doctor_specialty: '', doctor_hospital: ''
+        }, data.access_token);
+        localStorage.setItem('medbuddy_logged_in', 'true');
+        sessionStorage.setItem('just_logged_in', 'true');
+        window.location.replace('/dashboard.html');
+      }).catch(err => {
+        console.error('[SIGNUP] Error saving profile:', err);
+        // Continue anyway
+        saveUser({ 
+          name: fname + (lname ? ' ' + lname : ''), 
+          email, 
+          age, 
+          lang, 
+          isGuest: false,
+          profile_photo: null
+        }, data.access_token);
+        localStorage.setItem('medbuddy_logged_in', 'true');
+        window.location.replace('/dashboard.html');
+      });
     })
     .catch(err => {
-      console.error('Register error:', err);
       alert(err.message || 'Registration failed');
     });
   }

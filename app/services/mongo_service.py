@@ -56,12 +56,21 @@ def _ensure_indexes():
 def _hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
+SESSION_TIMEOUT_MINUTES = 30
+
 def verify_token(token: str):
     try:
         db = get_db()
         user = db.users.find_one({"session_token": token})
         if user:
-            return {"id": str(user["_id"]), "email": user["email"]}
+            session_created_at = user.get("session_created_at")
+            if session_created_at:
+                from datetime import datetime, timedelta
+                expiry_time = session_created_at + timedelta(minutes=SESSION_TIMEOUT_MINUTES)
+                if datetime.now() > expiry_time:
+                    db.users.update_one({"_id": user["_id"]}, {"$set": {"session_token": None, "session_created_at": None}})
+                    return None
+            return {"id": str(user["_id"]), "email": user["email"], "profile_photo": user.get("profile_photo")}
         return None
     except Exception:
         return None
@@ -76,15 +85,48 @@ def login(email: str, password: str):
             raise Exception("Invalid email or password")
         
         import secrets
+        from datetime import datetime
         token = secrets.token_urlsafe(32)
         db.users.update_one(
             {"_id": user["_id"]},
-            {"$set": {"session_token": token}}
+            {"$set": {"session_token": token, "session_created_at": datetime.now()}}
         )
+        
+        # Get all user fields to debug
+        all_keys = list(user.keys())
+        profile_photo = user.get("profile_photo")
+        
+        print(f"[MongoDB] Login - user_id: {user['_id']}")
+        print(f"[MongoDB] User document keys: {all_keys}")
+        print(f"[MongoDB] profile_photo value: {profile_photo}")
+        print(f"[MongoDB] profile_photo type: {type(profile_photo)}")
+        
+        # Build full profile data from MongoDB
+        profile_data = {
+            "name": user.get("name", ""),
+            "age": user.get("age", ""),
+            "phone": user.get("phone", ""),
+            "city": user.get("city", ""),
+            "blood_group": user.get("blood_group", ""),
+            "language": user.get("language", "en"),
+            "allergies": user.get("allergies", ""),
+            "medical_conditions": user.get("medical_conditions", ""),
+            "emergency_name": user.get("emergency_name", ""),
+            "emergency_phone": user.get("emergency_phone", ""),
+            "emergency_relation": user.get("emergency_relation", ""),
+            "doctor_name": user.get("doctor_name", ""),
+            "doctor_specialty": user.get("doctor_specialty", ""),
+            "doctor_hospital": user.get("doctor_hospital", "")
+        }
         
         return {
             "access_token": token,
-            "user": {"id": str(user["_id"]), "email": user["email"]}
+            "user": {
+                "id": str(user["_id"]), 
+                "email": user["email"], 
+                "profile_photo": profile_photo,
+                **profile_data
+            }
         }
     except Exception as e:
         raise Exception(str(e))
@@ -98,24 +140,97 @@ def register(email: str, password: str):
         
         password_hash = _hash_password(password)
         import secrets
+        from datetime import datetime
         token = secrets.token_urlsafe(32)
         
         result = db.users.insert_one({
             "email": email,
             "password_hash": password_hash,
             "session_token": token,
+            "session_created_at": datetime.now(),
             "created_at": None
         })
         
         return {
             "access_token": token,
-            "user": {"id": str(result.inserted_id), "email": email}
+            "user": {
+                "id": str(result.inserted_id), 
+                "email": email, 
+                "profile_photo": None,
+                "name": "", "age": "", "phone": "", "city": "",
+                "blood_group": "", "language": "en", "allergies": "",
+                "medical_conditions": "", "emergency_name": "",
+                "emergency_phone": "", "emergency_relation": "",
+                "doctor_name": "", "doctor_specialty": "", "doctor_hospital": ""
+            }
         }
     except Exception as e:
         raise Exception(str(e))
 
 def logout():
     pass
+
+def refresh_session(token: str):
+    """Refresh session timestamp to extend session"""
+    try:
+        db = get_db()
+        from datetime import datetime
+        result = db.users.update_one(
+            {"session_token": token},
+            {"$set": {"session_created_at": datetime.now()}}
+        )
+        return result.modified_count > 0
+    except Exception:
+        return False
+
+def clear_all_user_data(user_id: str):
+    """Clear all analysis, medications, and history for a user"""
+    try:
+        db = get_db()
+        
+        print(f"[DEBUG] Attempting to clear data for user_id: {user_id}", flush=True)
+        
+        # Step 1: Find the actual user_id from the users collection
+        user_doc = db.users.find_one({"email": user_id})
+        
+        if user_doc:
+            actual_user_id = str(user_doc["_id"])
+            print(f"[DEBUG] Found user in users collection, actual_id: {actual_user_id}", flush=True)
+        else:
+            # Try to find user_id by searching any collection with partial email match
+            print(f"[DEBUG] User not found by email, searching other collections...", flush=True)
+            
+            # Check analyses collection for any matching user
+            test_doc = db.analyses.find_one({})
+            if test_doc and test_doc.get("user_id"):
+                # Check if any document has user_id containing part of email
+                partial = user_id.split('@')[0]
+                match = db.analyses.find_one({"user_id": {"$regex": partial, "$options": "i"}})
+                if match:
+                    actual_user_id = match.get("user_id")
+                    print(f"[DEBUG] Found user_id in analyses: {actual_user_id}", flush=True)
+                else:
+                    print(f"[DEBUG] Could not find user data for: {user_id}", flush=True)
+                    return True  # Return success anyway, no data to clear
+            else:
+                actual_user_id = None
+        
+        if not actual_user_id:
+            print(f"[DEBUG] No data found for user: {user_id}", flush=True)
+            return True
+        
+        # Step 2: Delete using the actual user_id
+        analyses_result = db.analyses.delete_one({"user_id": actual_user_id})
+        history_result = db.analysis_history.delete_one({"user_id": actual_user_id})
+        meds_result = db.medications.delete_many({"user_id": actual_user_id})
+        adherence_result = db.adherence.delete_many({"user_id": actual_user_id})
+        
+        print(f"[Aushadh AI] Data cleared for {user_id} (actual: {actual_user_id}): analyses={analyses_result.deleted_count}, history={history_result.deleted_count}, meds={meds_result.deleted_count}, adherence={adherence_result.deleted_count}", flush=True)
+        
+        return True
+    except Exception as e:
+        print(f"Clear all data error: {e}", flush=True)
+        return False
 
 def save_medications(user_id: str, medications: list):
     try:
@@ -324,3 +439,144 @@ def get_adherence_stats(user_id: str, days: int = 30):
         import traceback
         traceback.print_exc()
         return {"total_days": 0, "adherence_rate": 0, "streak": 0, "total_doses": 0, "taken_doses": 0}
+
+
+def update_profile_photo(user_id: str, photo_data: str):
+    """Update user's profile photo"""
+    try:
+        db = get_db()
+        from bson import ObjectId
+        
+        print(f"[MongoDB] update_profile_photo called with user_id: {user_id}")
+        print(f"[MongoDB] photo_data length: {len(photo_data) if photo_data else 0}")
+        
+        result = db.users.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$set": {"profile_photo": photo_data}}
+        )
+        
+        print(f"[MongoDB] Update result - matched: {result.matched_count}, modified: {result.modified_count}")
+        
+        # Verify the update worked by reading back
+        verify_user = db.users.find_one({"_id": ObjectId(user_id)})
+        print(f"[MongoDB] After update - profile_photo exists: {bool(verify_user.get('profile_photo'))}")
+        
+        return result.modified_count > 0
+    except Exception as e:
+        print(f"Update profile photo error: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+
+def get_profile_photo(user_id: str):
+    """Get user's profile photo"""
+    try:
+        db = get_db()
+        from bson import ObjectId
+        user = db.users.find_one({"_id": ObjectId(user_id)})
+        if user:
+            return user.get("profile_photo")
+        return None
+    except Exception as e:
+        print(f"Get profile photo error: {e}")
+        return None
+
+
+def get_profile_data(user_id: str):
+    """Get user's profile data from MongoDB"""
+    try:
+        db = get_db()
+        from bson import ObjectId
+        user = db.users.find_one({"_id": ObjectId(user_id)})
+        if user:
+            # Return all profile fields
+            return {
+                "name": user.get("name", ""),
+                "age": user.get("age", ""),
+                "phone": user.get("phone", ""),
+                "city": user.get("city", ""),
+                "blood_group": user.get("blood_group", ""),
+                "language": user.get("language", "en"),
+                "allergies": user.get("allergies", ""),
+                "medical_conditions": user.get("medical_conditions", ""),
+                "emergency_name": user.get("emergency_name", ""),
+                "emergency_phone": user.get("emergency_phone", ""),
+                "emergency_relation": user.get("emergency_relation", ""),
+                "doctor_name": user.get("doctor_name", ""),
+                "doctor_specialty": user.get("doctor_specialty", ""),
+                "doctor_hospital": user.get("doctor_hospital", "")
+            }
+        return None
+    except Exception as e:
+        print(f"Get profile data error: {e}")
+        import traceback
+        traceback.print_exc()
+        return None
+
+
+def save_profile_data(user_id: str, profile_data: dict):
+    """Save user's profile data to MongoDB"""
+    try:
+        db = get_db()
+        from bson import ObjectId
+        
+        print(f"[MongoDB] save_profile_data called with user_id: {user_id}")
+        print(f"[MongoDB] profile_data: {profile_data}")
+        
+        # Build update dict with only non-None values
+        update_dict = {}
+        for key, value in profile_data.items():
+            if value is not None and value != "":
+                update_dict[key] = value
+        
+        if not update_dict:
+            print("[MongoDB] No data to update")
+            return True
+            
+        result = db.users.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$set": update_dict}
+        )
+        
+        print(f"[MongoDB] Update result - matched: {result.matched_count}, modified: {result.modified_count}")
+        
+        return result.matched_count > 0
+    except Exception as e:
+        print(f"Save profile data error: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+
+def user_has_data(user_id: str) -> bool:
+    """Check if user has any saved data - determines if new or returning user"""
+    try:
+        db = get_db()
+        from bson import ObjectId
+        
+        analysis = db.analyses.find_one({"user_id": ObjectId(user_id)})
+        if analysis:
+            return True
+        
+        medications = db.medications.find_one({"user_id": ObjectId(user_id)})
+        if medications:
+            return True
+            
+        checklist = db.checklist.find_one({"user_id": ObjectId(user_id)})
+        if checklist:
+            return True
+            
+        # Check users collection for profile data (name, age, etc.)
+        user = db.users.find_one({"_id": ObjectId(user_id)})
+        if user:
+            # Check if user has any profile fields filled
+            profile_fields = ['name', 'age', 'phone', 'city', 'blood_group', 'allergies', 'medical_conditions']
+            for field in profile_fields:
+                if user.get(field):
+                    return True
+            
+        return False
+    except Exception as e:
+        print(f"Check user data error: {e}")
+        return False

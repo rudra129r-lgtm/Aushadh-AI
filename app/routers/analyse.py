@@ -85,16 +85,16 @@ async def analyse_file(
                 except Exception as e:
                     logger.warning(f"[Analyse] Medical image detection error: {e}")
             
-            # BLOCK medical images - reject with helpful message
-            if is_medical:
-                logger.warning(f"[Analyse] Blocked medical image upload: {file.filename}")
-                raise HTTPException(
-                    status_code=400,
-                    detail="This appears to be a medical scan (X-ray, MRI, CT, or Ultrasound). Prescription upload is only for text-based prescriptions. Please use the Medical Image Analysis feature instead."
-                )
+            # TEMPORARILY DISABLED: Block medical images - reject with helpful message
+            # if is_medical:
+            #     logger.warning(f"[Analyse] Blocked medical image upload: {file.filename}")
+            #     raise HTTPException(
+            #         status_code=400,
+            #         detail="This appears to be a medical scan (X-ray, MRI, CT, or Ultrasound). Prescription upload is only for text-based prescriptions. Please use the Medical Image Analysis feature instead."
+            #     )
             
             # Regular prescription/image analysis
-            logger.info(f"Processing as prescription image... language: {language}")
+            logger.info(f"Processing as image... language: {language}")
             result = await claude_service.analyse_image(data, file.content_type, age or "", language or "English")
 
         else:  # text/plain
@@ -216,4 +216,28 @@ async def analyse_medical_image(
         return result
     except Exception as e:
         logger.error(f"Medical image analysis failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/validate-medical-image", summary="Validate if uploaded image is a medical scan")
+async def validate_medical_image(file: UploadFile = File(...)):
+    """Validate if the uploaded image is a medical scan (X-ray, MRI, CT, Ultrasound) or a document/prescription"""
+    logger.info(f"Validating medical image: {file.filename}, type: {file.content_type}")
+    
+    if file.content_type not in MEDICAL_IMAGE_TYPES:
+        raise HTTPException(
+            status_code=415,
+            detail=f"Only JPG, PNG images are supported. Received: {file.content_type}"
+        )
+    
+    data = await file.read()
+    logger.info(f"File size for validation: {len(data)} bytes")
+    
+    # Enable validation - detect if image is a medical scan (X-ray, MRI, CT, Ultrasound)
+    try:
+        is_medical = detect_if_medical_image(data)
+        logger.info(f"Medical image validation result: {is_medical}")
+        return {"is_valid_medical_image": is_medical}
+    except Exception as e:
+        logger.error(f"Medical image validation failed: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

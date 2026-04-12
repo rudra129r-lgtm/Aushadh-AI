@@ -282,13 +282,269 @@
 </div>
 
 <div class="fixed top-5 right-6 flex items-center gap-3 z-[999999]">
-  <div class="w-10 h-10 rounded-full bg-white/20 border-2 border-white/30 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform" onclick="toggleNotifications(event)">
-    <span class="material-symbols-outlined text-white/70 text-base">notifications</span>
+  <!-- Mind-Blowing Bell Icon -->
+  <div class="bell-wrapper" onclick="toggleNotifications(event)">
+    <!-- Glow effect -->
+    <div class="bell-glow"></div>
+    <!-- Ring waves -->
+    <div class="bell-ring"></div>
+    <div class="bell-ring bell-ring-2"></div>
+    <!-- Main bell button -->
+    <div class="bell-btn">
+      <span class="material-symbols-outlined bell-icon">notifications</span>
+      <!-- Notification badge -->
+      <span class="bell-badge hidden" id="notification-badge">0</span>
+    </div>
   </div>
-  <div id="dashboard-avatar" class="w-10 h-10 rounded-full bg-white flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-md" onclick="toggleProfile(event)">
-    <span class="material-symbols-outlined text-primary text-sm">person</span>
+  <!-- Mind-Blowing Profile Avatar -->
+  <div class="profile-wrapper" onclick="toggleProfile(event)">
+    <!-- Glow effect -->
+    <div class="profile-glow"></div>
+    <!-- Main avatar -->
+    <div class="profile-btn" id="dashboard-avatar">
+      <span class="profile-initial" id="profile-initial">P</span>
+    </div>
   </div>
 </div>
+
+<style>
+/* Mind-Blowing Bell Animation Styles */
+.bell-wrapper {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.bell-glow {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.4) 0%, transparent 70%);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.bell-wrapper:hover .bell-glow,
+.bell-wrapper.has-notifications .bell-glow {
+  opacity: 1;
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+.bell-btn {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 2;
+}
+
+.bell-btn:hover {
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.bell-btn:active {
+  transform: scale(0.95);
+}
+
+.bell-icon {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 22px;
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+.bell-btn:hover .bell-icon {
+  color: #ffffff;
+  transform: rotate(-15deg);
+}
+
+.bell-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Manrope', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+  border: 2px solid rgba(255,255,255,0.9);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5);
+  animation: badge-bounce 0.5s ease-out;
+}
+
+.bell-badge.hidden {
+  display: none;
+}
+
+.bell-ring {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  border: 2px solid rgba(16, 185, 129, 0.5);
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.bell-ring-2 {
+  animation-delay: 0.15s;
+}
+
+.bell-wrapper:hover .bell-ring {
+  animation: ring-expand 1s ease-out infinite;
+}
+
+.bell-wrapper.has-notifications .bell-ring {
+  animation: ring-expand 1s ease-out infinite;
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+@keyframes ring-expand {
+  0% { opacity: 0.8; transform: scale(0.8); }
+  100% { opacity: 0; transform: scale(1.5); }
+}
+
+@keyframes badge-bounce {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+/* Notification pulse animation */
+@keyframes notification-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.bell-wrapper.has-new-notification .bell-badge {
+  animation: badge-bounce 0.5s ease-out, notification-pulse 1.5s ease-out 0.5s;
+}
+
+/* Mind-Blowing Profile Avatar Styles */
+.profile-wrapper {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.profile-glow {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.profile-wrapper:hover .profile-glow {
+  opacity: 1;
+  animation: profile-glow-pulse 2s ease-in-out infinite;
+}
+
+.profile-btn {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10B981 0%, #059669 50%, #047857 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 2;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+}
+
+.profile-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 25px rgba(16, 185, 129, 0.5);
+}
+
+.profile-btn:active {
+  transform: scale(0.95);
+}
+
+.profile-initial {
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+  font-family: 'Manrope', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.profile-btn:hover .profile-initial {
+  transform: scale(1.1);
+}
+
+/* Ring ripple effect on click */
+.profile-wrapper::after {
+  content: '';
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid rgba(16, 185, 129, 0.6);
+  opacity: 0;
+  transform: scale(1);
+}
+
+.profile-wrapper:active::after {
+  animation: profile-ring-ripple 0.6s ease-out;
+}
+
+@keyframes profile-glow-pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+@keyframes profile-ring-ripple {
+  0% { opacity: 0.8; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.5); }
+}
+
+/* Profile menu styling */
+#profile-dropdown {
+  animation: profile-menu-appear 0.2s ease-out;
+}
+
+@keyframes profile-menu-appear {
+  from { opacity: 0; transform: translateY(-10px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+</style>
 
 <main class="md:ml-56 min-h-screen pb-24 md:pb-12">
   <!-- Animated Green Header -->
@@ -298,7 +554,7 @@
       <div class="flex items-center gap-4">
         <img src="logo_white.png" alt="Aushadh AI" class="w-12 h-12 object-contain">
         <div class="flex flex-col">
-          <h2 class="font-headline font-extrabold text-2xl text-white"><span data-i18n="welcome_back">Welcome back</span>, <span id="user-name">there</span> 👋</h2>
+          <h2 class="font-headline font-extrabold text-2xl text-white"><span id="welcome-text">Welcome to Aushadh AI</span>, <span id="user-name">there</span> 👋</h2>
           <p class="text-sm text-white/70" id="date-str"></p>
         </div>
       </div>
@@ -384,8 +640,10 @@
     <div class="mb-12">
       <div class="flex items-end justify-between mb-6">
         <div>
-          <h3 class="text-2xl font-headline font-bold text-on-surface" data-i18n="active_medications">Active Medications</h3>
-          <p class="text-outline text-sm" id="med-subtitle" data-i18n="med_subtitle">Upload a prescription to see your medications</p>
+          <h3 class="text-2xl font-headline font-extrabold text-on-surface tracking-tight" data-i18n="active_medications">
+            <span class="bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary-container">Active Medications</span>
+          </h3>
+          <p class="text-outline text-sm font-medium" id="med-subtitle" data-i18n="med_subtitle">Upload a prescription to see your medications</p>
         </div>
         <a class="text-primary font-bold text-sm flex items-center hover:translate-x-1 transition-transform" href="medications.html">
           <span data-i18n="view_all">View All</span> <span class="material-symbols-outlined text-sm ml-1">chevron_right</span>
@@ -416,7 +674,9 @@
     <!-- Prescription History -->
     <div id="history-section" class="hidden mb-10">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="font-headline font-bold text-on-surface text-lg" data-i18n="recent_prescriptions">Recent Prescriptions</h3>
+        <h3 class="text-lg font-headline font-extrabold text-on-surface tracking-tight">
+          <span class="bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary-container" data-i18n="recent_prescriptions">Recent Prescriptions</span>
+        </h3>
         <span class="text-xs text-outline font-semibold">Last 5 analyses</span>
       </div>
       <div id="history-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
@@ -438,6 +698,71 @@
 console.log('=== DASHBOARD PAGE LOADING ===');
 
 requireAuth();
+
+// Initialize profile avatar - fetch fresh from server first
+async function initProfileAvatar() {
+  // First try to get fresh photo from server
+  await fetchProfilePhotoForDashboard();
+  
+  const user = getUser();
+  const profileBtn = document.querySelector('.profile-btn');
+  
+  console.log('[Profile] User data:', user);
+  console.log('[Profile] profile_photo:', user?.profile_photo);
+  
+  if (!profileBtn) return;
+  
+  // If user has profile photo, show it
+  if (user && user.profile_photo) {
+    console.log('[Profile] Showing photo');
+    profileBtn.innerHTML = `<img src="${user.profile_photo}" class="w-full h-full object-cover rounded-full" alt="Profile">`;
+  } else if (user && user.email) {
+    // Otherwise show email initial
+    console.log('[Profile] Showing initial');
+    const initialEl = document.getElementById('profile-initial');
+    if (initialEl) {
+      const emailInitial = user.email.split('@')[0].charAt(0).toUpperCase();
+      initialEl.textContent = emailInitial;
+    }
+  }
+}
+
+async function fetchProfilePhotoForDashboard() {
+  const token = localStorage.getItem('medbuddy_token');
+  if (!token) return;
+  
+  try {
+    const res = await fetch(`${API}/profile/photo`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    if (res.ok) {
+      const data = await res.json();
+      const photoData = data.profile_photo;
+      
+      console.log('[Profile] Dashboard - fetched from server:', photoData ? 'Photo exists' : 'No photo');
+      
+      // Update localStorage with fresh data
+      const user = getUser();
+      user.profile_photo = photoData;
+      localStorage.setItem('medbuddy_user', JSON.stringify(user));
+    }
+  } catch (err) {
+    console.error('[Profile] Dashboard - Error fetching photo:', err);
+  }
+}
+
+// Run after a short delay to ensure medbuddy.js is loaded
+setTimeout(initProfileAvatar, 100);
+
+// ── Welcome message ─────────────────────────────────
+function setWelcomeMessage() {
+  const welcomeSpan = document.getElementById('welcome-text');
+  if (welcomeSpan) {
+    welcomeSpan.textContent = 'Welcome to Aushadh AI';
+  }
+}
+setWelcomeMessage();
 
 console.log('requireAuth finished, waiting for DOMContentLoaded...');
 
@@ -484,7 +809,21 @@ function toggleNotifications(e) {
     notifications.push({ icon: 'info', text: 'No new notifications', time: '' });
   }
   
-  const bell = e.target.closest('[onclick]').getBoundingClientRect();
+  // Update bell visual state based on notifications
+  const bellWrapper = document.querySelector('.bell-wrapper');
+  const badge = document.getElementById('notification-badge');
+  if (notifications.length > 0 && notifications[0].icon !== 'info') {
+    bellWrapper?.classList.add('has-notifications');
+    if (badge) {
+      badge.classList.remove('hidden');
+      badge.textContent = Math.min(notifications.length, 99);
+    }
+  } else {
+    bellWrapper?.classList.remove('has-notifications');
+    if (badge) badge.classList.add('hidden');
+  }
+  
+  const bell = e.target.closest('.bell-wrapper').getBoundingClientRect();
   
   const dropdown = document.createElement('div');
   dropdown.id = 'notification-dropdown';
@@ -534,26 +873,33 @@ function toggleProfile(e) {
   }
   
   const user = getUser();
-  const avatarEl = document.getElementById('dashboard-avatar');
-  if (user.avatar) {
-    avatarEl.innerHTML = `<img src="${user.avatar}" class="w-full h-full object-cover rounded-full">`;
-  } else if (user.name) {
-    const initials = user.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
-    avatarEl.innerHTML = `<span class="text-primary font-bold text-sm">${initials}</span>`;
-  }
+  const profileBtn = document.querySelector('.profile-btn');
   
-  const rect = avatarEl.getBoundingClientRect();
+  const rect = profileBtn.getBoundingClientRect();
   
   const dropdown = document.createElement('div');
   dropdown.id = 'profile-dropdown';
   dropdown.style.cssText = `position:fixed;top:${rect.bottom + 10}px;right:${window.innerWidth - rect.right}px;width:260px;background:#f7f9ff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,0.3);z-index:2147483647 !important;overflow:hidden;border:1px solid #bdc9ca;pointer-events:auto`;
+  
+  // Show profile photo or initial - both centered properly
+  const userInitial = user?.email ? user.email.split('@')[0].charAt(0).toUpperCase() : 'U';
+  const hasPhoto = user?.profile_photo;
+  
+  const avatarContent = hasPhoto 
+    ? `<div style="display:flex;justify-content:center;margin-bottom:12px">
+        <img src="${user.profile_photo}" style="width:72px;height:72px;object-cover;border-radius:50%;border:3px solid white;box-shadow:0 4px 12px rgba(0,0,0,0.2)" alt="Profile">
+       </div>`
+    : `<div style="display:flex;justify-content:center;margin-bottom:12px">
+        <div style="width:72px;height:72px;background:linear-gradient(135deg, #10B981 0%, #059669 50%, #047857 100%);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(16, 185, 129, 0.5)">
+          <span style="color:white;font-size:28px;font-weight:700;font-family:'Manrope',sans-serif">${userInitial}</span>
+        </div>
+       </div>`;
+  
   dropdown.innerHTML = `
     <div style="background:linear-gradient(135deg, #002f34 0%, #004f56 30%, #006068 60%, #007b85 100%);padding:24px;text-align:center;border-radius:16px 16px 0 0">
-      <div style="width:72px;height:72px;background:white;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.2)">
-        <span class="material-symbols-outlined" style="color:#006068;font-size:40px">person</span>
-      </div>
-      <p style="color:white;font-family:'Manrope',sans-serif;font-weight:700;font-size:18px">${user.name || 'User'}</p>
-      <p style="color:white/70;font-family:'Public Sans',sans-serif;font-size:13px;margin-top:4px">${user.email || ''}</p>
+      ${avatarContent}
+      <p style="color:white;font-family:'Manrope',sans-serif;font-weight:700;font-size:18px">${user?.name || 'User'}</p>
+      <p style="color:white/70;font-family:'Public Sans',sans-serif;font-size:13px;margin-top:4px">${user?.email || ''}</p>
     </div>
     <div style="padding:12px;background:#fff;border-radius:0 0 16px 16px;border:1px solid #e5e8ee;border-top:none">
       <a href="profile.html" style="display:flex;align-items:center;gap:12px;padding:14px 16px;text-decoration:none;color:#181c20;font-family:'Manrope',sans-serif;font-weight:600;font-size:14px;border-radius:10px" onmouseover="this.style.background='#f1f4fa'" onmouseout="this.style.background='transparent'">
@@ -569,12 +915,12 @@ function toggleProfile(e) {
   
   document.body.appendChild(dropdown);
   
-  // Update close handler to include avatar element
+  // Update close handler to include profile wrapper
   setTimeout(() => {
     document.addEventListener('click', function handler(e) {
       const dropdown = document.getElementById('profile-dropdown');
-      const avatarEl = document.getElementById('dashboard-avatar');
-      if (dropdown && !dropdown.contains(e.target) && !avatarEl.contains(e.target)) {
+      const profileWrapper = document.querySelector('.profile-wrapper');
+      if (dropdown && !dropdown.contains(e.target) && !profileWrapper.contains(e.target)) {
         dropdown.remove();
         document.removeEventListener('click', handler);
       }
@@ -585,6 +931,7 @@ function toggleProfile(e) {
 document.addEventListener('DOMContentLoaded', async function() {
   console.log('=== DASHBOARD DOMContentLoaded ===');
   const user=getUser();
+  
   let data=getAnalysis();
   const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
@@ -592,36 +939,40 @@ document.addEventListener('DOMContentLoaded', async function() {
   const freshLoginAfterLogout = sessionStorage.getItem('fresh_login_after_logout');
   const isFreshLogin = !!freshLoginAfterLogout;
 
-  // Load from server if logged in
-  if (localStorage.getItem('medbuddy_logged_in')) {
-    // Load history regardless of fresh login - history should always be available
-    const serverHistory = await loadHistoryFromServer();
-    if (serverHistory) {
-      localStorage.setItem('medbuddy_history', JSON.stringify(serverHistory));
+  // Check if we have local data
+  const hasLocalData = localStorage.getItem('medbuddy_analysis');
+
+  // Load from server only if we have local data and logged in
+  if (hasLocalData && localStorage.getItem('medbuddy_logged_in')) {
+    // Only load history if not fresh login
+    if (!isFreshLogin) {
+      const serverHistory = await loadHistoryFromServer();
+      if (serverHistory) {
+        localStorage.setItem('medbuddy_history', JSON.stringify(serverHistory));
+      }
     }
     
-    // Only load current analysis if NOT a fresh login after logout
-    if (!isFreshLogin) {
-      const serverData = await loadAnalysisFromServer();
-      if (serverData) data = serverData;
-    }
+    // Always load analysis from server (previous data persists after logout)
+    const serverData = await loadAnalysisFromServer();
+    if (serverData) data = serverData;
   }
-
+  
   // Clear fresh login flag
   sessionStorage.removeItem('fresh_login_after_logout');
 
-  // User name
-  document.getElementById('user-name').textContent=(user.name||user.email||'there').split(' ')[0];
+  // User name and welcome message
+  const userName = (user.name || user.email || 'there').split(' ')[0];
+  document.getElementById('user-name').textContent = userName;
   
-  // Update avatar on page load
-  const avatarEl = document.getElementById('dashboard-avatar');
-  if (user.avatar) {
-    avatarEl.innerHTML = `<img src="${user.avatar}" class="w-full h-full object-cover rounded-full">`;
-  } else if (user.name) {
-    const initials = user.name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
-    avatarEl.innerHTML = `<span class="text-primary font-bold text-sm">${initials}</span>`;
+  // Always show welcome message
+  setWelcomeMessage();
+  
+  // Update avatar on page load - use profile_photo
+  const profileBtn = document.querySelector('.profile-btn');
+  if (profileBtn && user.profile_photo) {
+    profileBtn.innerHTML = `<img src="${user.profile_photo}" class="w-full h-full object-cover rounded-full" alt="Profile">`;
   }
-
+  
   // Date
 document.getElementById('date-str').textContent=new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
 
