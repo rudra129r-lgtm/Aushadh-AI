@@ -11,3 +11,4 @@ pymongo>=4.6.0
 google-cloud-vision>=3.4.0
 fastapi-limiter==0.1.5
 redis>=4.2.0
+numpy>=1.24.0
