@@ -114,6 +114,7 @@ const TRANSLATIONS = {
     nav_profile: { en: 'Profile', hi: 'प्रोफ़ाइल' },
     sign_out: { en: 'Sign Out', hi: 'साइन आउट' },
     welcome_back: { en: 'Welcome back', hi: 'वापसी पर स्वागत है' },
+
     your_health: { en: 'Your Health', hi: 'आपका स्वास्थ्य' },
     finally_clear: { en: 'Finally Clear.', hi: 'अंत में स्पष्ट।' },
     upload_prescription: { en: 'Upload Prescription', hi: 'नुस्खा अपलोड करें' },
@@ -279,7 +280,28 @@ const TRANSLATIONS = {
     stop_listening: { en: 'Stop', hi: 'रुकें' },
     no_medications_found: { en: 'No medications found in your document', hi: 'आपके दस्तावेज़ में कोई दवाई नहीं मिली' },
     in_plain_words: { en: 'In Plain Words', hi: 'सादे शब्दों में' },
-    full_list: { en: 'Full List', hi: 'पूरी सूची' }
+    full_list: { en: 'Full List', hi: 'पूरी सूची' },
+    drug_interactions_heading: { en: 'Drug Interactions', hi: 'दवाइयों की अंतःक्रियाएं' },
+    drug_interactions_desc: { en: 'These medicines may affect each other. Consult your doctor.', hi: 'ये दवाइयाँ एक-दूसरे को प्रभावित कर सकती हैं। अपने डॉक्टर से परामर्श करें।' },
+    severity_high: { en: 'High', hi: 'उच्च' },
+    severity_medium: { en: 'Medium', hi: 'मध्यम' },
+    severity_low: { en: 'Low', hi: 'कम' },
+    duration_label: { en: 'Duration', hi: 'अवधि' },
+    with_food_label: { en: 'With Food', hi: 'भोजन के साथ' },
+    fda_warnings: { en: 'FDA Warnings', hi: 'FDA चेतावनियाँ' },
+    fda_side_effects: { en: 'Side Effects', hi: 'साइड इफेक्ट्स' },
+    storage_instructions: { en: 'Storage', hi: 'भंडारण' },
+    show_more: { en: 'Show more', hi: 'और देखें' },
+    show_less: { en: 'Show less', hi: 'कम देखें' },
+    recovery_days: { en: 'days', hi: 'दिन' },
+    medical_findings: { en: 'Medical Image Findings', hi: 'मेडिकल इमेज निष्कर्ष' },
+    findings_normal: { en: 'Normal', hi: 'सामान्य' },
+    findings_abnormal: { en: 'Abnormal', hi: 'असामान्य' },
+    findings_critical: { en: 'Critical', hi: 'गंभीर' },
+    quick_checklist: { en: 'Quick Checklist', hi: 'त्वरित चेकलिस्ट' },
+    view_full_checklist: { en: 'View full checklist', hi: 'पूरी चेकलिस्ट देखें' },
+    no_interactions: { en: 'No known drug interactions found.', hi: 'कोई ज्ञात दवा अंतःक्रिया नहीं मिली।' },
+    checklist_items: { en: 'checklist items', hi: 'चेकलिस्ट आइटम' }
   },
   medications: {
     title: { en: 'Medications', hi: 'दवाइयाँ' },
@@ -578,7 +600,7 @@ function applyTranslations() {
 
 // Initialize language on load
 (function initLanguage() {
-  const savedLang = localStorage.getItem('medbuddy_language');
+  const savedLang = localStorage.getItem('medbudday_language');
   if (savedLang) {
     currentLang = savedLang;
     document.documentElement.lang = savedLang === 'hi' ? 'hi' : 'en';
@@ -1468,13 +1490,31 @@ function shareAnalysisOnWhatsApp() {
   if (!data) return;
   let msg = `*Aushadh AI Health Summary*\n\n`;
   msg += `📋 *Summary:* ${data.summary_en || ''}\n\n`;
+  if (data.recovery_days_min && data.recovery_days_max) {
+    msg += `📅 *Recovery:* ${data.recovery_days_min}–${data.recovery_days_max} days\n\n`;
+  }
   msg += `🩺 *Condition:* ${data.diagnosis?.simple_english || ''}\n\n`;
+  const interactions = data.drug_interactions || [];
+  if (interactions.length > 0) {
+    msg += `⚠️ *Drug Interactions:*\n`;
+    interactions.forEach(i => {
+      msg += `  • ${i.drug_a} + ${i.drug_b} [${(i.severity||'Medium').toUpperCase()}]: ${(i.description||'').slice(0,100)}\n`;
+    });
+    msg += '\n';
+  }
   msg += `💊 *Medicines:*\n`;
   (data.medications || []).forEach(m => {
     msg += `  • ${m.name} ${m.dosage} — ${m.timing} for ${m.duration}\n`;
   });
+  const findings = data.findings || data.abnormalities || [];
+  if (findings.length > 0) {
+    msg += `\n🔍 *Medical Findings:*\n`;
+    findings.forEach(f => {
+      msg += `  • ${f.area||''}: ${(f.observation||f.text||'').slice(0,100)} (${f.severity||'Normal'})\n`;
+    });
+  }
   msg += `\n🚨 *Emergency:* ${data.emergency || ''}\n\n`;
-  msg += `_Simplified by Aushadh AI AI — always consult your doctor_`;
+  msg += `_Simplified by Aushadh AI — always consult your doctor_`;
   shareOnWhatsApp(msg);
 }
 

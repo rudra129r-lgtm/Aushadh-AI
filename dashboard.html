@@ -752,6 +752,30 @@ async function fetchProfilePhotoForDashboard() {
   }
 }
 
+async function fetchProfileDataForDashboard() {
+  const token = localStorage.getItem('medbuddy_token');
+  if (!token) return null;
+  
+  try {
+    const res = await fetch(`${API}/profile/data`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    if (res.ok) {
+      const profileData = await res.json();
+      
+      const user = getUser();
+      const mergedUser = { ...user, ...profileData };
+      localStorage.setItem('medbuddy_user', JSON.stringify(mergedUser));
+      
+      return mergedUser;
+    }
+  } catch (err) {
+    console.error('[Profile] Dashboard - Error fetching profile:', err);
+  }
+  return null;
+}
+
 // Run after a short delay to ensure medbuddy.js is loaded
 setTimeout(initProfileAvatar, 100);
 
@@ -930,7 +954,13 @@ function toggleProfile(e) {
 
 document.addEventListener('DOMContentLoaded', async function() {
   console.log('=== DASHBOARD DOMContentLoaded ===');
-  const user=getUser();
+  let user=getUser();
+  
+  // Fetch fresh profile data from server to get complete user info including name
+  const freshProfile = await fetchProfileDataForDashboard();
+  if (freshProfile) {
+    user = freshProfile;
+  }
   
   let data=getAnalysis();
   const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');

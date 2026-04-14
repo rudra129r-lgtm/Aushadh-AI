@@ -379,7 +379,6 @@
 
 <script src="medbuddy.js?v=12345"></script>
 <script>
-console.log('apiValidateMedicalImage defined:', typeof apiValidateMedicalImage);
 let inputMode='file', selectedFile=null, stepTimer=null, uploadMode='prescription', outputLang='English', currentAbortController=null;
 
 const STEPS_TEXT=['Extracting text...','AI analyzing...','Getting drug info...','Checking interactions...','Generating summary...'];
@@ -505,84 +504,6 @@ async function setFile(f){
   document.getElementById('file-size-display').textContent=(f.size/1024).toFixed(1)+' KB';
   document.getElementById('file-type-icon').textContent=f.type==='application/pdf'?'picture_as_pdf':'image';
   document.getElementById('upload-err-box').classList.add('hidden');
-  
-  const lang = getCurrentLanguage();
-  
-  // PRESCRIPTION MODE - Validate if uploaded file is actually a medical image
-  if (uploadMode === 'prescription' && (f.type === 'image/jpeg' || f.type === 'image/jpg' || f.type === 'image/png')) {
-    document.getElementById('analyse-btn').disabled = true;
-    const btnText = lang === 'hi' ? 'सत्यापन हो रहा है...' : 'Validating...';
-    document.getElementById('analyse-btn').innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> ' + btnText;
-    
-    try {
-      const result = await apiValidateMedicalImage(f);
-      if (result.is_valid_medical_image) {
-        const errorMsg = lang === 'hi'
-          ? 'यह फ़ाइल मेडिकल इमेज (X-ray, MRI, CT, Ultrasound) प्रतीत होती है। कृपया "Medical Image" मोड का उपयोग करें।'
-          : 'This appears to be a medical image (X-ray, MRI, CT, Ultrasound). Please use Medical Image mode to analyze this file.';
-        document.getElementById('upload-err-box').classList.remove('hidden');
-        document.getElementById('upload-err-msg').textContent = errorMsg;
-        document.getElementById('analyse-btn').innerHTML = '<span class="material-symbols-outlined">error</span> Invalid File';
-        document.getElementById('analyse-btn').disabled = true;
-        return;
-      }
-      
-      document.getElementById('analyse-btn').innerHTML = '<span class="material-symbols-outlined">auto_awesome</span> ' + (lang === 'hi' ? 'AI से विश्लेषण करें' : 'Analyse with AI');
-      document.getElementById('analyse-btn').disabled = false;
-      
-    } catch (err) {
-      console.error('Prescription validation failed:', err);
-      const analyseText = lang === 'hi' ? 'AI से विश्लेषण करें' : 'Analyse with AI';
-      document.getElementById('analyse-btn').innerHTML = '<span class="material-symbols-outlined">auto_awesome</span> ' + analyseText;
-      document.getElementById('analyse-btn').disabled = false;
-    }
-  }
-  
-  // MEDICAL IMAGE MODE - No validation (allow all images, AI auto-detects)
-  // Validation disabled for testing - re-enable by uncommenting below
-  /*
-  if (uploadMode === 'medical') {
-    document.getElementById('analyse-btn').disabled = true;
-    const btnText = lang === 'hi' ? 'सत्यापन हो रहा है...' : 'Validating...';
-    document.getElementById('analyse-btn').innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> ' + btnText;
-    
-    try {
-      if (f.type === 'application/pdf') {
-        const errorMsg = lang === 'hi'
-          ? 'PDF फ़ाइलें मेडिकल इमेज (X-ray, MRI, CT) के लिए समर्थित नहीं हैं। कृपया JPG या PNG फ़ाइल अपलोड करें।'
-          : 'PDF files are not supported for medical images (X-ray, MRI, CT). Please upload a JPG or PNG file.';
-        document.getElementById('upload-err-box').classList.remove('hidden');
-        document.getElementById('upload-err-msg').textContent = errorMsg;
-        document.getElementById('analyse-btn').innerHTML = '<span class="material-symbols-outlined">error</span> Invalid File';
-        document.getElementById('analyse-btn').disabled = true;
-        return;
-      }
-      
-      const result = await apiValidateMedicalImage(f);
-      if (!result.is_valid_medical_image) {
-        const errorMsg = lang === 'hi'
-          ? 'यह फ़ाइल मेडिकल इमेज (X-ray, MRI, CT, Ultrasound) के बजाय प्रिस्क्रिप्शन/रिपोर्ट प्रतीत होती है। कृपया सही प्रकार की मेडिकल इमेज अपलोड करें।'
-          : 'This file appears to be a prescription/report, not a medical image (X-ray, MRI, CT, Ultrasound). Please upload the correct type of medical image.';
-        document.getElementById('upload-err-box').classList.remove('hidden');
-        document.getElementById('upload-err-msg').textContent = errorMsg;
-        document.getElementById('analyse-btn').innerHTML = '<span class="material-symbols-outlined">error</span> Invalid File';
-        document.getElementById('analyse-btn').disabled = true;
-        return;
-      }
-      
-      document.getElementById('upload-err-box').classList.add('hidden');
-      const medImageOk = lang === 'hi' ? 'मेडिकल इमेज का विश्लेषण करें' : 'Analyse Medical Image';
-      document.getElementById('analyse-btn').innerHTML = '<span class="material-symbols-outlined">auto_awesome</span> ' + medImageOk;
-      document.getElementById('analyse-btn').disabled = false;
-      
-    } catch (err) {
-      console.error('Medical image validation failed:', err);
-      const medImageErr = lang === 'hi' ? 'मेडिकल इमेज का विश्लेषण करें' : 'Analyse Medical Image';
-      document.getElementById('analyse-btn').innerHTML = '<span class="material-symbols-outlined">auto_awesome</span> ' + medImageErr;
-      document.getElementById('analyse-btn').disabled = false;
-    }
-  }
-  */
   
   checkReady();
 }

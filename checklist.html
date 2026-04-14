@@ -296,9 +296,19 @@
 
     <!-- HAS DATA -->
     <div id="has-data" class="hidden">
-      <header class="mb-8 text-center pt-8">
-        <h1 class="text-2xl md:text-4xl font-extrabold text-on-surface leading-tight"><span data-i18n="post_consultation">Post-Consultation</span><br/><span class="text-primary-container" data-i18n="followup_guide">Follow-up Guide</span></h1>
-        <p class="text-on-surface-variant mt-2 max-w-xl mx-auto" data-i18n="personalized_breakdown">Your personalised breakdown of what to watch for and your next steps.</p>
+      <header class="mb-8 pt-8">
+        <div class="flex items-start justify-between gap-4 flex-wrap">
+          <div class="flex flex-col items-start gap-2">
+            <h1 class="text-2xl md:text-4xl font-extrabold text-on-surface leading-tight">
+              <span data-i18n="post_consultation">Post-Consultation</span> <span class="text-primary-container" data-i18n="followup_guide">Follow-up Guide</span>
+            </h1>
+            <p class="text-on-surface-variant text-sm max-w-md" data-i18n="personalized_breakdown">Your personalised breakdown of what to watch for and your next steps.</p>
+          </div>
+          <button onclick="showFindHospitalPopup()" class="flex items-center gap-2 bg-error text-white px-5 py-2.5 rounded-full font-bold text-sm hover:bg-error/90 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-error/50 transition-all shadow-sm flex-shrink-0">
+            <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">local_hospital</span>
+            <span data-i18n="find_hospital">Find a Hospital</span>
+          </button>
+        </div>
       </header>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -320,9 +330,6 @@
                 <span id="emergency-text"></span>
               </div>
             </div>
-            <a href="medications.html" class="mt-5 flex items-center gap-1 text-primary font-bold text-sm hover:underline">
-              <span class="material-symbols-outlined text-sm">medical_services</span> <span data-i18n="view_medications">View Medications</span>
-            </a>
           </div>
         </section>
 
@@ -370,23 +377,6 @@
           </div>
         </section>
       </div>
-
-      <footer class="mt-12 text-center border-t border-surface-container-high pt-8 pb-10">
-        <div class="flex justify-center gap-3 flex-wrap">
-          <a href="diagnosis.html" class="flex items-center gap-2 primary-gradient text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:shadow-primary/50 hover:-translate-y-0.5 active:scale-95 transition-all">
-            <span class="material-symbols-outlined text-sm">summarize</span> <span data-i18n="health_summary">Health Summary</span>
-          </a>
-          <a href="medications.html" class="flex items-center gap-2 primary-gradient text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:shadow-primary/50 hover:-translate-y-0.5 active:scale-95 transition-all">
-            <span class="material-symbols-outlined text-sm">medication</span> <span data-i18n="medicines">Medications</span>
-          </a>
-          <a href="documents.html" class="flex items-center gap-2 primary-gradient text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:shadow-primary/50 hover:-translate-y-0.5 active:scale-95 transition-all">
-            <span class="material-symbols-outlined text-sm">upload_file</span> <span data-i18n="new_upload">New Upload</span>
-          </a>
-          <button onclick="showFindHospitalPopup()" class="flex items-center gap-2 bg-error text-white px-6 py-2.5 rounded-full font-bold text-sm hover:bg-error/90 hover:shadow-lg hover:shadow-error/50 hover:-translate-y-0.5 transition-all shadow-md">
-            <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">local_hospital</span> <span data-i18n="find_hospital">Find a Hospital</span>
-          </button>
-        </div>
-      </footer>
     </div>
   </section>
 </main>

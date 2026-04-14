@@ -305,9 +305,15 @@
     <div id="has-data" class="hidden space-y-6">
 
       <!-- ── PAGE HEADER ── -->
-      <div>
-        <h1 class="font-headline text-2xl md:text-3xl font-extrabold text-on-surface mb-1" data-i18n="your_health_summary">Your Health Summary</h1>
-        <p class="text-sm text-on-surface-variant" id="header-subtitle" data-i18n="ai_simplified">AI-simplified from your prescription by Aushadh AI</p>
+      <div class="flex items-start justify-between">
+        <div>
+          <h1 class="font-headline text-2xl md:text-3xl font-extrabold text-on-surface mb-1" data-i18n="your_health_summary">Your Health Summary</h1>
+          <p class="text-sm text-on-surface-variant" id="header-subtitle" data-i18n="ai_simplified">AI-simplified from your prescription by Aushadh AI</p>
+        </div>
+        <button onclick="exportPdf()" class="flex items-center gap-2 primary-gradient text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md hover:shadow-lg hover:shadow-primary/50 hover:-translate-y-0.5 transition-all">
+          <span class="material-symbols-outlined text-sm">picture_as_pdf</span>
+          <span data-i18n="export_pdf">Export PDF</span>
+        </button>
       </div>
 
       <!-- ── PATIENT + DOCTOR INFO CARD ── -->
@@ -400,6 +406,18 @@
         </div>
       </div>
 
+      <!-- ── DRUG INTERACTIONS ── -->
+      <div id="drug-interactions-block" class="hidden bg-surface-container-lowest rounded-2xl border border-orange-200 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-orange-100 flex items-center gap-2">
+          <span class="material-symbols-outlined text-orange-500 text-base" style="font-variation-settings:'FILL' 1">sync_alt</span>
+          <h3 class="font-headline font-bold text-base text-on-surface" id="heading-interactions">Drug Interactions</h3>
+        </div>
+        <div class="p-5">
+          <p class="text-xs text-orange-600 mb-4" id="interactions-desc">These medicines may affect each other. Consult your doctor.</p>
+          <div class="space-y-3" id="interactions-list"></div>
+        </div>
+      </div>
+
       <!-- ── MEDICATIONS ── -->
       <div>
         <div class="flex items-center justify-between mb-3">
@@ -458,27 +476,35 @@
         <div class="flex items-start gap-3">
           <span class="material-symbols-outlined text-secondary flex-shrink-0 mt-0.5" style="font-variation-settings:'FILL' 1">calendar_today</span>
           <div>
-            <p class="font-headline font-bold text-sm text-on-surface mb-1">Recovery Timeline</p>
+            <p class="font-headline font-bold text-sm text-on-surface mb-1" id="heading-recovery">Recovery Timeline</p>
             <p class="text-sm text-on-surface-variant leading-relaxed" id="recovery-text"></p>
           </div>
         </div>
       </div>
 
-      <!-- ── BOTTOM CTAs ── -->
-      <div class="flex justify-center gap-3 flex-wrap mt-8 pt-8 border-t border-surface-container-high">
-        <a href="checklist.html" class="flex items-center gap-2 primary-gradient text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:shadow-primary/50 hover:-translate-y-0.5 active:scale-95 transition-all">
-          <span class="material-symbols-outlined text-sm">fact_check</span><span data-i18n="followup_checklist">Follow-up Checklist</span>
-        </a>
-        <a href="medications.html" class="flex items-center gap-2 primary-gradient text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:shadow-primary/50 hover:-translate-y-0.5 active:scale-95 transition-all">
-          <span class="material-symbols-outlined text-sm">medication</span><span data-i18n="full_schedule">Full Medication Schedule</span>
-        </a>
-        <a href="chat.html" class="flex items-center gap-2 primary-gradient text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:shadow-primary/50 hover:-translate-y-0.5 active:scale-95 transition-all">
-          <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1">smart_toy</span><span data-i18n="ask_ai_question">Ask AI a Question</span>
-        </a>
-        <button onclick="exportPdf()" class="flex items-center gap-2 primary-gradient text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:shadow-primary/50 hover:-translate-y-0.5 active:scale-95 transition-all">
-          <span class="material-symbols-outlined text-sm">picture_as_pdf</span><span data-i18n="export_pdf">Export PDF</span>
-        </button>
+      <!-- ── MEDICAL IMAGE FINDINGS ── -->
+      <div id="findings-block" class="hidden bg-surface-container-lowest rounded-2xl border border-outline-variant/20 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-outline-variant/10 flex items-center gap-2">
+          <span class="material-symbols-outlined text-tertiary text-base" style="font-variation-settings:'FILL' 1">image</span>
+          <h3 class="font-headline font-bold text-base text-on-surface" data-i18n="medical_findings">Medical Image Findings</h3>
+        </div>
+        <div class="p-5 space-y-3" id="findings-list"></div>
       </div>
+
+      <!-- ── MINI INLINE CHECKLIST ── -->
+      <div id="mini-checklist-block" class="hidden bg-surface-container-lowest rounded-2xl border border-outline-variant/20 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-outline-variant/10 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-secondary text-base" style="font-variation-settings:'FILL' 1">fact_check</span>
+            <h3 class="font-headline font-bold text-base text-on-surface">Quick Checklist</h3>
+          </div>
+          <a href="checklist.html" class="text-primary font-bold text-xs hover:underline flex items-center gap-1">
+            View full checklist <span class="material-symbols-outlined text-sm">arrow_forward</span>
+          </a>
+        </div>
+        <div class="p-5 space-y-2" id="mini-checklist-list"></div>
+      </div>
+
     </section>
   </section>
 </main>
@@ -741,19 +767,223 @@ if (watchOriginalEl) watchOriginalEl.textContent = d.watch_for?.original || '—
   } else {
     cards.innerHTML = '<div class="col-span-full text-center py-4 text-outline text-sm" data-i18n="no_medications_found">No medications found in your document</div>';
   }
+
+  // Drug Interactions
+  renderDrugInteractions(d, lang);
+
+  // Recovery Days
+  renderRecoveryDays(d, lang);
+
+  // Medical Findings (for X-ray/MRI/CT scans)
+  renderMedicalFindings(d, lang);
+
+  // Mini Inline Checklist
+  renderMiniChecklist(d, lang);
 }
 
 function renderMedCards(meds, lang = 'en') {
   const cards = document.getElementById('med-cards');
   if (!cards) return;
-  cards.innerHTML = (meds || []).map((m) => `
-    <div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/10 shadow-sm">
-      <div class="flex items-center gap-2 mb-2">
-        <span class="font-bold text-sm">${esc(m.name)}</span>
+  cards.innerHTML = (meds || []).map((m, i) => {
+    const duration = m.duration ? `<span class="text-[10px] font-bold bg-surface-container text-outline px-2 py-0.5 rounded-full">${esc(m.duration)}</span>` : '';
+    const withFood = m.with_food ? `<span class="text-[10px] font-bold bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full">🍽️ ${esc(m.with_food)}</span>` : '';
+    const hasFda = m.fda_warnings || m.fda_side_effects || m.storage;
+    const fdaWarnings = m.fda_warnings ? `<div class="mt-2 p-2 bg-amber-50 rounded-lg"><p class="text-[10px] font-black text-amber-700 uppercase mb-1">⚠️ Warnings</p><p class="text-xs text-amber-800">${esc(m.fda_warnings.slice(0, 200))}${m.fda_warnings.length > 200 ? '...' : ''}</p></div>` : '';
+    const fdaSideEffects = m.fda_side_effects ? `<div class="mt-2 p-2 bg-red-50 rounded-lg"><p class="text-[10px] font-black text-red-700 uppercase mb-1">💊 Side Effects</p><p class="text-xs text-red-800">${esc(m.fda_side_effects.slice(0, 200))}${m.fda_side_effects.length > 200 ? '...' : ''}</p></div>` : '';
+    const fdaStorage = m.storage ? `<div class="mt-2 p-2 bg-blue-50 rounded-lg"><p class="text-[10px] font-black text-blue-700 uppercase mb-1">📦 Storage</p><p class="text-xs text-blue-800">${esc(m.storage.slice(0, 150))}${m.storage.length > 150 ? '...' : ''}</p></div>` : '';
+    const fdaSection = hasFda ? `<div class="mt-2 border-t border-outline-variant/10 pt-2" id="fda-expand-${i}"><button onclick="toggleFdaCard(${i})" class="flex items-center gap-1 text-primary text-xs font-bold hover:underline"><span class="material-symbols-outlined text-sm">expand_more</span>Show FDA Info</button><div id="fda-content-${i}" class="hidden">${fdaWarnings}${fdaSideEffects}${fdaStorage}</div></div>` : '';
+    return `<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/10 shadow-sm">
+      <div class="flex items-start justify-between gap-2 mb-2">
+        <span class="font-bold text-sm text-on-surface">${esc(m.name)}</span>
       </div>
-      <div class="text-xs text-outline">${esc(m.dosage)} - ${esc(m.timing)}</div>
-      <div class="text-xs text-on-surface-variant mt-1">${esc(lang === 'hi' ? (m.simple_instruction_hindi || m.simple_instruction_hi || m.simple_instruction) : (m.simple_instruction_en || m.simple_instruction))}</div>
-    </div>`).join('');
+      <div class="text-xs text-outline mb-1">${esc(m.dosage)} — ${esc(m.timing)}</div>
+      <div class="flex flex-wrap gap-1 mb-2">
+        ${duration}${withFood}
+      </div>
+      <div class="text-xs text-on-surface-variant leading-relaxed">${esc(lang === 'hi' ? (m.simple_instruction_hindi || m.simple_instruction_hi || m.simple_instruction) : (m.simple_instruction_en || m.simple_instruction))}</div>
+      ${fdaSection}
+    </div>`;
+  }).join('');
+}
+
+function toggleFdaCard(index) {
+  const content = document.getElementById('fda-content-' + index);
+  const btn = document.querySelector(`#fda-expand-${index} button`);
+  if (!content || !btn) return;
+  const isHidden = content.classList.contains('hidden');
+  content.classList.toggle('hidden');
+  btn.innerHTML = isHidden
+    ? '<span class="material-symbols-outlined text-sm">expand_less</span>Hide FDA Info'
+    : '<span class="material-symbols-outlined text-sm">expand_more</span>Show FDA Info';
+}
+
+function renderDrugInteractions(d, lang = 'en') {
+  const block = document.getElementById('drug-interactions-block');
+  const list = document.getElementById('interactions-list');
+  if (!block || !list) return;
+
+  const interactions = d.drug_interactions || [];
+  if (interactions.length === 0) {
+    block.classList.add('hidden');
+    return;
+  }
+
+  const sevCls = {
+    high: 'bg-red-50 border border-red-200',
+    medium: 'bg-orange-50 border border-orange-200',
+    low: 'bg-surface-container-low border border-outline-variant/20'
+  };
+  const sevTextCls = {
+    high: 'text-red-700 bg-red-100',
+    medium: 'text-orange-700 bg-orange-100',
+    low: 'text-outline bg-surface-container'
+  };
+  const sevLabel = {
+    high: lang === 'hi' ? 'उच्च' : 'High',
+    medium: lang === 'hi' ? 'मध्यम' : 'Medium',
+    low: lang === 'hi' ? 'कम' : 'Low'
+  };
+  const drugSep = lang === 'hi' ? ' + ' : ' + ';
+
+  list.innerHTML = interactions.map(int => {
+    const sev = int.severity || 'medium';
+    return `<div class="p-3 rounded-xl ${sevCls[sev] || sevCls.medium}">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${sevTextCls[sev] || sevTextCls.medium}">${sevLabel[sev] || sevLabel.medium}</span>
+        <span class="text-sm font-bold text-on-surface">${esc(int.drug_a)}${drugSep}${esc(int.drug_b)}</span>
+      </div>
+      <p class="text-xs text-on-surface-variant leading-relaxed">${esc(int.description || '')}</p>
+    </div>`;
+  }).join('');
+
+  const descEl = document.getElementById('interactions-desc');
+  if (descEl) {
+    descEl.textContent = lang === 'hi'
+      ? 'ये दवाइयाँ एक-दूसरे को प्रभावित कर सकती हैं। अपने डॉक्टर से परामर्श करें।'
+      : 'These medicines may affect each other. Consult your doctor.';
+  }
+
+  block.classList.remove('hidden');
+}
+
+function renderMedicalFindings(d, lang = 'en') {
+  const block = document.getElementById('findings-block');
+  const list = document.getElementById('findings-list');
+  if (!block || !list) return;
+
+  const findings = d.findings || d.abnormalities || [];
+  if (findings.length === 0) {
+    block.classList.add('hidden');
+    return;
+  }
+
+  const sevCls = {
+    normal: 'bg-green-50 border border-green-200',
+    abnormal: 'bg-amber-50 border border-amber-200',
+    critical: 'bg-red-50 border border-red-200'
+  };
+  const sevTextCls = {
+    normal: 'text-green-700 bg-green-100',
+    abnormal: 'text-amber-700 bg-amber-100',
+    critical: 'text-red-700 bg-red-100'
+  };
+  const sevLabel = {
+    normal: lang === 'hi' ? 'सामान्य' : 'Normal',
+    abnormal: lang === 'hi' ? 'असामान्य' : 'Abnormal',
+    critical: lang === 'hi' ? 'गंभीर' : 'Critical'
+  };
+
+  list.innerHTML = findings.map(f => {
+    const sev = (f.severity || 'normal').toLowerCase();
+    const area = f.area || f.category || '';
+    const obs = f.observation || f.text || f.description || '';
+    return `<div class="p-4 rounded-xl ${sevCls[sev] || sevCls.normal}">
+      ${area ? `<div class="flex items-center gap-2 mb-2"><span class="material-symbols-outlined text-sm text-tertiary">image</span><span class="text-xs font-bold text-tertiary uppercase tracking-wider">${esc(area)}</span></div>` : ''}
+      <p class="text-sm text-on-surface leading-relaxed mb-2">${esc(obs)}</p>
+      <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${sevTextCls[sev] || sevTextCls.normal}">${sevLabel[sev] || sevLabel.normal}</span>
+    </div>`;
+  }).join('');
+
+  block.classList.remove('hidden');
+}
+
+function renderRecoveryDays(d, lang = 'en') {
+  const block = document.getElementById('recovery-block');
+  if (!block) return;
+  const textEl = document.getElementById('recovery-text');
+  if (!textEl) return;
+
+  const min = d.recovery_days_min;
+  const max = d.recovery_days_max;
+  let html = '';
+
+  if (min && max) {
+    const daysLabel = lang === 'hi' ? 'दिन' : 'days';
+    if (min === max) {
+      html = `<span class="inline-flex items-center gap-1 mb-2">
+        <span class="text-[10px] font-black uppercase bg-secondary-container text-on-secondary-container px-2 py-1 rounded-full tracking-wider">${min} ${daysLabel}</span>
+      </span><br>`;
+    } else {
+      html = `<span class="inline-flex items-center gap-1 mb-2">
+        <span class="text-[10px] font-black uppercase bg-secondary-container text-on-secondary-container px-2 py-1 rounded-full tracking-wider">${min}–${max} ${daysLabel}</span>
+      </span><br>`;
+    }
+  }
+
+  const noteText = d.recovery_note || '';
+  textEl.innerHTML = html + esc(noteText);
+
+  block.classList.remove('hidden');
+}
+
+function renderMiniChecklist(d, lang = 'en') {
+  const block = document.getElementById('mini-checklist-block');
+  const list = document.getElementById('mini-checklist-list');
+  if (!block || !list) return;
+
+  const checklist = d.checklist || [];
+  if (checklist.length === 0) {
+    block.classList.add('hidden');
+    return;
+  }
+
+  const catColors = {
+    Medications: 'bg-blue-50 border-blue-200',
+    Tests: 'bg-purple-50 border-purple-200',
+    Followup: 'bg-green-50 border-green-200',
+    'Follow-up': 'bg-green-50 border-green-200',
+    Lifestyle: 'bg-orange-50 border-orange-200',
+    Monitoring: 'bg-cyan-50 border-cyan-200',
+    Emergency: 'bg-red-50 border-red-200',
+    default: 'bg-surface-container-low border-outline-variant/20'
+  };
+
+  const displayItems = checklist.slice(0, 4);
+  list.innerHTML = displayItems.map((item, i) => {
+    const cat = item.category || 'General';
+    const colorCls = catColors[cat] || catColors.default;
+    const catShort = lang === 'hi'
+      ? (cat === 'Follow-up' ? 'फॉलो-अप' : cat === 'Medications' ? 'दवाइयाँ' : cat === 'Tests' ? 'जाँच' : cat === 'Lifestyle' ? 'जीवनशैली' : cat)
+      : cat;
+    return `<div class="flex items-start gap-3 p-3 rounded-xl border ${colorCls}">
+      <span class="material-symbols-outlined text-sm text-outline flex-shrink-0 mt-0.5">radio_button_unchecked</span>
+      <div class="flex-1 min-w-0">
+        <p class="text-xs font-semibold text-on-surface leading-relaxed">${esc(item.text || String(item))}</p>
+        <span class="text-[10px] font-bold text-outline uppercase tracking-wider mt-1 block">${esc(catShort)}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  const totalCount = checklist.length;
+  const remaining = totalCount - displayItems.length;
+  if (remaining > 0) {
+    list.innerHTML += `<a href="checklist.html" class="flex items-center justify-center gap-2 p-3 rounded-xl border border-dashed border-outline-variant/40 text-primary font-bold text-xs hover:bg-primary/5 transition-all">
+      <span class="material-symbols-outlined text-sm">arrow_forward</span>
+      ${lang === 'hi' ? `और ${remaining} आइटम देखें` : `View ${remaining} more items`}
+    </a>`;
+  }
+
+  block.classList.remove('hidden');
 }
 
 function updateHeadings(lang) {
@@ -764,7 +994,9 @@ function updateHeadings(lang) {
     'heading-clinical': lang === 'hi' ? 'डॉक्टर के नोट्स' : 'Doctor\'s Clinical Notes',
     'heading-plain': lang === 'hi' ? 'सादे शब्दों में' : 'In Plain Words',
     'heading-sideeffects': lang === 'hi' ? 'संभावित साइड इफेक्ट्स' : 'Possible Side Effects',
-    'heading-emergency': lang === 'hi' ? 'तुरंत डॉक्टर को बुलाएं अगर:' : 'Call Doctor Immediately If:'
+    'heading-emergency': lang === 'hi' ? 'तुरंत डॉक्टर को बुलाएं अगर:' : 'Call Doctor Immediately If:',
+    'heading-interactions': lang === 'hi' ? 'दवाइयों की अंतःक्रियाएं' : 'Drug Interactions',
+    'heading-recovery': lang === 'hi' ? 'स्वास्थ्य लाभ समयरेखा' : 'Recovery Timeline'
   };
   Object.keys(headings).forEach(id => {
     const el = document.getElementById(id);
@@ -847,6 +1079,12 @@ async function setLang(l,btn){
       }
       renderMedCards(currentData.medications, 'hi');
     }
+
+    // Re-render new sections in Hindi
+    renderDrugInteractions(currentData, 'hi');
+    renderRecoveryDays(currentData, 'hi');
+    renderMedicalFindings(currentData, 'hi');
+    renderMiniChecklist(currentData, 'hi');
   } else {
     // Switching to English - use stored original English data
     if (summaryEl) summaryEl.textContent = currentData.summary_en || '—';
@@ -868,20 +1106,16 @@ async function setLang(l,btn){
     // Render emergency in English - use stored original
     document.getElementById('emergency-mini').textContent = currentData.emergency_original || '—';
     
-    // Render medications in English - use stored original
+    // Render medications in English - use stored original with enhanced cards
     if (medCards && currentData.medications_en) {
-      console.log('[setLang] Using medications_en:', currentData.medications_en[0]);
-      const medsHTML = currentData.medications_en.map(m => {
-        return `<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/10 shadow-sm">
-          <div class="flex items-center gap-2 mb-2">
-            <span class="font-bold text-sm">${esc(m.name)}</span>
-          </div>
-          <div class="text-xs text-outline">${esc(m.dosage)} - ${esc(m.timing)}</div>
-          <div class="text-xs text-on-surface-variant mt-1">${esc(m.simple_instruction_en || m.simple_instruction)}</div>
-        </div>`;
-      }).join('');
-      medCards.innerHTML = medsHTML;
+      renderMedCards(currentData.medications_en, 'en');
     }
+
+    // Re-render new sections in English
+    renderDrugInteractions(currentData, 'en');
+    renderRecoveryDays(currentData, 'en');
+    renderMedicalFindings(currentData, 'en');
+    renderMiniChecklist(currentData, 'en');
   }
 }
 
@@ -903,17 +1137,24 @@ function exportPdf(){
     </tr>`).join('');
   const checklist=(currentData.checklist||[]).map(c=>`<li>☐ [${e(c.category)}] ${e(c.text)}</li>`).join('');
   const se=(currentData.side_effects||[]).map(s=>`<li>${s.icon||'⚠️'} ${e(s.text)}</li>`).join('');
+  const interactions=(currentData.drug_interactions||[]).map(i=>`<li><strong>[${(i.severity||'Medium').toUpperCase()}]</strong> ${e(i.drug_a)} + ${e(i.drug_b)}: ${e(i.description||'')}</li>`).join('');
+  const findings=(currentData.findings||currentData.abnormalities||[]).map(f=>`<li><strong>${e(f.area||'')}</strong>: ${e(f.observation||f.text||'')} (${e(f.severity||'Normal')})</li>`).join('');
+  const recoveryDays = (currentData.recovery_days_min && currentData.recovery_days_max)
+    ? `<p style="font-size:12px;margin-top:4px"><strong>Recovery:</strong> ${currentData.recovery_days_min}–${currentData.recovery_days_max} days</p>` : '';
 
   let html=`
     <h1>Aushadh AI Health Summary</h1>
     <p style="color:#6e797a;font-size:12px">Generated ${new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}${currentData.doctor_name?' &nbsp;|&nbsp; '+e(currentData.doctor_name):''}</p>
     <h2>Summary</h2>
     <p style="font-size:13px">${e(currentData.summary_en)}</p>
+    ${recoveryDays}
     <h2>Diagnosis</h2>
     <p style="font-size:11px;color:#6e797a;margin-bottom:4px">${e(currentData.diagnosis?.original_jargon)}</p>
     <p style="font-size:13px">${e(currentData.diagnosis?.simple_english)}</p>
+    ${interactions?`<h2>Drug Interactions</h2><ul style="font-size:12px;line-height:1.8">${interactions}</ul>`:''}
     <h2>Medications</h2>
     <table><thead><tr><th>Medicine</th><th>Dose</th><th>Timing</th><th>Duration</th><th>With Food</th></tr></thead><tbody>${meds}</tbody></table>
+    ${findings?`<h2>Medical Image Findings</h2><ul style="font-size:12px;line-height:1.8">${findings}</ul>`:''}
     ${se?`<h2>Side Effects to Watch</h2><ul style="font-size:12px;line-height:1.8">${se}</ul>`:''}
     ${currentData.emergency?`<h2>Emergency — Call Doctor If</h2><div class="pdf-emergency">${e(currentData.emergency)}</div>`:''}
     ${checklist?`<h2>Action Checklist</h2><ul style="font-size:12px;line-height:2;list-style:none;padding:0">${checklist}</ul>`:''}

@@ -458,19 +458,6 @@
         </div>
       </div>
 
-      <!-- CTAs -->
-      <div class="flex justify-center gap-3 flex-wrap mt-8 pt-8 border-t border-surface-container-high">
-        <a href="diagnosis.html" class="flex items-center gap-2 primary-gradient text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:shadow-primary/50 hover:-translate-y-0.5 active:scale-95 transition-all">
-          <span class="material-symbols-outlined text-sm">summarize</span> <span data-i18n="health_summary">Health Summary</span>
-        </a>
-        <a href="checklist.html" class="flex items-center gap-2 primary-gradient text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:shadow-primary/50 hover:-translate-y-0.5 active:scale-95 transition-all">
-          <span class="material-symbols-outlined text-sm">fact_check</span> <span data-i18n="checklist">Checklist</span>
-        </a>
-        <a href="documents.html" class="flex items-center gap-2 primary-gradient text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:shadow-primary/50 hover:-translate-y-0.5 active:scale-95 transition-all">
-          <span class="material-symbols-outlined text-sm">upload_file</span> <span data-i18n="new_upload">New Upload</span>
-        </a>
-      </div>
-
     </div>
   </section>
 </main>
@@ -703,7 +690,6 @@ function clearAdherenceData() {
         const medPlural = medLang === 'hi' ? (medCount > 1 ? '' : '') : (medCount !== 1 ? 's' : '');
         const medicinesLabel = medLang === 'hi' ? 'दवाइयाँ' : 'medicine';
         const noMedsText = medLang === 'hi' ? 'इस समय कोई दवाई नहीं' : 'No medicines this time';
-        const markTakenText = medLang === 'hi' ? 'लिया हुआ चिह्नित करें' : 'Mark as Taken';
         
         return `
         <div class="p-6 ${s.bg}">
@@ -727,9 +713,6 @@ function clearAdherenceData() {
                     <span class="text-[10px] font-bold px-2 py-0.5 ${s.badge} rounded-full">${esc(m.dosage)}</span>
                     <span class="text-[10px] text-outline">${esc(mWithFood)}</span>
                   </div>
-                  <button onclick="markTaken(this,'${esc(m.name)}')" class="taken-btn mt-2 w-full flex items-center justify-center gap-1 bg-surface-container-low hover:bg-secondary-container/30 text-outline hover:text-secondary border border-outline-variant/20 py-1.5 rounded-lg text-xs font-bold transition-all">
-                    <span class="material-symbols-outlined text-sm">check_circle</span> ${markTakenText}
-                  </button>
                 </div>`}).join('')}
         </div>`}).join('');
 
@@ -743,8 +726,8 @@ function clearAdherenceData() {
         const markTakenText = lang === 'hi' ? 'लिया हुआ चिह्नित करें' : 'Mark as Taken';
         
         return `
-        <div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm border border-outline-variant/10 hover:shadow-md transition-all">
-          <div class="p-5">
+        <div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm border border-outline-variant/10 hover:shadow-md transition-all flex flex-col">
+          <div class="p-5 flex-1">
             <div class="flex items-start justify-between mb-3">
               <div class="flex items-center gap-3">
                 <div class="w-10 h-10 ${colors[i%colors.length].split(' ')[0]} rounded-xl flex items-center justify-center">
@@ -762,7 +745,7 @@ function clearAdherenceData() {
             </div>
             <p class="text-xs text-on-surface-variant leading-relaxed">${esc(instruction)}</p>
           </div>
-          <div class="px-5 pb-4">
+          <div class="px-5 py-4">
             <button onclick="markTaken(this,'${esc(m.name)}')" class="taken-btn w-full flex items-center justify-center gap-1 bg-surface-container-low hover:bg-secondary-container/30 text-outline hover:text-secondary border border-outline-variant/20 py-2 rounded-xl text-xs font-bold transition-all">
               <span class="material-symbols-outlined text-sm">check_circle</span> ${markTakenText}
             </button>

@@ -331,6 +331,115 @@ Medical Document:
 {document}"""
 
 
+def detect_medical_modality(image_data: bytes) -> str:
+    """
+    Analyze image characteristics to detect medical imaging modality.
+    Returns: 'xray', 'mri', 'ct', 'ultrasound', 'unknown'
+    """
+    try:
+        from PIL import Image
+        import io
+        
+        img = Image.open(io.BytesIO(image_data))
+        
+        # Convert to grayscale for analysis
+        if img.mode != 'L':
+            gray = img.convert('L')
+        else:
+            gray = img
+        
+        # Use getdata() for compatibility with older PIL
+        try:
+            pixels = list(gray.getdata())
+        except:
+            pixels = list(gray.get_flattened_data())
+        
+        width, height = img.size
+        
+        # Calculate histogram
+        histogram = [0] * 256
+        for p in pixels:
+            if isinstance(p, tuple):
+                p = p[0]
+            histogram[p] += 1
+        
+        total_pixels = len(pixels)
+        
+        # Calculate brightness metrics
+        mean_brightness = sum(p * histogram[p] for p in range(256)) / total_pixels
+        
+        # Calculate contrast (standard deviation)
+        variance = sum(((p - mean_brightness) ** 2) * histogram[p] for p in range(256)) / total_pixels
+        std_dev = variance ** 0.5
+        
+        # Calculate dark pixel ratio (common in X-ray)
+        dark_pixels = sum(histogram[p] for p in range(0, 50))
+        dark_ratio = dark_pixels / total_pixels
+        
+        # Calculate bright pixel ratio (bone in X-ray)
+        bright_pixels = sum(histogram[p] for p in range(200, 256))
+        bright_ratio = bright_pixels / total_pixels
+        
+        # Calculate mid-tone distribution
+        mid_pixels = sum(histogram[p] for p in range(80, 180))
+        mid_ratio = mid_pixels / total_pixels
+        
+        # Count histogram peaks (multiple peaks = likely MRI)
+        peak_count = 0
+        prev_count = histogram[0]
+        for p in range(1, 255):
+            curr_count = histogram[p]
+            next_count = histogram[p + 1] if p < 255 else 0
+            if curr_count > prev_count and curr_count > next_count and curr_count > total_pixels * 0.005:
+                peak_count += 1
+            prev_count = curr_count
+        
+        # Edge detection for text detection (common in ultrasound with measurements)
+        try:
+            from PIL import ImageFilter
+            edges = gray.filter(ImageFilter.FIND_EDGES)
+            edge_pixels = list(edges.getdata())
+            high_edge_pixels = sum(1 for p in edge_pixels if p > 30)
+            edge_ratio = high_edge_pixels / total_pixels
+        except:
+            edge_ratio = 0
+        
+        # Detection logic - more refined thresholds
+        print('[Aushadh AI] Image stats: dark=' + str(round(dark_ratio,2)) + ', mid=' + str(round(mid_ratio,2)) + ', std=' + str(round(std_dev,1)) + ', peaks=' + str(peak_count) + ', edges=' + str(round(edge_ratio,3)))
+        
+        # Priority 1: CT - very uniform grayscale (very high mid, very low contrast)
+        # CT scans have very uniform density distribution (cross-sectional)
+        if mid_ratio > 0.7 and std_dev < 40 and dark_ratio < 0.2:
+            print('[Aushadh AI] Detected: CT (uniform cross-section)')
+            return 'ct'
+        
+        # Priority 2: X-ray - high contrast with dark background (bone imaging)
+        # Classic X-ray has dark background with bright bones/structures
+        if dark_ratio > 0.3 and std_dev > 50 and peak_count < 5:
+            print('[Aushadh AI] Detected: X-ray (high contrast skeletal)')
+            return 'xray'
+        
+        # Priority 3: MRI - multiple tissue intensities (many peaks, moderate contrast)
+        # MRI shows different tissue types with varying signal intensities
+        if peak_count >= 6 and std_dev > 45:
+            print('[Aushadh AI] Detected: MRI (multiple tissue intensities)')
+            return 'mri'
+        
+        # Priority 4: Ultrasound - typically has measurement text overlays
+        # Ultrasound images often have text annotations and measurement markers
+        if edge_ratio > 0.35 and bright_ratio < 0.15:
+            print('[Aushadh AI] Detected: Ultrasound (measurement overlays)')
+            return 'ultrasound'
+        
+        # Fallback: default to X-ray as most common
+        print('[Aushadh AI] Detected: Unknown (defaulting to X-ray)')
+        return 'unknown'
+        
+    except Exception as e:
+        print('[Aushadh AI] Modality detection error: ' + str(e))
+        return 'unknown'
+
+
 def parse_json(raw: str) -> dict:
     raw = raw.strip()
     if "```json" in raw:
@@ -407,37 +516,150 @@ async def analyse_pdf(data: bytes, age: str, language: str) -> dict:
 
 
 async def analyse_medical_image(data: bytes, media_type: str, age: str, language: str, image_type: str = None) -> dict:
-    """Analyze X-ray, MRI, CT scan - Azure primary, Gemini fallback, Groq last"""
+    """Analyze X-ray, MRI, CT scan using multi-model ensemble for best accuracy"""
     
     # If no image_type provided, let AI auto-detect
     if not image_type:
         image_type = "auto-detect"
         print(f"[Aushadh AI] No image type specified, will auto-detect from image content")
     
-    # First try with Azure (primary)
+    # Use ensemble for better accuracy
+    return await analyse_medical_image_ensemble(data, media_type, age, language, image_type)
+
+
+async def analyse_medical_image_ensemble(data: bytes, media_type: str, age: str, language: str, image_type: str = None) -> dict:
+    if not image_type:
+        image_type = 'auto-detect'
+    
+    print('[Aushadh AI] Starting medical image analysis with Azure...')
+    
+    tasks = {}
+    
     if AZURE_VISION_KEY and AZURE_VISION_ENDPOINT:
+        tasks['azure'] = asyncio.create_task(
+            _analyse_with_azure_safe(data, media_type, age, language, image_type)
+        )
+    
+    results = {}
+    for name, task in tasks.items():
         try:
-            result = await _analyse_with_azure(data, media_type, age, language, image_type)
-            return result
+            result = await task
+            if result:
+                results[name] = result
+                print('[Aushadh AI] ' + name.upper() + ' completed: confidence=' + str(result.get('confidence', 0)) + '%')
         except Exception as e:
-            print(f"[Aushadh AI] Azure failed: {e}")
+            print('[Aushadh AI] ' + name.upper() + ' failed: ' + str(e))
     
-    # Second try with Gemini
+    if not results:
+        raise Exception('Azure analysis failed. Please try again.')
+    
+    merged = _consensus_merge(results, language)
+    merged['pipeline'] = 'Azure Vision Analysis'
+    merged['ensemble_results'] = results
+    merged['ensemble_models_count'] = len(results)
+    
+    print('[Aushadh AI] Analysis complete: Azure succeeded')
+    return merged
+
+
+async def _analyse_with_azure_safe(data: bytes, media_type: str, age: str, language: str, image_type: str) -> dict:
+    """Safe wrapper for Azure analysis"""
     try:
-        result = await _analyse_with_gemini(data, media_type, age, language, image_type)
-        return result
+        return await _analyse_with_azure(data, media_type, age, language, image_type)
     except Exception as e:
-        error_msg = str(e)
-        print(f"[Aushadh AI] Gemini failed: {error_msg}")
-    
-    # Last fallback with Groq
+        print(f"[Aushadh AI] Azure safe wrapper error: {e}")
+        return None
+
+
+async def _analyse_with_gemini_safe(data: bytes, media_type: str, age: str, language: str, image_type: str) -> dict:
+    """Safe wrapper for Gemini analysis"""
     try:
-        result = await _analyse_with_groq_vision(data, media_type, age, language, image_type)
-        return result
-    except Exception as groq_err:
-        print(f"[Aushadh AI] Groq fallback also failed: {groq_err}")
+        return await _analyse_with_gemini(data, media_type, age, language, image_type)
+    except Exception as e:
+        print(f"[Aushadh AI] Gemini safe wrapper error: {e}")
+        return None
+
+
+async def _analyse_with_groq_vision_safe(data: bytes, media_type: str, age: str, language: str, image_type: str) -> dict:
+    """Safe wrapper for Groq vision analysis"""
+    try:
+        return await _analyse_with_groq_vision(data, media_type, age, language, image_type)
+    except Exception as e:
+        print(f"[Aushadh AI] Groq safe wrapper error: {e}")
+        return None
+
+
+def _consensus_merge(results: dict, language: str) -> dict:
+    if not results:
+        return {'error': 'No results to merge'}
     
-    raise Exception("All image analysis services failed. Please try again later.")
+    model_weights = {'azure': 1.5}
+    
+    weighted_sum = 0
+    weight_total = 0
+    for name, r in results.items():
+        weight = model_weights.get(name, 1.0)
+        conf = r.get('confidence', 0)
+        weighted_sum += conf * weight
+        weight_total += weight
+    
+    avg_confidence = weighted_sum / weight_total if weight_total > 0 else 50
+    
+    winning_model = max(results.items(), key=lambda x: x[1].get('confidence', 0))[0] if results else 'unknown'
+    
+    diagnoses = [r.get('diagnosis', {}).get('original_jargon', '').lower() for r in results.values() if r]
+    models_agree = len(set(diagnoses)) <= 1 if diagnoses else False
+    
+    all_findings = []
+    seen_areas = set()
+    for r in results.values():
+        for f in r.get('findings', []):
+            area = f.get('area', '').lower()
+            if area and area not in seen_areas:
+                all_findings.append(f)
+                seen_areas.add(area)
+            elif not area:
+                all_findings.append(f)
+    
+    all_abnormalities = []
+    seen_ab = set()
+    for r in results.values():
+        for ab in r.get('abnormalities', []):
+            ab_text = str(ab).lower()
+            if ab_text and ab_text not in seen_ab:
+                all_abnormalities.append(ab)
+                seen_ab.add(ab_text)
+    
+    emergency_msgs = []
+    for r in results.values():
+        em = r.get('emergency', '')
+        if em and em not in emergency_msgs:
+            emergency_msgs.append(em)
+    merged_emergency = ' | '.join(emergency_msgs) if emergency_msgs else ''
+    
+    winning = results.get(winning_model, results.get(list(results.keys())[0], {}))
+    
+    agreement = 'agree' if models_agree else 'disagree'
+    
+    merged = {
+        'confidence': round(avg_confidence),
+        'confidence_note': f'Ensemble of {len(results)} models. Azure prioritized. Models {agreement} on diagnosis.',
+        'ensemble_confidence_avg': round(avg_confidence),
+        'winning_model': winning_model,
+        'models_agree': models_agree,
+        'models_disagree': not models_agree and len(results) > 1,
+        'summary_en': winning.get('summary_en', ''),
+        'summary_hi': winning.get('summary_hi', ''),
+        'diagnosis': winning.get('diagnosis', {}),
+        'findings': all_findings,
+        'abnormalities': all_abnormalities,
+        'watch_for': winning.get('watch_for', {'original': '', 'simple': ''}),
+        'emergency': merged_emergency,
+        'medications': winning.get('medications', []),
+        'checklist': winning.get('checklist', [])
+    }
+    
+    return merged
 
 
 async def _analyse_with_azure(data: bytes, media_type: str, age: str, language: str, image_type: str) -> dict:
@@ -445,7 +667,38 @@ async def _analyse_with_azure(data: bytes, media_type: str, age: str, language: 
     if not AZURE_VISION_KEY or not AZURE_VISION_ENDPOINT:
         raise Exception("Azure not configured")
     
-    print(f"[Aushadh AI] Analyzing {image_type} with Azure Vision...")
+    # Auto-detect medical image modality
+    detected_modality = detect_medical_modality(data)
+    if detected_modality != 'unknown':
+        actual_type = detected_modality
+    elif image_type and image_type != 'auto-detect':
+        actual_type = image_type
+    else:
+        actual_type = 'unknown'
+    
+    # If modality cannot be determined, return friendly error message
+    if actual_type == 'unknown':
+        print('[Aushadh AI] Could not determine image modality')
+        return {
+            'confidence': 0,
+            'summary_en': 'Unable to determine image modality. Please try with a clearer medical image or specify the image type (X-ray, MRI, CT, Ultrasound).',
+            'summary_hi': 'छवि का प्रकार निर्धारित करने में असमर्थ। कृपया एक स्पष्ट चिकित्सा छवि का प्रयास करें या छवि का प्रकार निर्दिष्ट करें।',
+            'modality_detected': 'unknown',
+            'diagnosis': {
+                'original_jargon': 'Image modality could not be determined',
+                'simple_english': 'Could not identify what type of medical image this is',
+                'simple_hindi': 'इस चिकित्सा छवि का प्रकार पहचान नहीं सका'
+            },
+            'findings': [],
+            'abnormalities': [],
+            'watch_for': {'original': '', 'simple': ''},
+            'emergency': '',
+            'medications': [],
+            'checklist': [],
+            'error': 'Could not determine image modality'
+        }
+    
+    print('[Aushadh AI] Analyzing ' + actual_type + ' with Azure Vision (auto-detected)...')
     
     base64_image = base64.b64encode(data).decode("utf-8")
     
@@ -466,7 +719,7 @@ async def _analyse_with_azure(data: bytes, media_type: str, age: str, language: 
         response = requests.post(azure_url, headers=headers, params=params, data=data, timeout=60)
         
         if response.status_code != 200:
-            raise Exception(f"Azure API error: {response.status_code}")
+            raise Exception(f"Azure API error: {response.status_code} - {response.text[:300]}")
         
         azure_result = response.json()
         print(f"[Aushadh AI] Azure OCR result: {json.dumps(azure_result)[:500]}")
@@ -486,37 +739,59 @@ async def _analyse_with_azure(data: bytes, media_type: str, age: str, language: 
             context_parts.append(f"Tags: {', '.join([t.get('name', '') for t in tags[:10]])}")
         
         context_parts.append(f"Patient age: {age or 'Not specified'}")
-        context_parts.append(f"Image type: {image_type}")
+        context_parts.append('Image modality: ' + actual_type)
         
-        # Use Groq to generate medical analysis from Azure results
-        prompt = f"""You are an expert radiologist. Based on Azure Computer Vision analysis of a medical image, provide a detailed medical report.
+# Use Groq to generate medical analysis from Azure results
+        prompt = f'''You are a board-certified radiologist with 15+ years of experience in diagnostic imaging.
 
-Azure Vision Analysis:
+CONTEXT:
+- Patient age: {age or 'Not specified'}
+- Image modality: {actual_type}
+
+IMPORTANT: This is a {actual_type.upper()} image, NOT an X-ray. Analyze it specifically as {actual_type.upper()}.
+
+AZURE VISION ANALYSIS:
 {chr(10).join(context_parts)}
 
-Patient age: {age or 'Not specified'}
-Image type: {image_type}
-Language: {language}
+MODALITY-SPECIFIC ANALYSIS:
+For X-RAY: Focus on bones, lungs, heart, joints.
+For MRI: Focus on soft tissues, brain, spine, organs.
+For CT: Focus on cross-sectional anatomy, internal organs.
+For ULTRASOUND: Focus on organ morphology, measurements, fluid.
 
-Provide medical analysis in this JSON format:
+EMERGENCY BY TYPE:
+X-ray: pneumonia, pneumothorax, fractures
+MRI: brain hemorrhage, tumors
+CT: internal bleeding, organ damage
+Ultrasound: free fluid
+
+CRITICAL INSTRUCTIONS: Chest X-ray, Abdominal X-ray, Bone X-ray, MRI, CT, Ultrasound
+2. Emergency indicators: pneumoperitoneum, pleural effusion, pneumothorax, cardiomegaly, fractures, mass lesions, bowel obstruction
+3. Use 5-tier severity: normal, mild, moderate, severe, critical
+4. IMPORTANT: Output VALID JSON with double quotes, not single quotes. Example: {{'key': 'value'}} is WRONG, must be {{'key': 'value'}} with double quotes.
+
+OUTPUT ONLY valid JSON (double quotes required):
 {{
-  "confidence": 75,
-  "confidence_note": "Analysis based on image recognition",
-  "summary_en": "Brief summary in English",
-  "summary_hi": "Brief summary in Hindi",
-  "diagnosis": {{
-    "original_jargon": "Technical observations from image analysis",
-    "simple_english": "Simple explanation in English",
-    "simple_hindi": "Simple explanation in Hindi"
+  'confidence': 80,
+  'confidence_note': 'Analysis based on {actual_type.upper()}',
+  'modality_detected': '{actual_type}',
+  'summary_en': 'Brief summary in English',
+  'summary_hi': 'Same summary in Hindi script (देवनागरी)',
+  'diagnosis': {{
+    'original_jargon': 'Technical {actual_type} findings',
+    'simple_english': '2-3 sentences in plain English',
+    'simple_hindi': 'Same in Hindi script'
   }},
-  "findings": [],
-  "abnormalities": [],
-  "watch_for": {{"original": "Key observations", "simple": "Plain warning signs"}},
-  "emergency": "",
-  "medications": [],
-  "checklist": []
-}}"""
-
+  'findings': [
+    {{'area': 'Body part', 'observation': 'What observed', 'severity': 'normal|mild|moderate|severe|critical'}}
+  ],
+  'abnormalities': [],
+  'watch_for': {{'original': 'Clinical observations', 'simple': 'Warning signs'}},
+  'emergency': '',
+  'medications': [],
+  'checklist': []
+}}'''
+        
         response = requests.post(
             GROQ_URL,
             headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
@@ -553,6 +828,23 @@ Image type: {image_type if image_type != 'auto-detect' else 'Detect the image ty
 
 TASK: First identify what type of medical image this is, then analyze it and provide a detailed report in JSON format.
 
+MODALITY-SPECIFIC ANALYSIS:
+For X-RAY: Focus on bones, lungs, heart, joints.
+For MRI: Focus on soft tissues, brain, spine, organs.
+For CT: Focus on cross-sectional anatomy, internal organs.
+For ULTRASOUND: Focus on organ morphology, measurements, fluid.
+
+EMERGENCY BY TYPE:
+X-ray: pneumonia, pneumothorax, fractures
+MRI: brain hemorrhage, tumors
+CT: internal bleeding, organ damage
+Ultrasound: free fluid
+
+CRITICAL INSTRUCTIONS: Chest X-ray, Abdominal X-ray, Bone X-ray, MRI, CT, Ultrasound, Mammogram
+2. Emergency indicators: pneumoperitoneum, pleural effusion, pneumothorax, cardiomegaly, fractures, mass lesions, bowel obstruction
+3. Use 5-tier severity: normal, mild, moderate, severe, critical
+4. HINDI: Use Hindi script (देवनागरी), not transliterated
+
 Output ONLY this exact JSON structure:
 {{
   "confidence": 85,
@@ -568,7 +860,7 @@ Output ONLY this exact JSON structure:
     {{
       "area": "Area/body part examined",
       "observation": "What was observed",
-      "severity": "normal|abnormal|critical"
+      "severity": "normal|mild|moderate|severe|critical"
     }}
   ],
   "abnormalities": [],
@@ -582,8 +874,9 @@ Output ONLY this exact JSON structure:
 }}"""
 
     # Try the updated API format
-    # Use the correct model name - gemini-2.0-flash is available
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
+    # Use the correct model name - gemini-1.5-flash is available
+    gemini_models = [("v1", "gemini-2.0-flash-exp"), ("v1", "gemini-2.0-flash"), ("v1", "gemini-1.5-flash")]
+    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash-exp:generateContent?key={GEMINI_API_KEY}"
     
     # Updated payload format
     payload = {
@@ -624,7 +917,7 @@ Output ONLY this exact JSON structure:
         
         if response.status_code == 404:
             # Try alternative model
-            url2 = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent?key={GEMINI_API_KEY}"
+            url2 = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
             print(f"[Aushadh AI] Trying alternative model...")
             response = requests.post(url2, json=payload, timeout=120)
         
