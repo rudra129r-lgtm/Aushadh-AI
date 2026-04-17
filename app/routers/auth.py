@@ -1,11 +1,21 @@
-from fastapi import APIRouter, HTTPException, Depends, Header, Request
+from fastapi import APIRouter, HTTPException, Depends, Header, Request, Query
 from pydantic import BaseModel, Field, EmailStr
 from typing import Optional
 import re
+import os
+import secrets
+import requests
 from app.services import mongo_service
 from datetime import datetime, timedelta
 from collections import defaultdict
 import asyncio
+
+# Google OAuth Configuration
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
+GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
+GOOGLE_REDIRECT_URI = os.environ.get("GOOGLE_REDIRECT_URI", "https://aushadh-ai.onrender.com/api/auth/google/callback")
+GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
+GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
 
 router = APIRouter()
 
@@ -174,6 +184,117 @@ async def login(req: LoginRequest, request: Request):
 async def logout(authorization: Optional[str] = Header(None)):
     mongo_service.logout()
     return {"message": "Logged out successfully"}
+
+
+# ── Google OAuth ─────────────────────────────────────
+
+class GoogleOAuthResponse(BaseModel):
+    redirect_url: str
+
+@router.get("/auth/google", response_model=GoogleOAuthResponse, summary="Initiate Google OAuth")
+async def google_login():
+    """Redirect user to Google OAuth consent screen"""
+    if not GOOGLE_CLIENT_ID:
+        raise HTTPException(status_code=500, detail="Google OAuth not configured")
+    
+    # Generate state for CSRF protection
+    state = secrets.token_urlsafe(32)
+    
+    # Build Google OAuth URL
+    google_auth_url = (
+        f"https://accounts.google.com/o/oauth2/v2/auth?"
+        f"client_id={GOOGLE_CLIENT_ID}&"
+        f"redirect_uri={GOOGLE_REDIRECT_URI}&"
+        f"response_type=code&"
+        f"scope=openid%20email%20profile&"
+        f"access_type=online&"
+        f"state={state}&"
+        f"prompt=select_account"
+    )
+    
+    return {"redirect_url": google_auth_url}
+
+
+@router.get("/auth/google/callback", summary="Google OAuth callback")
+async def google_callback(code: str = Query(...), state: str = Query(None)):
+    """Handle Google OAuth callback - exchange code for tokens and create/find user"""
+    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
+        raise HTTPException(status_code=500, detail="Google OAuth not configured")
+    
+    try:
+        # Exchange authorization code for tokens
+        token_response = requests.post(
+            GOOGLE_TOKEN_URL,
+            data={
+                "code": code,
+                "client_id": GOOGLE_CLIENT_ID,
+                "client_secret": GOOGLE_CLIENT_SECRET,
+                "redirect_uri": GOOGLE_REDIRECT_URI,
+                "grant_type": "authorization_code"
+            },
+            headers={"Content-Type": "application/x-www-form-urlencoded"}
+        )
+        
+        if not token_response.ok:
+            print(f"Google token exchange failed: {token_response.text}")
+            raise HTTPException(status_code=400, detail="Failed to exchange code with Google")
+        
+        token_data = token_response.json()
+        access_token = token_data.get("access_token")
+        
+        # Get user info from Google
+        userinfo_response = requests.get(
+            GOOGLE_USERINFO_URL,
+            headers={"Authorization": f"Bearer {access_token}"}
+        )
+        
+        if not userinfo_response.ok:
+            raise HTTPException(status_code=400, detail="Failed to get user info from Google")
+        
+        google_user = userinfo_response.json()
+        google_id = google_user.get("id")
+        email = google_user.get("email")
+        name = google_user.get("name", "")
+        profile_photo = google_user.get("picture")
+        
+        if not google_id or not email:
+            raise HTTPException(status_code=400, detail="Invalid Google response - missing user info")
+        
+        # Register or login user via Google
+        result = mongo_service.register_google_user(google_id, email, name, profile_photo)
+        
+        # Build frontend URL with token
+        frontend_url = f"/login.html?token={result['access_token']}&google=1"
+        
+        # Redirect to frontend
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url=frontend_url, status_code=302)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Google OAuth error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Google OAuth failed: {str(e)}")
+
+
+@router.get("/auth/google/userinfo", summary="Get Google user info")
+async def get_google_userinfo(authorization: Optional[str] = Header(None)):
+    """Get user info for a Google-authenticated user"""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    token = authorization.replace("Bearer ", "")
+    user_data = mongo_service.verify_token(token)
+    
+    if not user_data:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    
+    return {
+        "id": user_data.get("id", ""),
+        "email": user_data.get("email", ""),
+        "name": user_data.get("name", ""),
+        "profile_photo": user_data.get("profile_photo")
+    }
 
 
 @router.post("/auth/refresh-session", summary="Refresh session to extend timeout")

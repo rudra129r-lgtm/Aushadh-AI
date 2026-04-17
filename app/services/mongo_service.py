@@ -47,6 +47,7 @@ def get_db():
 def _ensure_indexes():
     try:
         db.users.create_index("email", unique=True)
+        db.users.create_index("google_id", unique=True, sparse=True)
         db.medications.create_index("user_id")
         db.analyses.create_index("user_id")
         db.analysis_history.create_index("user_id")
@@ -55,6 +56,103 @@ def _ensure_indexes():
 
 def _hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
+
+def find_user_by_google_id(google_id: str):
+    """Find user by Google ID"""
+    try:
+        db = get_db()
+        user = db.users.find_one({"google_id": google_id})
+        return user
+    except Exception as e:
+        print(f"Error finding user by google_id: {e}")
+        return None
+
+def find_user_by_email(email: str):
+    """Find user by email"""
+    try:
+        db = get_db()
+        user = db.users.find_one({"email": email})
+        return user
+    except Exception as e:
+        print(f"Error finding user by email: {e}")
+        return None
+
+def register_google_user(google_id: str, email: str, name: str, profile_photo: str = None):
+    """Register new user via Google OAuth or link Google to existing account"""
+    try:
+        db = get_db()
+        
+        # Check if user exists with this Google ID
+        existing_google_user = find_user_by_google_id(google_id)
+        if existing_google_user:
+            # User already exists with Google, create session
+            import secrets
+            from datetime import datetime
+            token = secrets.token_urlsafe(32)
+            db.users.update_one(
+                {"_id": existing_google_user["_id"]},
+                {"$set": {"session_token": token, "session_created_at": datetime.now()}}
+            )
+            return {
+                "access_token": token,
+                "user_id": str(existing_google_user["_id"]),
+                "email": existing_google_user["email"],
+                "name": existing_google_user.get("name", name),
+                "profile_photo": existing_google_user.get("profile_photo", profile_photo),
+                "is_new_user": False
+            }
+        
+        # Check if user exists with same email
+        existing_email_user = find_user_by_email(email)
+        if existing_email_user:
+            # Link Google ID to existing account
+            import secrets
+            from datetime import datetime
+            token = secrets.token_urlsafe(32)
+            db.users.update_one(
+                {"_id": existing_email_user["_id"]},
+                {"$set": {"google_id": google_id, "session_token": token, "session_created_at": datetime.now()}}
+            )
+            return {
+                "access_token": token,
+                "user_id": str(existing_email_user["_id"]),
+                "email": existing_email_user["email"],
+                "name": existing_email_user.get("name", name),
+                "profile_photo": existing_email_user.get("profile_photo", profile_photo),
+                "is_new_user": False,
+                "linked_existing": True
+            }
+        
+        # Create new user
+        import secrets
+        from datetime import datetime
+        token = secrets.token_urlsafe(32)
+        
+        new_user = {
+            "email": email,
+            "name": name,
+            "google_id": google_id,
+            "profile_photo": profile_photo,
+            "language": "en",
+            "created_at": datetime.now(),
+            "session_token": token,
+            "session_created_at": datetime.now()
+        }
+        
+        result = db.users.insert_one(new_user)
+        
+        return {
+            "access_token": token,
+            "user_id": str(result.inserted_id),
+            "email": email,
+            "name": name,
+            "profile_photo": profile_photo,
+            "is_new_user": True
+        }
+        
+    except Exception as e:
+        print(f"Error registering Google user: {e}")
+        raise Exception(f"Failed to register Google user: {str(e)}")
 
 SESSION_TIMEOUT_MINUTES = 30
 

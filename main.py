@@ -90,25 +90,26 @@ async def chrome_devtools():
 
 @app.get("/{filename}")
 async def serve(filename: str):
-    if filename == "api":
-        return {"message": "Aushadh AI API", "docs": "/docs"}
+    # Don't match API routes - let them be handled by routers
+    if filename in ["api", "auth", "chat", "analyse", "export", "profile", "health"]:
+        return {"error": "Route not found"}, 404
+    
+    # Only serve actual static files
     if filename in STATIC_FILES:
         file_path = BASE_DIR / filename
         if file_path.exists():
-            # Determine correct media type
             if filename.endswith(".png"):
                 media_type = "image/png"
-                logger.info(f"📷 Serving image: {filename} from {file_path}")
             elif filename.endswith(".html"):
                 media_type = "text/html; charset=utf-8"
-                logger.info(f"📄 Serving HTML: {filename}")
             elif filename.endswith(".js"):
                 media_type = "application/javascript"
             else:
                 media_type = "application/octet-stream"
             return FileResponse(file_path, media_type=media_type)
-        else:
-            logger.error(f"❌ File not found: {file_path}")
+    
+    # Fallback to index.html for SPA routing
     if (BASE_DIR / "index.html").exists():
         return FileResponse(BASE_DIR / "index.html", media_type="text/html; charset=utf-8")
+    
     return {"error": "File not found"}, 404

@@ -28,26 +28,35 @@ OPENFDA_URL       = "https://api.fda.gov/drug/label.json"
 # In-memory cache for OpenFDA (survives across requests)
 OPENFDA_CACHE = {}
 
-# Better system prompt for medical document extraction
-VISION_SYSTEM = """You are an expert at reading handwritten and printed medical prescriptions.
+# System prompt for vision/OCR - medical document extraction
+VISION_SYSTEM = """You are an expert at reading handwritten and printed medical prescriptions from India.
 
 TASK: Extract ALL information from this medical document and format as JSON.
 
+COMMON PRESCRIPTION PATTERNS:
+- Medicine forms: Tab (tablet), Cap (capsule), Syp (syrup), Inj (injection), Cre/Cream, Lot (lotion), Dt (dissolve tablet), Gran (granules)
+- Timing: Morning/M/Morn, Afternoon/A, Evening/E, Night/N/HS (at bedtime), empty stomach (AC)
+- Frequency: OD (once daily), BD/TW (twice daily), TDS/TDS/3D (3 times daily), QID (4 times daily), SOS (when needed), PRN (as needed)
+- With food: PC (after food), AC (before food), with food, with milk, with water
+- Dosage units: mg, ml, g, mcg, IU, units, drops
+- Duration: days, weeks, months, until review
+
 CRITICAL RULES:
-1. Read VERY carefully - some text may be faint or handwritten
-2. Extract EXACT medicine names - they are usually brand names like: Glucored, Januvia, Metformin, Azithromycin, etc.
-3. For timing, look for: Morning (M), Afternoon (A), Evening (E), Night (N) or BD (twice daily), OD (once daily), TDS (3 times daily)
-4. Extract dosage: usually in mg or ml
-5. If you CANNOT read something, write "Cannot read" - DO NOT make up information
-6. List each medication as: name, dosage, timing, duration (if stated), with_food (if stated)
-7. Extract patient name, age, gender, date, doctor name
-8. Extract any tests/investigations mentioned
-9. Extract any advice: diet, exercise, follow-up
+1. Read VERY carefully - some text may be faint, overlapping, or handwritten
+2. Extract EXACT medicine names as written - common brands: Crocin, Dolo, Augmentin, Glucored, Janumet, Metformin, Azithromycin, Omeprazole, etc.
+3. If text is unclear, note "Cannot read" - DO NOT guess or make up information
+4. For timing abbreviations: OD=once, BD=twice, TDS=three times, QID=four times
+5. Extract dosage exactly as written (e.g., "500mg", "650mg", "10ml")
+6. Look for duration: "for 5 days", "for 1 week", "for 1 month", "until review"
+7. Extract patient name, age, gender, date, doctor name, hospital/clinic name
+8. Extract any tests/investigations: blood tests, X-ray, ECG, ultrasound, etc.
+9. Extract all advice: diet restrictions, exercise limits, follow-up instructions
 
 Output ONLY valid JSON. Start with { and end with }"""
 
-# System prompt for text analysis
+# System prompt for text analysis - medical document simplifier
 SYSTEM = """You are Aushadh AI, a strict medical document simplifier for Indian patients.
+
 CRITICAL RULES:
 1. Extract ONLY what is written in the document — never add outside advice
 2. Medications must EXACTLY match the document — never change dosages
@@ -55,10 +64,16 @@ CRITICAL RULES:
 4. Return ONLY raw JSON — no markdown, no code blocks
 5. Your response must be valid JSON starting with { and ending with }
 6. Extract tests/investigations separately from medications
-7. plain_english explanations: 2-4 sentences, conversational
-8. side_effects from medications listed - top 2-3 warnings
-9. checklist: tests, diet, activity limits, follow-up
-10. For side_effects severity: 'high'=needs hospital immediately, 'medium'=expected but monitor, 'low'=mild discomfort. NEVER default all to 'low'. Classify each accurately.
+
+SIDEEFFECTS SEVERITY (classify EACH accurately, never default all to 'low'):
+- HIGH 🚨: difficulty breathing, severe rash/hives, chest pain, swelling of face/throat, severe vomiting - needs IMMEDIATE hospital
+- MEDIUM ⚠️: nausea, vomiting, dizziness, severe headache, diarrhea - monitor and contact doctor if worsens
+- LOW 💊: mild stomach upset, slight drowsiness, dry mouth, mild headache - usually temporary
+
+7. plain_english explanations: 2-4 sentences, conversational, family-friendly
+8. side_effects: extract from medications listed - top 2-3 warnings with accurate severity
+9. checklist: tests, diet, activity limits, follow-up, medicine reminders
+10. For antibiotics: ALWAYS include "complete full course" in checklist
 11. recovery_days_min/max: extract from document (e.g. "rest for 7 days" → min=7, max=7; "2-3 weeks" → min=14, max=21). Return null only if truly not mentioned."""
 
 
@@ -284,47 +299,61 @@ def build_prompt(age: str, language: str, document: str) -> str:
     return f"""Patient age: {age or 'Not specified'}
 Output language: {language}
 
-Analyse this medical document and return ONLY this exact JSON. Start directly with {{
+Analyse this medical document and return ONLY this exact JSON structure. Start directly with {{
+
+CONFIDENTIALITY SCORING:
+- 90-100: Clear printed prescription, all details visible, easy to read
+- 70-89: Mostly clear, minor unclear text, minor handwriting issues
+- 50-69: Several unclear items, partial extraction possible
+- Below 50: Mostly unclear, significant guessing required, mention what was unreadable
 
 {{
   "confidence": 85,
-  "confidence_note": "Brief note about document clarity",
-  "summary_en": "One sentence plain English summary for family, max 25 words",
-  "summary_hi": "Same summary in Hindi script",
+  "confidence_note": "Brief note about document clarity (e.g., 'Clear printed text', 'Some handwritten portions unclear')",
+  "summary_en": "One sentence plain English summary for family - max 25 words, no jargon",
+  "summary_hi": "Same summary in Hindi script (देवनागरी)",
   "diagnosis": {{
-    "original_jargon": "Exact medical diagnosis terms from document",
-    "simple_english": "2-4 sentences plain English explanation",
-    "simple_hindi": "Same in Hindi script"
+    "original_jargon": "Exact medical diagnosis/condition as written in document",
+    "simple_english": "2-3 sentences plain English explanation - what this means for the patient",
+    "simple_hindi": "Same explanation in Hindi script"
   }},
   "watch_for": {{
-    "original": "Exact clinical observations from document",
-    "simple": "Plain English what to watch for"
+    "original": "Exact clinical observations, vitals, or concerns noted by doctor",
+    "simple": "Plain English - what symptoms or signs the patient should watch for"
   }},
   "medications": [
     {{
-      "name": "Exact medicine name (keep in original language)",
-      "dosage": "e.g. 500mg (ALWAYS keep in English)",
-      "timing": "e.g. Morning and Night (ALWAYS keep in English)",
-      "duration": "e.g. 30 days (ALWAYS keep in English)",
-      "with_food": "Yes/No/Before meals/After meals/As prescribed (ALWAYS keep in English)",
-      "simple_instruction": "One plain sentence instruction in English ONLY",
-      "simple_instruction_hi": "Same instruction in Hindi script ONLY"
+      "name": "Exact medicine name as written (e.g., 'Dolo 650', 'Metformin 500', 'Augmentin 625')",
+      "dosage": "Always in English (e.g., '500mg', '650mg', '10ml', '2 drops')",
+      "timing": "Clear English (e.g., 'Morning and Night', 'Three times daily after meals', 'At bedtime')",
+      "duration": "Always in English (e.g., '7 days', '2 weeks', '1 month', 'Until review')",
+      "with_food": "Before meals / After meals / With food / With milk / As prescribed / Not specified",
+      "simple_instruction": "One sentence in plain English (e.g., 'Take one tablet after breakfast with water')",
+      "simple_instruction_hi": "Same instruction in Hindi script"
     }}
   ],
   "side_effects": [
-    {{"icon": "🚨 for high / ⚠️ for medium / 💊 for low", "text": "Side effect in plain language", "severity": "high|medium|low — classify accurately, not all low"}}
+    {{
+      "icon": "🚨 for HIGH / ⚠️ for MEDIUM / 💊 for LOW",
+      "text": "Side effect in plain language (e.g., 'May cause drowsiness', 'Nausea if taken empty stomach')",
+      "severity": "HIGH / MEDIUM / LOW - classify EACH side effect accurately"
+    }}
   ],
-  "emergency": "Call doctor immediately if: [specific warning signs]",
+  "emergency": "Seek emergency care if: [specific warning signs from document, e.g., 'difficulty breathing, swelling of face/throat, severe vomiting']",
   "checklist": [
-    {{"category": "Follow-up", "text": "Action item", "done": false}}
+    {{"category": "Follow-up", "text": "e.g., 'Review with doctor in 1 week', 'Get blood tests done'}},
+    {{"category": "Diet", "text": "e.g., 'Avoid oily food', 'Take light meals', 'Avoid alcohol'}},
+    {{"category": "Activity", "text": "e.g., 'Complete bed rest for 3 days', 'No strenuous exercise for 1 week'}},
+    {{"category": "Test", "text": "e.g., 'Complete blood count after 1 week', 'Follow-up X-ray in 1 month'}},
+    {{"category": "Medicine", "text": "e.g., 'Complete full antibiotic course even if feeling better', 'Store in cool place'"}}
   ],
-  "recovery_days_min": 7,
-  "recovery_days_max": 14,
-  "recovery_note": "Plain sentence summary of recovery period",
-  "patient_age": "from document or null",
-  "patient_gender": "Male/Female/Other or null",
-  "doctor_name": null,
-  "doctor_specialty": null
+  "recovery_days_min": null,
+  "recovery_days_max": null,
+  "recovery_note": "Brief note about expected recovery (e.g., 'Most symptoms improve within 1-2 weeks with proper rest and medication')",
+  "patient_age": "Patient age from document or null",
+  "patient_gender": "Male / Female / Other / null",
+  "doctor_name": "Doctor name from document or null",
+  "doctor_specialty": "Doctor specialty (e.g., Cardiologist, General Physician) or null"
 }}
 
 Medical Document:
@@ -748,48 +777,64 @@ CONTEXT:
 - Patient age: {age or 'Not specified'}
 - Image modality: {actual_type}
 
-IMPORTANT: This is a {actual_type.upper()} image, NOT an X-ray. Analyze it specifically as {actual_type.upper()}.
+IMPORTANT: This is a {actual_type.upper()} image. Analyze it specifically as {actual_type.upper()}.
 
 AZURE VISION ANALYSIS:
 {chr(10).join(context_parts)}
 
 MODALITY-SPECIFIC ANALYSIS:
-For X-RAY: Focus on bones, lungs, heart, joints.
-For MRI: Focus on soft tissues, brain, spine, organs.
-For CT: Focus on cross-sectional anatomy, internal organs.
-For ULTRASOUND: Focus on organ morphology, measurements, fluid.
+For X-RAY: Focus on bones, lungs, heart, joints. Common findings: pneumonia, TB, fractures, cardiomegaly
+For MRI: Focus on soft tissues, brain, spine, organs. Common findings: hemorrhage, tumors, disc issues
+For CT: Focus on cross-sectional anatomy, internal organs. Common findings: bleeding, organ damage, stones
+For ULTRASOUND: Focus on organ morphology, measurements, fluid. Common findings: cysts, stones, fluid
 
-EMERGENCY BY TYPE:
-X-ray: pneumonia, pneumothorax, fractures
-MRI: brain hemorrhage, tumors
-CT: internal bleeding, organ damage
-Ultrasound: free fluid
+EMERGENCY INDICATORS (flag as CRITICAL if present):
+- Pneumoperitoneum, pleural effusion, pneumothorax
+- Cardiomegaly, pulmonary edema
+- Fractures (especially skull, spine)
+- Mass lesions, tumors
+- Bowel obstruction, free fluid
+- Brain hemorrhage, mass effect
 
-CRITICAL INSTRUCTIONS: Chest X-ray, Abdominal X-ray, Bone X-ray, MRI, CT, Ultrasound
-2. Emergency indicators: pneumoperitoneum, pleural effusion, pneumothorax, cardiomegaly, fractures, mass lesions, bowel obstruction
-3. Use 5-tier severity: normal, mild, moderate, severe, critical
-4. IMPORTANT: Output VALID JSON with double quotes, not single quotes. Example: {{'key': 'value'}} is WRONG, must be {{'key': 'value'}} with double quotes.
+SEVERITY GUIDELINES:
+- NORMAL: No abnormality detected
+- MILD: Minor findings, likely benign, follow-up recommended
+- MODERATE: Significant findings requiring attention
+- SEVERE: Serious findings needing prompt medical review
+- CRITICAL: Emergency findings requiring immediate action
+
+CRITICAL INSTRUCTIONS:
+1. Output VALID JSON with double quotes only
+2. Use 5-tier severity: normal, mild, moderate, severe, critical
+3. For emergency findings, set severity to "critical" and include in emergency field
+4. summary_en should be 1-2 sentences, family-friendly, no jargon
 
 OUTPUT ONLY valid JSON (double quotes required):
 {{
-  'confidence': 80,
-  'confidence_note': 'Analysis based on {actual_type.upper()}',
-  'modality_detected': '{actual_type}',
-  'summary_en': 'Brief summary in English',
-  'summary_hi': 'Same summary in Hindi script (देवनागरी)',
-  'diagnosis': {{
-    'original_jargon': 'Technical {actual_type} findings',
-    'simple_english': '2-3 sentences in plain English',
-    'simple_hindi': 'Same in Hindi script'
+  "confidence": 80,
+  "confidence_note": "Brief note about image quality and analysis confidence",
+  "modality_detected": "{actual_type}",
+  "summary_en": "One sentence summary - what was found and what it means for the patient in plain English",
+  "summary_hi": "Same summary in Hindi script (देवनागरी)",
+  "diagnosis": {{
+    "original_jargon": "Technical radiological findings as reported",
+    "simple_english": "2-3 sentences plain English explanation of what this means",
+    "simple_hindi": "Same explanation in Hindi script"
   }},
-  'findings': [
-    {{'area': 'Body part', 'observation': 'What observed', 'severity': 'normal|mild|moderate|severe|critical'}}
+  "findings": [
+    {{"area": "Body part/region examined", "observation": "What was observed", "severity": "normal|mild|moderate|severe|critical"}}
   ],
-  'abnormalities': [],
-  'watch_for': {{'original': 'Clinical observations', 'simple': 'Warning signs'}},
-  'emergency': '',
-  'medications': [],
-  'checklist': []
+  "abnormalities": ["List of abnormal findings that need attention"],
+  "watch_for": {{
+    "original": "Clinical observations from report",
+    "simple": "Warning signs patient should watch for in plain English"
+  }},
+  "emergency": "Emergency signs to watch for (e.g., 'Seek emergency care if symptoms worsen, new weakness develops, or severe pain occurs')",
+  "medications": [],
+  "checklist": [
+    {{"category": "Follow-up", "text": "e.g., 'Review imaging report with doctor within 1 week'"}},
+    {{"category": "Test", "text": "e.g., 'Additional tests may be recommended based on findings'"}}
+  ]
 }}'''
         
         response = requests.post(
@@ -821,7 +866,7 @@ async def _analyse_with_gemini(data: bytes, media_type: str, age: str, language:
     
     base64_image = base64.b64encode(data).decode("utf-8")
     
-    prompt = f"""You are an expert radiologist analyzing medical images.
+    prompt = f"""You are an expert radiologist analyzing medical images for Indian patients.
 
 Patient age: {age or 'Not specified'}
 Image type: {image_type if image_type != 'auto-detect' else 'Detect the image type from the image (X-ray, MRI, CT, Ultrasound, etc.)'}
@@ -829,48 +874,62 @@ Image type: {image_type if image_type != 'auto-detect' else 'Detect the image ty
 TASK: First identify what type of medical image this is, then analyze it and provide a detailed report in JSON format.
 
 MODALITY-SPECIFIC ANALYSIS:
-For X-RAY: Focus on bones, lungs, heart, joints.
-For MRI: Focus on soft tissues, brain, spine, organs.
-For CT: Focus on cross-sectional anatomy, internal organs.
-For ULTRASOUND: Focus on organ morphology, measurements, fluid.
+For X-RAY: Focus on bones, lungs, heart, joints. Common findings: pneumonia, TB, fractures, cardiomegaly
+For MRI: Focus on soft tissues, brain, spine, organs. Common findings: hemorrhage, tumors, disc issues
+For CT: Focus on cross-sectional anatomy, internal organs. Common findings: bleeding, organ damage, stones
+For ULTRASOUND: Focus on organ morphology, measurements, fluid. Common findings: cysts, stones, fluid
 
-EMERGENCY BY TYPE:
-X-ray: pneumonia, pneumothorax, fractures
-MRI: brain hemorrhage, tumors
-CT: internal bleeding, organ damage
-Ultrasound: free fluid
+EMERGENCY INDICATORS (flag as CRITICAL if present):
+- Pneumoperitoneum, pleural effusion, pneumothorax
+- Cardiomegaly, pulmonary edema
+- Fractures (especially skull, spine)
+- Mass lesions, tumors
+- Bowel obstruction, free fluid
+- Brain hemorrhage, mass effect
 
-CRITICAL INSTRUCTIONS: Chest X-ray, Abdominal X-ray, Bone X-ray, MRI, CT, Ultrasound, Mammogram
-2. Emergency indicators: pneumoperitoneum, pleural effusion, pneumothorax, cardiomegaly, fractures, mass lesions, bowel obstruction
-3. Use 5-tier severity: normal, mild, moderate, severe, critical
-4. HINDI: Use Hindi script (देवनागरी), not transliterated
+SEVERITY GUIDELINES:
+- NORMAL: No abnormality detected
+- MILD: Minor findings, likely benign, follow-up recommended
+- MODERATE: Significant findings requiring attention
+- SEVERE: Serious findings needing prompt medical review
+- CRITICAL: Emergency findings requiring immediate action
 
-Output ONLY this exact JSON structure:
+CRITICAL INSTRUCTIONS:
+1. Output VALID JSON with double quotes only - no markdown code blocks
+2. Use 5-tier severity: normal, mild, moderate, severe, critical
+3. For emergency findings, set severity to "critical" and include warning in emergency field
+4. summary_en should be 1-2 sentences, family-friendly, no medical jargon
+5. For Hindi fields, use Hindi script (देवनागरी), not transliterated Hindi
+
+OUTPUT ONLY this exact JSON structure:
 {{
   "confidence": 85,
-  "confidence_note": "Note about image quality",
-  "summary_en": "One sentence summary of findings in English",
-  "summary_hi": "Same summary in Hindi script",
+  "confidence_note": "Brief note about image quality and analysis confidence",
+  "summary_en": "One sentence summary - what was found and what it means for the patient in plain English",
+  "summary_hi": "Same summary in Hindi script (देवनागरी)",
   "diagnosis": {{
-    "original_jargon": "Technical radiological findings",
-    "simple_english": "2-3 sentences explaining findings in plain English",
-    "simple_hindi": "Same explanation in Hindi"
+    "original_jargon": "Technical radiological findings as reported",
+    "simple_english": "2-3 sentences plain English explanation of what this means",
+    "simple_hindi": "Same explanation in Hindi script"
   }},
   "findings": [
     {{
-      "area": "Area/body part examined",
+      "area": "Body part/region examined",
       "observation": "What was observed",
       "severity": "normal|mild|moderate|severe|critical"
     }}
   ],
-  "abnormalities": [],
+  "abnormalities": ["List of abnormal findings that need attention"],
   "watch_for": {{
-    "original": "Clinical observations requiring attention",
-    "simple": "Plain English warning signs"
+    "original": "Clinical observations from report",
+    "simple": "Warning signs patient should watch for in plain English"
   }},
-  "emergency": "",
+  "emergency": "Emergency signs to watch for (e.g., 'Seek emergency care if symptoms worsen, new weakness develops, or severe pain occurs')",
   "medications": [],
-  "checklist": []
+  "checklist": [
+    {{"category": "Follow-up", "text": "e.g., 'Review imaging report with doctor within 1 week'"}},
+    {{"category": "Test", "text": "e.g., 'Additional tests may be recommended based on findings'"}}
+  ]
 }}"""
 
     # Try the updated API format
@@ -956,7 +1015,7 @@ async def _analyse_with_groq_vision(data: bytes, media_type: str, age: str, lang
         # Then use Groq to analyze the extracted text
         lang_suffix = "" if language == "English" else "_hi"
         
-        prompt = f"""You are a medical expert. Analyze this medical image report/prescription.
+        prompt = f"""You are a medical expert. Analyze this medical image report/prescription for Indian patients.
 
 Image type: {image_type}
 Patient age: {age or 'Not specified'}
@@ -964,23 +1023,33 @@ Patient age: {age or 'Not specified'}
 Extracted text from image:
 {extracted_text[:2000]}
 
+INSTRUCTIONS:
+1. Analyze the extracted text and provide medical findings
+2. Output VALID JSON with double quotes only
+3. summary_en should be 1-2 sentences, family-friendly, no jargon
+4. For Hindi fields, use Hindi script (देवनागरी)
+
 Provide a medical analysis in JSON format:
 {{
   "confidence": 80,
-  "confidence_note": "Analysis based on extracted text",
-  "summary_en": "Brief summary in English",
-  "summary_hi": "Summary in Hindi",
+  "confidence_note": "Note about analysis confidence based on text extraction quality",
+  "summary_en": "One sentence summary in plain English",
+  "summary_hi": "Same summary in Hindi script (देवनागरी)",
   "diagnosis": {{
-    "original_jargon": "Original medical terms found",
-    "simple_english": "Simple explanation in English",
-    "simple_hindi": "Simple explanation in Hindi"
+    "original_jargon": "Technical medical terms from report",
+    "simple_english": "2-3 sentences plain English explanation",
+    "simple_hindi": "Same explanation in Hindi script"
   }},
-  "findings": [],
-  "abnormalities": [],
-  "watch_for": {{"original": "", "simple": ""}},
-  "emergency": "",
+  "findings": [
+    {{"area": "Body part", "observation": "What was observed", "severity": "normal|mild|moderate|severe|critical"}}
+  ],
+  "abnormalities": ["List of abnormal findings"],
+  "watch_for": {{"original": "Clinical observations", "simple": "Warning signs in plain English"}},
+  "emergency": "Emergency signs to watch for",
   "medications": [],
-  "checklist": []
+  "checklist": [
+    {{"category": "Follow-up", "text": "Review with doctor"}}
+  ]
 }}"""
 
         response = requests.post(
@@ -1071,7 +1140,7 @@ async def chat_reply(message: str, history: list, context: dict, language: str) 
         not_found_msg = "This information is not in your prescription, please ask your doctor."
         medical_refuse = "I'm Aushadh AI. I can only answer questions about your prescription. Please ask medical questions related to your prescription."
     
-    system = f"""You are Aushadh AI, a medical assistant for patients.
+    system = f"""You are Aushadh AI, a friendly medical assistant for Indian patients.
 
 PRESCRIPTION DATA:
 {ctx}
@@ -1081,8 +1150,10 @@ CRITICAL RULES:
 2. If the question is NOT answered in the prescription data above, ONLY reply: "{not_found_msg}"
 3. Do NOT add any additional information when using rule 2.
 4. If question is not medical/prescription related, ONLY reply: "{medical_refuse}"
-5. Keep answers simple and concise.
-6. If answering about medications, include: name, dosage, timing.
+5. Keep answers simple, clear, and encouraging.
+6. If answering about medications, include: medicine name, dosage, when to take, how to take (with food/before/after).
+7. Use simple language - patients may not understand medical terms.
+8. If asking about side effects, explain in plain terms what to expect and when to worry.
 
 Reply in {language}. JUST reply with your answer text only. DO NOT use JSON format."""
 

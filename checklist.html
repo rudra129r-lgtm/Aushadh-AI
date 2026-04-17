@@ -429,22 +429,23 @@ let checkedCount=0, totalCount=0, data=null;
       medium:{cls:'border-tertiary-fixed bg-surface-container-lowest',badge:'bg-tertiary-fixed text-on-tertiary-fixed',label: lang === 'hi' ? 'अपेक्षित' : 'EXPECTED'},
       low:{cls:'border-secondary bg-surface-container-lowest',badge:'bg-secondary-container text-on-secondary-container',label: lang === 'hi' ? 'ध्यान दें' : 'WATCH'}
     };
-    seList.innerHTML=data.side_effects.map(se=>{
+    const translatedSE = await Promise.all(data.side_effects.map(async se => {
       const c=sevConfig[se.severity]||sevConfig.low;
-      const seText = typeof translateChecklistItem === 'function' ? translateChecklistItem(se.text) : se.text;
+      const seText = typeof translateChecklistItem === 'function' ? await translateChecklistItem(se.text) : se.text;
       return `<div class="p-5 rounded-lg shadow-sm border-l-4 ${c.cls}">
         <div class="flex justify-between items-start mb-2">
           <h3 class="font-bold text-base text-on-surface">${se.icon||'⚠️'} ${esc(seText)}</h3>
           <span class="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${c.badge} ml-2 flex-shrink-0">${c.label}</span>
         </div>
       </div>`;
-    }).join('');
+    }));
+    seList.innerHTML=translatedSE.join('');
   }
 
   // Emergency
   if(data.emergency){
     document.getElementById('emergency-box').classList.remove('hidden');
-    const emergencyText = typeof translateChecklistItem === 'function' ? translateChecklistItem(data.emergency) : data.emergency;
+    const emergencyText = typeof translateChecklistItem === 'function' ? await translateChecklistItem(data.emergency) : data.emergency;
     document.getElementById('emergency-text').textContent=emergencyText;
   }
 
@@ -457,6 +458,13 @@ let checkedCount=0, totalCount=0, data=null;
     if(!groups[cat])groups[cat]=[];
     groups[cat].push({...item,idx:i});
   });
+
+  // Translate all items first
+  await Promise.all(Object.values(groups).flat().map(async item => {
+    if (lang === 'hi' && !item.text_hi) {
+      item.text_hi = typeof translateChecklistItem === 'function' ? await translateChecklistItem(item.text) : item.text;
+    }
+  }));
 
   const catConfig={
     Test:{icon:'science',color:'text-tertiary',bg:'bg-tertiary-fixed/20 border-tertiary-fixed/30'},
@@ -481,10 +489,7 @@ let checkedCount=0, totalCount=0, data=null;
       <h3 class="text-[10px] font-black uppercase tracking-widest text-outline mb-3">${catLabel}</h3>
       <div class="space-y-2">`;
     catItems.forEach(item=>{
-      let itemText = item.text;
-      if (lang === 'hi') {
-        itemText = item.text_hi || (typeof translateChecklistItem === 'function' ? translateChecklistItem(item.text) : item.text);
-      }
+      const itemText = lang === 'hi' ? (item.text_hi || item.text) : item.text;
       html+=`<label class="cl-item flex items-center justify-between p-4 ${cfg.bg} border rounded-lg cursor-pointer hover:opacity-90 transition-all group" id="cli-${item.idx}" onclick="toggleItem(${item.idx},this)">
         <div class="flex items-center gap-3">
           <div class="w-6 h-6 rounded-md border-2 border-outline-variant flex items-center justify-center flex-shrink-0 transition-all" id="cb-${item.idx}"></div>

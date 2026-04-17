@@ -560,20 +560,28 @@ function translateNotSpecified() {
   return lang === 'hi' ? 'निर्दिष्ट नहीं' : 'Not specified';
 }
 
-function translateChecklistItem(text) {
+async function translateToHindi(text) {
+  if (!text || text === '—') return text;
+  try {
+    const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|hi`);
+    const data = await response.json();
+    return data.responseData?.translatedText || text;
+  } catch(e) { return text; }
+}
+
+const checklistTranslationsCache = {};
+
+async function translateChecklistItem(text) {
   const lang = getCurrentLanguage();
   if (lang === 'en') return text;
   
-  const translations = {
-    'Schedule follow-up appointment in 1 month': '1 महीने में फॉलो-अप अपॉइंटमेंट शेड्यूल करें',
-    'Monitor blood pressure regularly': 'नियमित रूप से रक्तचाप की निगरानी करें',
-    'Stomach upset or dizziness': 'पेट की परेशान या चक्कर',
-    'Headache or fatigue': 'सिरदर्द या थकान',
-    'Allergic reactions or difficulty breathing': 'एलर्जी प्रतिक्रियाएं या सांस लेने में कठिनाई',
-    'Call doctor immediately if experiencing chest pain, shortness of breath, or severe allergic reactions': 'सीने में दर्द, सांस की तकलीफ या गंभीर एलर्जी प्रतिक्रियाओं का अनुभव होने पर तुरंत डॉक्टर को कॉल करें'
-  };
+  if (checklistTranslationsCache[text]) {
+    return checklistTranslationsCache[text];
+  }
   
-  return translations[text] || text;
+  const translated = await translateToHindi(text);
+  checklistTranslationsCache[text] = translated;
+  return translated;
 }
 
 function t(key) {
@@ -600,7 +608,7 @@ function applyTranslations() {
 
 // Initialize language on load
 (function initLanguage() {
-  const savedLang = localStorage.getItem('medbudday_language');
+  const savedLang = localStorage.getItem('medbuddy_language');
   if (savedLang) {
     currentLang = savedLang;
     document.documentElement.lang = savedLang === 'hi' ? 'hi' : 'en';
