@@ -826,7 +826,7 @@
     }
 
     // Fetch the Google auth URL from API
-    fetch(`${API}/auth/google`)
+    fetch(`${window.location.origin}/api/auth/google`)
       .then(res => res.json())
       .then(data => {
         // Redirect to Google OAuth consent screen
