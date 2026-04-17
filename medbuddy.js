@@ -731,6 +731,20 @@ function logout() {
   window.location.replace('/login.html');
 }
 
+function isDemoUser() {
+  const token = localStorage.getItem('medbuddy_token');
+  return token === 'demo_token';
+}
+
+function exitDemoMode() {
+  localStorage.removeItem('medbuddy_token');
+  localStorage.removeItem('medbuddy_logged_in');
+  localStorage.removeItem('medbuddy_user');
+  localStorage.removeItem('medbuddy_demo_data');
+  sessionStorage.clear();
+  window.location.replace('/login.html');
+}
+
 // ── Session Timeout ─────────────────────────────────────────
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
 const SESSION_WARNING_MS = 27 * 60 * 1000;
