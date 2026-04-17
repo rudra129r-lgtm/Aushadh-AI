@@ -489,8 +489,9 @@ async function loadProfile() {
   const profile = JSON.parse(localStorage.getItem('medbuddy_profile') || '{}');
   
   let analysis = getAnalysis();
-  // Skip loading from server if no local data
-  if (localStorage.getItem('medbuddy_analysis') && localStorage.getItem('medbuddy_logged_in')) {
+  // Skip loading from server if no local data or if demo user
+  const token = localStorage.getItem('medbuddy_token');
+  if (localStorage.getItem('medbuddy_analysis') && localStorage.getItem('medbuddy_logged_in') && token !== 'demo_token') {
     const serverData = await loadAnalysisFromServer();
     if (serverData) analysis = serverData;
   }

@@ -637,6 +637,13 @@ function requireAuth() {
       return;
     }
     
+    // Skip server validation for demo users
+    if (token === 'demo_token') {
+      console.log('Demo user - skipping server validation');
+      authValidated = true;
+      return;
+    }
+    
     console.log('Token exists, validating with server...');
     
     // Don't block page loading - do auth check in background
@@ -1019,6 +1026,15 @@ function getAnalysis() {
   }
   // Check for demo data (not saved to any storage)
   if (window.DEMO_DATA) return window.DEMO_DATA;
+  // Check sessionStorage for demo data backup
+  const demoBackup = sessionStorage.getItem('medbuddy_demo_data');
+  if (demoBackup) {
+    try {
+      return JSON.parse(demoBackup);
+    } catch(e) {
+      console.error('Error parsing demo data:', e);
+    }
+  }
   return null;
 }
 

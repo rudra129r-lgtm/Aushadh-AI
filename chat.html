@@ -358,8 +358,9 @@ let prescriptionData = null;
   
   // Check if this is a fresh login after logout - don't load from server
   const freshLoginAfterLogout = sessionStorage.getItem('fresh_login_after_logout');
+  const token = localStorage.getItem('medbuddy_token');
   
-  if (localStorage.getItem('medbuddy_logged_in') && !freshLoginAfterLogout) {
+  if (localStorage.getItem('medbuddy_logged_in') && !freshLoginAfterLogout && token !== 'demo_token') {
     const serverData = await loadAnalysisFromServer();
     if (serverData) prescriptionData = serverData;
   }

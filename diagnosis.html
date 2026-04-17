@@ -526,9 +526,38 @@ let currentData = null;
 let initialLang = 'en';  // Store the initial language from sessionStorage
 
 (async function initData() {
-  let data = getAnalysis();
+  // Check if demo user first - skip all server calls
+  const token = localStorage.getItem('medbuddy_token');
+  const isDemoUser = token === 'demo_token';
+  
+  let data = null;
+  
+  // For demo users, get data from sessionStorage backup first
+  if (isDemoUser) {
+    console.log('=== DEMO USER MODE ===');
+    const demoBackup = sessionStorage.getItem('medbuddy_demo_data');
+    if (demoBackup) {
+      try {
+        data = JSON.parse(demoBackup);
+        console.log('Demo data loaded from sessionStorage');
+      } catch(e) {
+        console.error('Error parsing demo data:', e);
+      }
+    }
+    if (!data && window.DEMO_DATA) {
+      data = window.DEMO_DATA;
+      console.log('Demo data loaded from window.DEMO_DATA');
+    }
+  } else {
+    data = getAnalysis();
+  }
+  
   console.log('=== initData START ===');
+  console.log('isDemoUser:', isDemoUser);
   console.log('getAnalysis() returned:', data ? 'data found' : 'null');
+  if (data) {
+    console.log('Data summary:', data.summary_en?.substring(0, 50) + '...');
+  }
   
   // Check saved language preference from upload page
   const savedLang = sessionStorage.getItem('medbuddy_lang');
@@ -552,7 +581,8 @@ let initialLang = 'en';  // Store the initial language from sessionStorage
   // Store the initial language before data loads
   initialLang = getCurrentLanguage();
   
-  if (localStorage.getItem('medbuddy_logged_in')) {
+  // Skip server load for demo users
+  if (!isDemoUser && localStorage.getItem('medbuddy_logged_in')) {
     console.log('Loading from server...');
     const serverData = await loadAnalysisFromServer();
     console.log('Server data:', serverData ? 'found' : 'null');

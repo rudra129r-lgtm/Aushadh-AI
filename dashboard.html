@@ -973,7 +973,8 @@ document.addEventListener('DOMContentLoaded', async function() {
   const hasLocalData = localStorage.getItem('medbuddy_analysis');
 
   // Load from server only if we have local data and logged in
-  if (hasLocalData && localStorage.getItem('medbuddy_logged_in')) {
+  const token = localStorage.getItem('medbuddy_token');
+  if (hasLocalData && localStorage.getItem('medbuddy_logged_in') && token !== 'demo_token') {
     // Only load history if not fresh login
     if (!isFreshLogin) {
       const serverHistory = await loadHistoryFromServer();

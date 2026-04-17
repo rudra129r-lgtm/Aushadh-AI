@@ -807,12 +807,73 @@
 
   /* ==================== DEMO LOGIN ==================== */
   function handleDemoLogin() {
-    saveUser({ name: 'Demo Patient', email: 'demo@medbuddy.ai', age: '52', lang: 'english', isGuest: true });
-    localStorage.setItem('medbuddy_logged_in', 'true');
-    sessionStorage.setItem('just_logged_in', 'true');
-    loadDemoData();
     const btn = event.target.closest('button');
     if (btn) { btn.innerHTML = '<span class="material-symbols-outlined text-sm animate-spin">progress_activity</span> Loading demo...'; btn.disabled = true; }
+    
+    // Set demo data directly (don't depend on medbuddy.js loading order)
+    window.DEMO_DATA = {
+      confidence: 88,
+      confidence_note: "Complex case requiring immediate medical attention",
+      summary_en: "Mr. Rahul Sharma was admitted with acute chest pain and shortness of breath. Emergency cardiac workup revealed STEMI (heart attack). Underwent urgent angioplasty with stent placement in LAD artery. Now on dual antiplatelet therapy, statins, and beta-blockers. Discharge to cardiac rehabilitation with strict monitoring required.",
+      summary_hi: "राहुल शर्मा को सीने में दर्द और सांस फूलने के कारण अस्पताल में भर्ती किया गया। हार्ट अटैक का पता चला। अत्यावश्यक एंजियोप्लास्टी हुई। अब दवाइयां चल रही हैं।",
+      diagnosis: {
+        original_jargon: "STEMI (ST-Elevation Myocardial Infarction) - Acute Anterior Wall MI - Critical Care Unit admission - Post primary PCI with drug-eluting stent to LAD - Triple vessel disease - Hypertension - Type 2 Diabetes Mellitus",
+        simple_english: "You had a heart attack (STEMI). The main artery supplying blood to your heart (LAD) was completely blocked. An emergency procedure was done to open the blocked artery and a small tube (stent) was placed to keep it open. You were in the ICU for 3 days. You now have three arteries that have blockages and need ongoing cardiac care."
+      },
+      watch_for: {
+        original: "Chest pain (angina), shortness of breath, palpitations, sweating, dizziness, fainting - call emergency immediately if any occur",
+        simple: "Watch for: Any chest pain, difficulty breathing, fast heartbeat, sweating, or feeling faint. These could mean your heart is in trouble. Call ambulance immediately."
+      },
+      emergency: "IMMEDIATE ACTION REQUIRED: If you experience chest pain, difficulty breathing, sudden sweating, or fainting, call ambulance immediately (102/108). Do not wait. This is a life-threatening cardiac condition.",
+      medications: [
+        { name: "Aspirin", dosage: "75mg", timing: "Once daily - Morning", duration: "Long-term (lifetime)", with_food: "After food", simple_instruction: "Take EVERY DAY for life. This prevents blood clots. Never skip." },
+        { name: "Clopidogrel", dosage: "75mg", timing: "Once daily - Morning", duration: "12 months (dual antiplatelet therapy)", with_food: "After food", simple_instruction: "Take for 1 year along with Aspirin. Both are critical to prevent another heart attack." },
+        { name: "Atorvastatin", dosage: "40mg", timing: "Once daily - Night", duration: "Long-term (lifetime)", with_food: "After food", simple_instruction: "Take at bedtime. This lowers cholesterol to prevent more blockages." },
+        { name: "Metoprolol", dosage: "25mg", timing: "Twice daily - Morning & Night", duration: "Long-term", with_food: "After food", simple_instruction: "Take morning and night. Keeps heart rate controlled. Do not stop suddenly." },
+        { name: "Ramipril", dosage: "5mg", timing: "Once daily - Morning", duration: "Long-term", with_food: "Can take with or without food", simple_instruction: "Take in morning. Controls blood pressure. Watch for persistent cough." }
+      ],
+      side_effects: [
+        { icon: "🚨", text: "Bleeding from gums, nose, or in urine/stool - contact doctor immediately", severity: "high" },
+        { icon: "🚨", text: "Chest pain, breathlessness, palpitations - call emergency (102/108) immediately", severity: "high" },
+        { icon: "🚨", text: "Severe dizziness, fainting, or fall - could be due to low blood pressure", severity: "high" },
+        { icon: "💊", text: "Mild stomach discomfort - take medicines after food", severity: "low" },
+        { icon: "😴", text: "Fatigue or mild dizziness - avoid driving until stable", severity: "low" }
+      ],
+      checklist: [
+        { text: "Take Aspirin 75mg daily - lifetime", category: "Medications" },
+        { text: "Take Clopidogrel 75mg daily for 12 months", category: "Medications" },
+        { text: "Take Atorvastatin 40mg at night", category: "Medications" },
+        { text: "Take Metoprolol 25mg twice daily", category: "Medications" },
+        { text: "Cardiac rehabilitation program - 3 times per week", category: "Follow-up" },
+        { text: "ECG review after 2 weeks", category: "Tests" },
+        { text: "Lipid profile and cardiac enzymes after 1 month", category: "Tests" },
+        { text: "Echocardiography after 3 months", category: "Tests" },
+        { text: "Strict low-salt, low-fat diet", category: "Lifestyle" },
+        { text: "No smoking or alcohol", category: "Lifestyle" },
+        { text: "Light exercise only after doctor approval", category: "Lifestyle" },
+        { text: "Monitor blood pressure daily", category: "Monitoring" },
+        { text: "Watch for chest pain or breathlessness", category: "Emergency" }
+      ],
+      recovery_note: "6-8 weeks recovery period. No heavy lifting, climbing stairs, or strenuous activity. Cardiac rehab essential. Follow-up with cardiologist in 2 weeks.",
+      doctor_name: "Dr. Rajesh Kumar",
+      doctor_specialty: "Interventional Cardiologist",
+      hospital: "Apollo Hospitals, Delhi",
+      patient_age: "58",
+      patient_gender: "Male",
+      recovery_days_min: 42,
+      recovery_days_max: 56,
+      drug_interactions: [],
+      pipeline: "Demo (Pre-loaded)"
+    };
+    
+    // Set required auth values
+    localStorage.setItem('medbuddy_token', 'demo_token');
+    localStorage.setItem('medbuddy_logged_in', 'true');
+    localStorage.setItem('medbuddy_user', JSON.stringify({ name: 'Demo Patient', email: 'demo@medbuddy.ai', age: '52', isGuest: true }));
+    sessionStorage.setItem('just_logged_in', 'true');
+    // Also save to sessionStorage as backup (in case window.DEMO_DATA doesn't persist)
+    sessionStorage.setItem('medbuddy_demo_data', JSON.stringify(window.DEMO_DATA));
+    
     window.location.replace('/diagnosis.html');
   }
 

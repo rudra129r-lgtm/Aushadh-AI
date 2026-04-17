@@ -606,7 +606,8 @@ function clearAdherenceData() {
     // Check if this is a fresh login after logout - don't load from server
     const freshLoginAfterLogout = sessionStorage.getItem('fresh_login_after_logout');
     
-    if (localStorage.getItem('medbuddy_logged_in') && !freshLoginAfterLogout) {
+    const token = localStorage.getItem('medbuddy_token');
+    if (localStorage.getItem('medbuddy_logged_in') && !freshLoginAfterLogout && token !== 'demo_token') {
       console.log('Loading from server...');
       try {
         const serverData = await loadAnalysisFromServer();
