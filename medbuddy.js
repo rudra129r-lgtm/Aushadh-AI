@@ -2,10 +2,9 @@
  * Aushadh AI — Shared Utilities
  * Connects frontend to FastAPI backend
  * 
- * DEPLOY v2.1.0 - 2026-04-19
- * [FIX] Added Hindi translations for diagnosis.html empty state:
- * - no_analysis: अभी तक कोई विश्लेषण नहीं
- * - upload_prescription_summary: Hindi text
+ * DEPLOY v2.2.0 - 2026-04-19
+ * [FIX] Translation fallback - t() now checks ALL pages if key not found in current page
+ * [FIX] Added Hindi translations for diagnosis.html empty state
  */
 
 var API = window.location.origin + "/api";
@@ -596,9 +595,18 @@ function t(key) {
   const page = window.location.pathname.split('/').pop().replace('.html', '');
   const langKey = currentLang === 'hi' ? 'hi' : 'en';
   
+  // Check page-specific translations
   if (TRANSLATIONS[page] && TRANSLATIONS[page][key]) {
     return TRANSLATIONS[page][key][langKey] || key;
   }
+  
+  // Fallback - check all pages for the key
+  for (const pageKey in TRANSLATIONS) {
+    if (TRANSLATIONS[pageKey] && TRANSLATIONS[pageKey][key]) {
+      return TRANSLATIONS[pageKey][key][langKey] || key;
+    }
+  }
+  
   return key;
 }
 
