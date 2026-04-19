@@ -1,6 +1,11 @@
 /**
  * Aushadh AI — Shared Utilities
  * Connects frontend to FastAPI backend
+ * 
+ * DEPLOY v2.1.0 - 2026-04-19
+ * [FIX] Added Hindi translations for diagnosis.html empty state:
+ * - no_analysis: अभी तक कोई विश्लेषण नहीं
+ * - upload_prescription_summary: Hindi text
  */
 
 var API = window.location.origin + "/api";
