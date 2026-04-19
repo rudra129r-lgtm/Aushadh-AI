@@ -88,11 +88,21 @@ async def root():
 async def chrome_devtools():
     return {}
 
-@app.get("/{filename}")
-async def serve(filename: str):
+@app.get("/{path:path}")
+async def serve(path: str):
     # Don't match API routes - let them be handled by routers
-    if filename in ["api", "auth", "chat", "analyse", "export", "profile", "health"]:
+    if path in ["api", "auth", "chat", "analyse", "export", "profile", "health"]:
         return {"error": "Route not found"}, 404
+    
+    # Handle logos directory
+    if path.startswith("logos/"):
+        logo_file = path.replace("logos/", "")
+        file_path = BASE_DIR / "logos" / logo_file
+        if file_path.exists():
+            return FileResponse(file_path, media_type="image/png")
+        return {"error": "Logo not found"}, 404
+    
+    filename = path.split("/")[-1]
     
     # Only serve actual static files
     if filename in STATIC_FILES:

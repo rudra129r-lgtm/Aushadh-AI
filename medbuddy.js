@@ -135,6 +135,7 @@ const TRANSLATIONS = {
     view_summary: { en: 'View Summary', hi: 'सारांश देखें' },
     view_meds: { en: 'View Meds', hi: 'दवाइयाँ देखें' },
     no_analysis: { en: 'No Analysis Yet', hi: 'अभी तक कोई विश्लेषण नहीं' },
+    upload_prescription_summary: { en: 'Upload your prescription or discharge summary first. Our AI will simplify it into plain language for you.', hi: 'पहले अपना नुस्खा या डिस्चार्ज सारांश अपलोड करें। हमारी AI इसे आपके लिए सरल भाषा में समझाएगी।' },
     upload_first: { en: 'Upload your first prescription to see your health summary here.', hi: 'अपना स्वास्थ्य सारांश यहाँ देखने के लिए अपना पहला नुस्खा अपलोड करें।' },
     upload_now: { en: 'Upload Now', hi: 'अभी अपलोड करें' },
     current: { en: 'CURRENT', hi: 'वर्तमान' },
@@ -301,7 +302,9 @@ const TRANSLATIONS = {
     quick_checklist: { en: 'Quick Checklist', hi: 'त्वरित चेकलिस्ट' },
     view_full_checklist: { en: 'View full checklist', hi: 'पूरी चेकलिस्ट देखें' },
     no_interactions: { en: 'No known drug interactions found.', hi: 'कोई ज्ञात दवा अंतःक्रिया नहीं मिली।' },
-    checklist_items: { en: 'checklist items', hi: 'चेकलिस्ट आइटम' }
+    checklist_items: { en: 'checklist items', hi: 'चेकलिस्ट आइटम' },
+    no_analysis: { en: 'No Analysis Yet', hi: 'अभी तक कोई विश्लेषण नहीं' },
+    upload_prescription_summary: { en: 'Upload your prescription or discharge summary first. Our AI will simplify it into plain language for you.', hi: 'पहले अपना नुस्खा या डिस्चार्ज सारांश अपलोड करें। हमारी AI इसे आपके लिए सरल भाषा में समझाएगी।' }
   },
   medications: {
     title: { en: 'Medications', hi: 'दवाइयाँ' },
@@ -627,7 +630,8 @@ function requireAuth() {
   console.log('=== requireAuth START ===');
   console.log('current page:', current);
   console.log('loggedIn:', loggedIn);
-  console.log('token exists:', !!token);
+  console.log('token:', token);
+  console.log('token is demo:', token === 'demo_token');
   
   if (!publicPages.includes(current)) {
     if (!loggedIn || !token) {
@@ -1031,23 +1035,37 @@ async function saveMedicationsToServer(medications) {
   }
 }
 function getAnalysis() {
+  const token = localStorage.getItem('medbuddy_token');
+  
+  // Check for demo user first - prioritize demo data
+  if (token === 'demo_token') {
+    console.log('[getAnalysis] Demo user detected');
+    // Check sessionStorage for demo data backup first
+    const demoBackup = sessionStorage.getItem('medbuddy_demo_data');
+    if (demoBackup) {
+      try {
+        console.log('[getAnalysis] Loading demo from sessionStorage');
+        return JSON.parse(demoBackup);
+      } catch(e) {
+        console.error('[getAnalysis] Error parsing demo data:', e);
+      }
+    }
+    // Fall back to window.DEMO_DATA
+    if (window.DEMO_DATA) {
+      console.log('[getAnalysis] Loading demo from window.DEMO_DATA');
+      return window.DEMO_DATA;
+    }
+    console.log('[getAnalysis] No demo data found');
+    return null;
+  }
+  
+  // Regular user - get from localStorage
   const primary = localStorage.getItem('medbuddy_analysis');
   if (primary) return JSON.parse(primary);
   const backup = sessionStorage.getItem('medbuddy_analysis_backup');
   if (backup) {
     localStorage.setItem('medbuddy_analysis', backup);
     return JSON.parse(backup);
-  }
-  // Check for demo data (not saved to any storage)
-  if (window.DEMO_DATA) return window.DEMO_DATA;
-  // Check sessionStorage for demo data backup
-  const demoBackup = sessionStorage.getItem('medbuddy_demo_data');
-  if (demoBackup) {
-    try {
-      return JSON.parse(demoBackup);
-    } catch(e) {
-      console.error('Error parsing demo data:', e);
-    }
   }
   return null;
 }

@@ -201,7 +201,7 @@
 <!-- Sidebar -->
 <aside class="hidden md:flex flex-col h-screen w-56 fixed left-0 top-0 sidebar-clean py-8 z-40">
   <div class="px-5 mb-6 flex items-center gap-2">
-    <img src="logo_green.png" alt="Aushadh AI" class="w-8 h-8 object-contain sidebar-logo">
+    <img src="/logos/logo_green.png" alt="Aushadh AI" class="w-8 h-8 object-contain sidebar-logo">
     <div>
       <h1 class="text-lg font-bold text-primary">Aushadh AI</h1>
       <p class="text-[10px] uppercase tracking-widest text-outline">Clinical Serenity</p>
@@ -294,10 +294,10 @@
       <div class="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
         <span class="material-symbols-outlined text-primary text-5xl">upload_file</span>
       </div>
-      <h2 class="font-headline text-3xl font-black text-on-surface mb-3">No Analysis Yet</h2>
-      <p class="text-on-surface-variant max-w-md mx-auto mb-8">Upload your prescription or discharge summary first. Our AI will simplify it into plain language for you.</p>
+      <h2 class="font-headline text-3xl font-black text-on-surface mb-3" data-i18n="no_analysis">No Analysis Yet</h2>
+      <p class="text-on-surface-variant max-w-md mx-auto mb-8" data-i18n="upload_prescription_summary">Upload your prescription or discharge summary first. Our AI will simplify it into plain language for you.</p>
       <a href="documents.html" class="inline-flex items-center gap-2 primary-gradient text-white font-black px-8 py-4 rounded-full shadow-lg hover:-translate-y-0.5 transition-all">
-        <span class="material-symbols-outlined">upload_file</span> Upload Document
+        <span class="material-symbols-outlined">upload_file</span> <span data-i18n="upload_document">Upload Document</span>
       </a>
     </div>
 
@@ -526,29 +526,30 @@ let currentData = null;
 let initialLang = 'en';  // Store the initial language from sessionStorage
 
 (async function initData() {
-  // Check if demo user first - skip all server calls
-  const token = localStorage.getItem('medbuddy_token');
-  const isDemoUser = token === 'demo_token';
-  
+  // Check for demo data first (regardless of token state - handles edge cases)
   let data = null;
   
-  // For demo users, get data from sessionStorage backup first
-  if (isDemoUser) {
-    console.log('=== DEMO USER MODE ===');
-    const demoBackup = sessionStorage.getItem('medbuddy_demo_data');
-    if (demoBackup) {
-      try {
-        data = JSON.parse(demoBackup);
-        console.log('Demo data loaded from sessionStorage');
-      } catch(e) {
-        console.error('Error parsing demo data:', e);
-      }
+  // Check sessionStorage for demo data first
+  const demoBackup = sessionStorage.getItem('medbuddy_demo_data');
+  if (demoBackup) {
+    try {
+      data = JSON.parse(demoBackup);
+      console.log('=== DEMO DATA LOADED ===');
+      console.log('source: sessionStorage');
+    } catch(e) {
+      console.error('Error parsing demo data:', e);
     }
-    if (!data && window.DEMO_DATA) {
-      data = window.DEMO_DATA;
-      console.log('Demo data loaded from window.DEMO_DATA');
-    }
-  } else {
+  }
+  
+  // Also check window.DEMO_DATA
+  if (!data && window.DEMO_DATA) {
+    data = window.DEMO_DATA;
+    console.log('=== DEMO DATA LOADED ===');
+    console.log('source: window.DEMO_DATA');
+  }
+  
+  // If still no data, use standard getAnalysis()
+  if (!data) {
     data = getAnalysis();
   }
   
@@ -581,12 +582,15 @@ let initialLang = 'en';  // Store the initial language from sessionStorage
   // Store the initial language before data loads
   initialLang = getCurrentLanguage();
   
-  // Skip server load for demo users
-  if (!isDemoUser && localStorage.getItem('medbuddy_logged_in')) {
-    console.log('Loading from server...');
-    const serverData = await loadAnalysisFromServer();
-    console.log('Server data:', serverData ? 'found' : 'null');
-    if (serverData) data = serverData;
+  // Only load from server if no data and user is logged in (not demo)
+  if (!data) {
+    const token = localStorage.getItem('medbuddy_token');
+    if (token && token !== 'demo_token' && localStorage.getItem('medbuddy_logged_in')) {
+      console.log('Loading from server...');
+      const serverData = await loadAnalysisFromServer();
+      console.log('Server data:', serverData ? 'found' : 'null');
+      if (serverData) data = serverData;
+    }
   }
   
   const showAlert = sessionStorage.getItem('showEmergencyAlert');
