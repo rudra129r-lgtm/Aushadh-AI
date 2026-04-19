@@ -1010,7 +1010,10 @@ async def _analyse_with_groq_vision(data: bytes, media_type: str, age: str, lang
         print(f"[Aushadh AI] Using Groq fallback for {image_type}...")
         
         # First extract text from image using OCR
-        extracted_text = await extract_text_from_image(data, media_type)
+        if media_type == "application/pdf":
+            extracted_text = extract_pdf_text(data)
+        else:
+            extracted_text = ocr_image(data)
         
         # Then use Groq to analyze the extracted text
         lang_suffix = "" if language == "English" else "_hi"

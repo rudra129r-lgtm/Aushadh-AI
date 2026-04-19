@@ -916,6 +916,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
     const isGoogle = urlParams.get('google');
+    const API = window.location.origin + "/api";
     
     if (token && isGoogle === '1') {
       // Token received from Google OAuth callback
