@@ -440,8 +440,8 @@ let checkedCount=0, totalCount=0, data=null;
 
   const lang = getCurrentLanguage();
 
-  // Family summary
-  const summaryText = (data.summary_hi || data.summary_en) || 'Summary from your prescription';
+  // Family summary - use correct language
+  const summaryText = lang === 'hi' ? (data.summary_hi || data.summary_en) : (data.summary_en || data.summary_hi) || 'Summary from your prescription';
   document.getElementById('family-summary').textContent='"'+summaryText+'"';
 
   // Side effects
@@ -454,7 +454,7 @@ let checkedCount=0, totalCount=0, data=null;
     };
     const translatedSE = await Promise.all(data.side_effects.map(async se => {
       const c=sevConfig[se.severity]||sevConfig.low;
-      const seText = typeof translateChecklistItem === 'function' ? await translateChecklistItem(se.text) : se.text;
+      const seText = lang === 'hi' && typeof translateChecklistItem === 'function' ? await translateChecklistItem(se.text) : se.text;
       return `<div class="p-5 rounded-lg shadow-sm border-l-4 ${c.cls}">
         <div class="flex justify-between items-start mb-2">
           <h3 class="font-bold text-base text-on-surface">${se.icon||'⚠️'} ${esc(seText)}</h3>
@@ -465,10 +465,10 @@ let checkedCount=0, totalCount=0, data=null;
     seList.innerHTML=translatedSE.join('');
   }
 
-  // Emergency
+  // Emergency - only translate if Hindi
   if(data.emergency){
     document.getElementById('emergency-box').classList.remove('hidden');
-    const emergencyText = typeof translateChecklistItem === 'function' ? await translateChecklistItem(data.emergency) : data.emergency;
+    const emergencyText = lang === 'hi' && typeof translateChecklistItem === 'function' ? await translateChecklistItem(data.emergency) : data.emergency;
     document.getElementById('emergency-text').textContent=emergencyText;
   }
 
@@ -482,12 +482,14 @@ let checkedCount=0, totalCount=0, data=null;
     groups[cat].push({...item,idx:i});
   });
 
-  // Translate all items first
-  await Promise.all(Object.values(groups).flat().map(async item => {
-    if (lang === 'hi' && !item.text_hi) {
-      item.text_hi = typeof translateChecklistItem === 'function' ? await translateChecklistItem(item.text) : item.text;
-    }
-  }));
+  // Translate items to Hindi only if Hindi mode is selected
+  if (lang === 'hi') {
+    await Promise.all(Object.values(groups).flat().map(async item => {
+      if (!item.text_hi) {
+        item.text_hi = typeof translateChecklistItem === 'function' ? await translateChecklistItem(item.text) : item.text;
+      }
+    }));
+  }
 
   const catConfig={
     Test:{icon:'science',color:'text-tertiary',bg:'bg-tertiary-fixed/20 border-tertiary-fixed/30'},

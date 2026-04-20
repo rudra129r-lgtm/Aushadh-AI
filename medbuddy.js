@@ -507,6 +507,10 @@ function setLanguage(lang) {
     enBtn.classList.toggle('active', lang === 'en');
     hiBtn.classList.toggle('active', lang === 'hi');
   }
+  // Clear checklist translations cache before reload
+  if (typeof clearChecklistTranslationsCache === 'function') {
+    clearChecklistTranslationsCache();
+  }
   // Reload page to refresh all content
   window.location.reload();
 }
@@ -576,19 +580,26 @@ async function translateToHindi(text) {
   } catch(e) { return text; }
 }
 
-const checklistTranslationsCache = {};
+let checklistTranslationsCache = {};
 
 async function translateChecklistItem(text) {
   const lang = getCurrentLanguage();
   if (lang === 'en') return text;
-  
+
+  if (!checklistTranslationsCache) {
+    checklistTranslationsCache = {};
+  }
   if (checklistTranslationsCache[text]) {
     return checklistTranslationsCache[text];
   }
-  
+
   const translated = await translateToHindi(text);
   checklistTranslationsCache[text] = translated;
   return translated;
+}
+
+function clearChecklistTranslationsCache() {
+  checklistTranslationsCache = {};
 }
 
 function t(key) {
